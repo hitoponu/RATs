@@ -1,0 +1,1885 @@
+[
+  {
+    "skill_id": "primitive_get_observation",
+    "name": "get_observation",
+    "description": "Get current observation: RGB/depth images from agentview and wrist cameras, robot joint positions, and end-effector cartesian pose.",
+    "code": "# Built-in Franka LIBERO primitive: get_observation() -> dict\n# Keys: ['agentview']['images']['rgb'|'depth'], ['robot0_eye_in_hand']['images']['rgb'|'depth'],\n#        ['robot_joint_pos'] (8,), ['robot_cartesian_pos'] (8,: xyz + wxyz + gripper)",
+    "api_primitives_used": [
+      "get_observation"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_object_pose",
+    "name": "get_object_pose",
+    "description": "Get the 3D pose of a named object in the robot base frame. Returns (position (3,) XYZ meters, quaternion_wxyz (4,)).",
+    "code": "# Built-in Franka LIBERO primitive: get_object_pose(object_name: str) -> tuple[ndarray, ndarray]",
+    "api_primitives_used": [
+      "get_object_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_goto_pose",
+    "name": "goto_pose",
+    "description": "Move end-effector to target pose using IK. Optional z_approach for pre-grasp approach motion (higher z, then descend).",
+    "code": "# Built-in Franka LIBERO primitive: goto_pose(position: ndarray(3,), quaternion_wxyz: ndarray(4,), z_approach: float = 0.0) -> None",
+    "api_primitives_used": [
+      "goto_pose"
+    ],
+    "preconditions": [],
+    "effects": [
+      "robot_moved"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_open_gripper",
+    "name": "open_gripper",
+    "description": "Open the Franka gripper fully.",
+    "code": "# Built-in Franka LIBERO primitive: open_gripper() -> None",
+    "api_primitives_used": [
+      "open_gripper"
+    ],
+    "preconditions": [],
+    "effects": [
+      "gripper_open"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_close_gripper",
+    "name": "close_gripper",
+    "description": "Close the Franka gripper fully.",
+    "code": "# Built-in Franka LIBERO primitive: close_gripper() -> None",
+    "api_primitives_used": [
+      "close_gripper"
+    ],
+    "preconditions": [],
+    "effects": [
+      "gripper_closed"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_goto_home_joint_position",
+    "name": "goto_home_joint_position",
+    "description": "Move the Franka arm to its home (rest) joint configuration. Useful before perception to get a clear agentview.",
+    "code": "# Built-in Franka LIBERO primitive: goto_home_joint_position() -> None",
+    "api_primitives_used": [
+      "goto_home_joint_position"
+    ],
+    "preconditions": [],
+    "effects": [
+      "robot_at_home"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_sample_grasp_pose",
+    "name": "sample_grasp_pose",
+    "description": "Plan grasp poses for a named object using ContactGraspNet. Returns (positions, quaternions_wxyz, scores) arrays.",
+    "code": "# Built-in Franka LIBERO primitive: sample_grasp_pose(object_name: str, top_k: int = 5, use_multiview: bool = True) -> tuple[ndarray, ndarray, ndarray]",
+    "api_primitives_used": [
+      "sample_grasp_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_object_3d_points_and_masks_from_language",
+    "name": "get_object_3d_points_and_masks_from_language",
+    "description": "Get 3D point cloud and 2D masks for an object specified by name. Uses SAM3 + depth deprojection. Returns dict with 'points_3d', 'agentview_mask', 'wrist_mask'.",
+    "code": "# Built-in Franka LIBERO primitive: get_object_3d_points_and_masks_from_language(object_name: str, use_multiview: bool = True) -> dict",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_oriented_bounding_box_from_3d_points",
+    "name": "get_oriented_bounding_box_from_3d_points",
+    "description": "Compute oriented bounding box (OBB) from 3D points. Returns dict with 'center', 'extent', 'R' (rotation matrix).",
+    "code": "# Built-in Franka LIBERO primitive: get_oriented_bounding_box_from_3d_points(points: ndarray) -> dict",
+    "api_primitives_used": [
+      "get_oriented_bounding_box_from_3d_points"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_segment_sam3_text_prompt",
+    "name": "segment_sam3_text_prompt",
+    "description": "Run SAM3 segmentation on an RGB image conditioned on a text prompt. Returns list of masks with bounding boxes and confidence scores.",
+    "code": "# Built-in Franka LIBERO primitive: segment_sam3_text_prompt(rgb: ndarray, text_prompt: str) -> list[dict]",
+    "api_primitives_used": [
+      "segment_sam3_text_prompt"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_segment_sam3_point_prompt",
+    "name": "segment_sam3_point_prompt",
+    "description": "Run SAM3 segmentation with point prompt conditioning. Returns list of segmentation masks with scores.",
+    "code": "# Built-in Franka LIBERO primitive: segment_sam3_point_prompt(rgb: ndarray, point_coords: tuple) -> list[dict]",
+    "api_primitives_used": [
+      "segment_sam3_point_prompt"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_point_prompt_molmo",
+    "name": "point_prompt_molmo",
+    "description": "Use Molmo VLM to locate objects in an image given a text description. Returns dict mapping object name to (x, y) pixel coordinates.",
+    "code": "# Built-in Franka LIBERO primitive: point_prompt_molmo(image: ndarray, text_prompt: str) -> dict[str, tuple]",
+    "api_primitives_used": [
+      "point_prompt_molmo"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "name": "compute_obb_mid_height_grasp_target",
+    "description": "Segments an object by language, builds an oriented bounding box from its point cloud, and computes a top-down grasp target at a specified fraction of the object's height plus a lift target above the object.",
+    "code": "def compute_obb_mid_height_grasp_target(object_prompt, height_fraction=0.55, top_clearance=0.06, lift_clearance=0.20, min_z_approach=0.02, grasp_quaternion=(0.0, 0.0, 1.0, 0.0), use_multiview=True):\n    segmentation = get_object_3d_points_and_masks_from_language(object_prompt, use_multiview=use_multiview)\n    points = segmentation.get(\"points_3d\") if segmentation is not None else None\n    if points is None or len(points) == 0:\n        return {\n            \"success\": False,\n            \"reason\": \"point_cloud_not_found\",\n            \"segmentation\": {\n                \"agentview_score\": segmentation.get(\"agentview_score\") if segmentation is not None else None,\n                \"wrist_score\": segmentation.get(\"wrist_score\") if segmentation is not None else None,\n                \"num_points\": 0,\n            },\n        }\n\n    obb = get_oriented_bounding_box_from_3d_points(points)\n    center = obb[\"center\"].copy()\n    bottom_z = float(points[:, 2].min())\n    top_z = float(points[:, 2].max())\n    height = top_z - bottom_z\n    if height <= 0.0:\n        return {\"success\": False, \"reason\": \"invalid_object_height\", \"obb\": obb, \"center\": center}\n\n    grasp_position = center.copy()\n    grasp_position[2] = bottom_z + height_fraction * height\n\n    lift_position = center.copy()\n    lift_position[2] = top_z + lift_clearance\n\n    z_approach = (top_z + top_clearance) - grasp_position[2]\n    if z_approach < min_z_approach:\n        z_approach = min_z_approach\n\n    return {\n        \"success\": True,\n        \"segmentation\": {\n            \"agentview_score\": segmentation.get(\"agentview_score\") if segmentation is not None else None,\n            \"wrist_score\": segmentation.get(\"wrist_score\") if segmentation is not None else None,\n            \"num_points\": int(len(points)),\n        },\n        \"obb\": obb,\n        \"center\": center,\n        \"bottom_z\": bottom_z,\n        \"top_z\": top_z,\n        \"height\": height,\n        \"grasp_position\": grasp_position,\n        \"lift_position\": lift_position,\n        \"z_approach\": z_approach,\n        \"orientation_used_wxyz\": grasp_quaternion,\n    }",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points"
+    ],
+    "preconditions": [
+      "object is visible to language-based segmentation",
+      "object point cloud has nonzero height",
+      "height_fraction is between the lower and upper graspable region of the object"
+    ],
+    "effects": [
+      "returns an OBB-based grasp position at the requested height fraction",
+      "returns a lift position above the segmented object's top surface",
+      "returns a z_approach distance suitable for top-down approach"
+    ],
+    "source_task": "i_want_to_put_the_milk_on_the_wooden_tray",
+    "learned_iteration": 2,
+    "skill_id": "learned_compute_obb_mid_height_grasp_target",
+    "is_primitive": false,
+    "usage_count": 2,
+    "success_count": 2,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "place_carried_object_at_target_center",
+    "description": "Moves a grasped object to a target center, lowers to a release height, opens the gripper, and retreats upward while preserving the carry orientation.",
+    "code": "def place_carried_object_at_target_center(target_center, carry_quaternion, hover_height=0.22, release_height=0.14, retreat_height=0.16):\n    hover_position = target_center.copy()\n    hover_position[2] = target_center[2] + hover_height\n\n    release_position = target_center.copy()\n    release_position[2] = target_center[2] + release_height\n\n    retreat_position = target_center.copy()\n    retreat_position[2] = target_center[2] + retreat_height\n\n    goto_pose(hover_position, carry_quaternion, z_approach=0.0)\n    goto_pose(release_position, carry_quaternion, z_approach=0.0)\n    open_gripper()\n    goto_pose(retreat_position, carry_quaternion, z_approach=0.0)\n\n    return {\n        \"hover_position\": hover_position,\n        \"release_position\": release_position,\n        \"retreat_position\": retreat_position,\n        \"carry_orientation_wxyz\": carry_quaternion,\n    }",
+    "api_primitives_used": [
+      "goto_pose",
+      "open_gripper"
+    ],
+    "preconditions": [
+      "robot is already holding an object",
+      "target_center is a reachable placement point",
+      "release_height leaves the object stably supported by the target surface"
+    ],
+    "effects": [
+      "carried object is moved above the target center",
+      "object is released at target_center plus release_height",
+      "gripper retreats upward after release"
+    ],
+    "source_task": "i_want_to_put_the_milk_on_the_wooden_tray",
+    "learned_iteration": 2,
+    "skill_id": "learned_place_carried_object_at_target_center",
+    "is_primitive": false,
+    "usage_count": 12,
+    "success_count": 10,
+    "success_rate": 0.8333333333333334,
+    "tier": "verified",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "localize_object_with_pose_aliases_and_segmentation_fallback",
+    "description": "Localizes a target object by trying one or more pose-query names, then falls back to language segmentation and an oriented bounding box center if pose queries fail.",
+    "code": "def localize_object_with_pose_aliases_and_segmentation_fallback(object_names, segmentation_query, use_multiview=True):\n    position = None\n    quaternion = None\n    method = None\n    point_count = None\n    obb = None\n\n    for object_name in object_names:\n        if position is None:\n            position, quaternion = get_object_pose(object_name, use_multiview=use_multiview)\n            method = \"object_pose_\" + object_name\n\n    if position is None:\n        seg = get_object_3d_points_and_masks_from_language(segmentation_query, use_multiview=use_multiview)\n        points = seg.get(\"points_3d\")\n        if points is not None and len(points) > 0:\n            point_count = len(points)\n            obb = get_oriented_bounding_box_from_3d_points(points)\n            position = obb[\"center\"]\n            quaternion = None\n            method = \"segmentation_obb_\" + segmentation_query\n\n    return {\n        \"position\": position,\n        \"quaternion\": quaternion,\n        \"method\": method,\n        \"point_count\": point_count,\n        \"obb\": obb\n    }",
+    "api_primitives_used": [
+      "get_object_pose",
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points"
+    ],
+    "preconditions": [
+      "target object is visible or partially visible",
+      "at least one pose alias or the segmentation query refers to the intended target"
+    ],
+    "effects": [
+      "returns a best-effort target position and optional quaternion",
+      "provides metadata describing whether pose lookup or segmentation OBB was used"
+    ],
+    "source_task": "i_want_to_open_the_microwave",
+    "learned_iteration": 3,
+    "skill_id": "learned_localize_object_with_pose_aliases_and_segmentation_fallback",
+    "is_primitive": false,
+    "usage_count": 18,
+    "success_count": 16,
+    "success_rate": 0.8888888888888888,
+    "tier": "verified",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pull_grasped_handle_along_offset_waypoints_and_retreat",
+    "description": "Moves a grasped handle through a sequence of Cartesian offset waypoints, then releases and retreats by a specified offset while preserving the grasp orientation.",
+    "code": "def pull_grasped_handle_along_offset_waypoints_and_retreat(start_position, quaternion_wxyz, pull_offsets, retreat_offset, waypoint_z_approach=0.0, release_before_retreat=True):\n    waypoints = []\n\n    for offset in pull_offsets:\n        waypoint = start_position.copy()\n        waypoint[0] = waypoint[0] + offset[0]\n        waypoint[1] = waypoint[1] + offset[1]\n        waypoint[2] = waypoint[2] + offset[2]\n        goto_pose(waypoint, quaternion_wxyz, z_approach=waypoint_z_approach)\n        waypoints.append(waypoint)\n\n    if len(waypoints) > 0:\n        final_position = waypoints[-1]\n    else:\n        final_position = start_position\n\n    if release_before_retreat:\n        open_gripper()\n\n    retreat_position = final_position.copy()\n    retreat_position[0] = retreat_position[0] + retreat_offset[0]\n    retreat_position[1] = retreat_position[1] + retreat_offset[1]\n    retreat_position[2] = retreat_position[2] + retreat_offset[2]\n    goto_pose(retreat_position, quaternion_wxyz, z_approach=0.0)\n\n    return {\n        \"waypoints\": waypoints,\n        \"retreat_position\": retreat_position\n    }",
+    "api_primitives_used": [
+      "goto_pose",
+      "open_gripper"
+    ],
+    "preconditions": [
+      "robot gripper is already closed on a handle or pullable part",
+      "start_position is the grasp/contact position",
+      "pull_offsets describe a collision-free opening or pulling path for the articulated object"
+    ],
+    "effects": [
+      "moves the grasped handle through the requested pull trajectory",
+      "optionally releases the handle",
+      "retreats away from the final handle position"
+    ],
+    "source_task": "i_want_to_open_the_microwave",
+    "learned_iteration": 3,
+    "skill_id": "learned_pull_grasped_handle_along_offset_waypoints_and_retreat",
+    "is_primitive": false,
+    "usage_count": 4,
+    "success_count": 3,
+    "success_rate": 0.75,
+    "tier": "verified",
+    "rediscovery_count": 4,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "rotate_grasped_object_in_place_by_yaw_waypoints",
+    "description": "Rotates an already-grasped object in place by commanding a sequence of arbitrary yaw-rotated wrist orientations at a fixed Cartesian position, then optionally releases and retreats upward.",
+    "code": "def rotate_grasped_object_in_place_by_yaw_waypoints(grasp_position, base_quaternion_wxyz, yaw_waypoints_degrees, release_after=True, retreat_z_offset=0.12):\n    import math\n\n    def _quat_multiply_wxyz(q1, q2):\n        w1, x1, y1, z1 = float(q1[0]), float(q1[1]), float(q1[2]), float(q1[3])\n        w2, x2, y2, z2 = float(q2[0]), float(q2[1]), float(q2[2]), float(q2[3])\n        return [\n            (w1 * w2) - (x1 * x2) - (y1 * y2) - (z1 * z2),\n            (w1 * x2) + (x1 * w2) + (y1 * z2) - (z1 * y2),\n            (w1 * y2) - (x1 * z2) + (y1 * w2) + (z1 * x2),\n            (w1 * z2) + (x1 * y2) - (y1 * x2) + (z1 * w2),\n        ]\n\n    def _yaw_quaternion_wxyz(yaw_degrees):\n        half_angle = math.radians(float(yaw_degrees)) / 2.0\n        return [math.cos(half_angle), 0.0, 0.0, math.sin(half_angle)]\n\n    final_quaternion = base_quaternion_wxyz\n    commanded_quaternions = []\n    for yaw_degrees in yaw_waypoints_degrees:\n        final_quaternion = _quat_multiply_wxyz(_yaw_quaternion_wxyz(yaw_degrees), base_quaternion_wxyz)\n        goto_pose(grasp_position, final_quaternion, z_approach=0.0)\n        commanded_quaternions.append(final_quaternion)\n\n    retreat_position = None\n    if release_after:\n        open_gripper()\n        retreat_position = grasp_position.copy()\n        retreat_position[2] = retreat_position[2] + retreat_z_offset\n        goto_pose(retreat_position, final_quaternion, z_approach=0.0)\n\n    return {\n        \"final_quaternion_wxyz\": final_quaternion,\n        \"commanded_quaternions_wxyz\": commanded_quaternions,\n        \"retreat_position\": retreat_position.tolist() if hasattr(retreat_position, \"tolist\") else retreat_position,\n    }",
+    "api_primitives_used": [
+      "goto_pose",
+      "open_gripper"
+    ],
+    "preconditions": [
+      "object is already securely grasped",
+      "grasp_position is the desired fixed pivot/contact position",
+      "base_quaternion_wxyz is the wrist orientation used for the grasp",
+      "yaw_waypoints_degrees contains supported incremental yaw values such as 30, 60, 90, -30, -60, or -90"
+    ],
+    "effects": [
+      "end effector rotates in place through the specified yaw waypoints",
+      "if release_after is true, gripper opens and retreats upward by retreat_z_offset"
+    ],
+    "source_task": "i_want_to_turn_on_the_stove",
+    "learned_iteration": 4,
+    "skill_id": "learned_rotate_grasped_object_in_place_by_yaw_waypoints",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "rewrite_history": [
+      {
+        "timestamp": 1779219312.588076,
+        "previous_code": "def rotate_grasped_object_in_place_by_yaw_waypoints(grasp_position, base_quaternion_wxyz, yaw_waypoints_degrees, release_after=True, retreat_z_offset=0.12):\n    def _quat_multiply_wxyz(q1, q2):\n        w1, x1, y1, z1 = float(q1[0]), float(q1[1]), float(q1[2]), float(q1[3])\n        w2, x2, y2, z2 = float(q2[0]), float(q2[1]), float(q2[2]), float(q2[3])\n        return [\n            (w1 * w2) - (x1 * x2) - (y1 * y2) - (z1 * z2),\n            (w1 * x2) + (x1 * w2) + (y1 * z2) - (z1 * y2),\n            (w1 * y2) - (x1 * z2) + (y1 * w2) + (z1 * x2),\n            (w1 * z2) + (x1 * y2) - (y1 * x2) + (z1 * w2),\n        ]\n\n    def _yaw_quaternion_wxyz(yaw_degrees):\n        if yaw_degrees == 30:\n            return [0.9659258263, 0.0, 0.0, 0.2588190451]\n        if yaw_degrees == 60:\n            return [0.8660254038, 0.0, 0.0, 0.5]\n        if yaw_degrees == 90:\n            return [0.7071067812, 0.0, 0.0, 0.7071067812]\n        if yaw_degrees == -30:\n            return [0.9659258263, 0.0, 0.0, -0.2588190451]\n        if yaw_degrees == -60:\n            return [0.8660254038, 0.0, 0.0, -0.5]\n        if yaw_degrees == -90:\n            return [0.7071067812, 0.0, 0.0, -0.7071067812]\n        return [0.9238795325, 0.0, 0.0, 0.3826834324]\n\n    final_quaternion = base_quaternion_wxyz\n    for yaw_degrees in yaw_waypoints_degrees:\n        final_quaternion = _quat_multiply_wxyz(_yaw_quaternion_wxyz(yaw_degrees), base_quaternion_wxyz)\n        goto_pose(grasp_position, final_quaternion, z_approach=0.0)\n\n    retreat_position = None\n    if release_after:\n        open_gripper()\n        retreat_position = grasp_position.copy()\n        retreat_position[2] = retreat_position[2] + retreat_z_offset\n        goto_pose(retreat_position, final_quaternion, z_approach=0.0)\n\n    return {\"final_quaternion_wxyz\": final_quaternion, \"retreat_position\": retreat_position.tolist() if hasattr(retreat_position, \"tolist\") else retreat_position}",
+        "previous_description": "Rotates an already-grasped object in place by commanding a sequence of yaw-rotated wrist orientations at a fixed Cartesian position, then optionally releases and retreats upward.",
+        "rationale": "The existing skill hardcodes quaternion values for only a few yaw angles and silently substitutes a fixed 45-degree quaternion for all other inputs. Computing the yaw quaternion from the requested angle makes the same procedure reusable for arbitrary knob, handle, or object rotation amounts."
+      }
+    ],
+    "rewrite_count": 1,
+    "curator_reason": "The existing skill hardcodes quaternion values for only a few yaw angles and silently substitutes a fixed 45-degree quaternion for all other inputs. Computing the yaw quaternion from the requested angle makes the same procedure reusable for arbitrary knob, handle, or object rotation amounts."
+  },
+  {
+    "name": "sample_grasp_pose_approach_and_close",
+    "description": "Samples a grasp pose for a language-described target, approaches from above by a configurable height, and closes the gripper on the target.",
+    "code": "def sample_grasp_pose_approach_and_close(target_prompt, approach_height=0.06, use_multiview=True):\n    open_gripper()\n    grasp_position, grasp_quaternion = sample_grasp_pose(target_prompt, use_multiview=use_multiview)\n    if grasp_position is None or grasp_quaternion is None:\n        return {\n            \"success\": False,\n            \"reason\": \"sample_grasp_pose_returned_none\",\n            \"grasp_position\": None,\n            \"grasp_quaternion\": None,\n        }\n    goto_pose(grasp_position, grasp_quaternion, z_approach=approach_height)\n    close_gripper()\n    return {\n        \"success\": True,\n        \"reason\": \"gripper_closed_on_sampled_grasp_pose\",\n        \"grasp_position\": grasp_position,\n        \"grasp_quaternion\": grasp_quaternion,\n    }",
+    "api_primitives_used": [
+      "open_gripper",
+      "sample_grasp_pose",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "target_prompt describes a visible and reachable graspable part or object",
+      "gripper is empty",
+      "sample_grasp_pose can produce a collision-free grasp for the target"
+    ],
+    "effects": [
+      "gripper is closed at the sampled grasp pose",
+      "returns the grasp position and quaternion for downstream manipulation such as pulling or lifting"
+    ],
+    "source_task": "i_want_to_open_the_top_drawer_of_the_wooden_cabinet",
+    "learned_iteration": 5,
+    "skill_id": "learned_sample_grasp_pose_approach_and_close",
+    "is_primitive": false,
+    "usage_count": 4,
+    "success_count": 2,
+    "success_rate": 0.5,
+    "tier": "verified",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "return_arm_to_home_configuration",
+    "description": "Moves the robot arm back to its safe home joint configuration after completing or aborting a manipulation action.",
+    "code": "def return_arm_to_home_configuration():\n    goto_home_joint_position()\n    return {\"success\": True, \"action\": \"goto_home_joint_position\"}",
+    "api_primitives_used": [
+      "goto_home_joint_position"
+    ],
+    "preconditions": [
+      "robot is in a valid non-colliding state for homing"
+    ],
+    "effects": [
+      "arm is moved to the predefined safe home joint configuration"
+    ],
+    "source_task": "i_want_to_open_the_top_drawer_of_the_wooden_cabinet_task0",
+    "learned_iteration": 6,
+    "skill_id": "learned_return_arm_to_home_configuration",
+    "is_primitive": false,
+    "usage_count": 17,
+    "success_count": 17,
+    "success_rate": 1.0,
+    "tier": "verified",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "check_open_microwave_interior_visible",
+    "description": "Checks whether a language-described region or object is visible in fresh perception, returning a robust point-cloud center when enough segmented points and score are available. Defaults preserve the original open-microwave-interior behavior.",
+    "code": "def check_open_microwave_interior_visible(region_prompt='open microwave interior', min_points=30, min_score=0.25, use_multiview=False, center_method='median'):\n    import numpy as np\n    get_observation()\n    result = get_object_3d_points_and_masks_from_language(region_prompt, use_multiview=use_multiview)\n    points = result.get('points_3d', None) if result is not None else None\n    score = result.get('agentview_score', 0.0) if result is not None else 0.0\n\n    if points is None:\n        return {'success': False, 'center': None, 'num_points': 0, 'score': float(score), 'region_prompt': region_prompt}\n\n    points = np.asarray(points, dtype=float)\n    if points.ndim != 2 or points.shape[0] < int(min_points):\n        num_points = int(points.shape[0]) if points.ndim == 2 else 0\n        return {'success': False, 'center': None, 'num_points': num_points, 'score': float(score), 'region_prompt': region_prompt}\n\n    if center_method == 'mean':\n        center = np.mean(points, axis=0)\n    else:\n        center = np.median(points, axis=0)\n\n    success = bool(float(score) >= float(min_score))\n    return {\n        'success': success,\n        'center': center,\n        'num_points': int(points.shape[0]),\n        'score': float(score),\n        'region_prompt': region_prompt,\n        'use_multiview': use_multiview,\n        'center_method': center_method,\n    }",
+    "api_primitives_used": [
+      "get_observation",
+      "get_object_3d_points_and_masks_from_language"
+    ],
+    "preconditions": [
+      "The robot has attempted to open the microwave door.",
+      "The agentview camera has a view of the microwave."
+    ],
+    "effects": [
+      "Uses a fresh agentview observation and language segmentation to determine whether an open microwave interior is visible.",
+      "Returns a robust world-frame interior center estimate based on the median of segmented 3D points when visible."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the failures where later steps proceeded after an ineffective pull or checked stale/incorrect views. This helper gates the soup-can pick/place sequence on fresh visibility of the open interior and supplies a placement target center without using unavailable camera intrinsics or pixel-to-world projection.",
+    "learned_iteration": 7,
+    "skill_id": "learned_check_open_microwave_interior_visible",
+    "usage_count": 2,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "rewrite_history": [
+      {
+        "timestamp": 1779230921.2697299,
+        "previous_code": "def check_open_microwave_interior_visible(min_points=30, min_score=0.25):\n    import numpy as np\n    obs = get_observation()\n    _ = obs['agentview']['images']['rgb']\n    result = get_object_3d_points_and_masks_from_language('open microwave interior', use_multiview=False)\n    points = result.get('points_3d', None)\n    score = result.get('agentview_score', 0.0)\n    if points is None:\n        return {\"success\": False, \"center\": None, \"num_points\": 0, \"score\": float(score)}\n    points = np.asarray(points, dtype=float)\n    if points.ndim != 2 or points.shape[0] < int(min_points):\n        return {\"success\": False, \"center\": None, \"num_points\": int(points.shape[0]) if points.ndim == 2 else 0, \"score\": float(score)}\n    center = np.median(points, axis=0)\n    success = bool(float(score) >= float(min_score))\n    return {\"success\": success, \"center\": center, \"num_points\": int(points.shape[0]), \"score\": float(score)}",
+        "previous_description": "Verify from fresh perception that the microwave interior is visible before attempting to pick or place objects inside.",
+        "rationale": "The original skill was useful but hardcoded to the literal query 'open microwave interior' and single-view perception. Lifting the query and multiview flag makes the same visibility/center-estimation procedure reusable for other containers, interiors, and placement regions while preserving the default microwave use case."
+      }
+    ],
+    "rewrite_count": 1,
+    "curator_reason": "The original skill was useful but hardcoded to the literal query 'open microwave interior' and single-view perception. Lifting the query and multiview flag makes the same visibility/center-estimation procedure reusable for other containers, interiors, and placement regions while preserving the default microwave use case."
+  },
+  {
+    "name": "pick_flat_object_with_obb_top_down_retries",
+    "description": "Segments a flat object, computes an oriented-bounding-box top-down grasp pose, tries configurable top-clearance and XY-offset corrections, lifts, and verifies that the object rose.",
+    "code": "def pick_flat_object_with_obb_top_down_retries(target_prompt, verification_names, approach_height=0.10, lift_height=0.05, top_clearance_attempts=(-0.02, -0.025), xy_offset_attempts=((-0.015, -0.015), (-0.02, 0.0)), use_multiview=True, min_lift_delta=0.015):\n    attempt_records = []\n    last_grasp_position = None\n    last_grasp_quaternion = None\n    last_lift_position = None\n    last_obb = None\n    last_segmentation = None\n\n    num_attempts = min(len(top_clearance_attempts), len(xy_offset_attempts))\n    for attempt_index in range(num_attempts):\n        open_gripper()\n\n        segmentation = get_object_3d_points_and_masks_from_language(target_prompt, use_multiview=use_multiview)\n        points = segmentation.get(\"points_3d\", None)\n        if points is None or len(points) == 0:\n            attempt_records.append({\n                \"attempt_index\": attempt_index,\n                \"top_clearance\": top_clearance_attempts[attempt_index],\n                \"xy_offset\": xy_offset_attempts[attempt_index],\n                \"grasp_position\": None,\n                \"grasp_quaternion_wxyz\": None,\n                \"lift_position\": None,\n                \"verified_position\": None,\n                \"verified_lifted\": False,\n            })\n            continue\n\n        obb = get_oriented_bounding_box_from_3d_points(points)\n        center = obb.get(\"center\", None)\n        extent = obb.get(\"extent\", None)\n        if center is None:\n            attempt_records.append({\n                \"attempt_index\": attempt_index,\n                \"top_clearance\": top_clearance_attempts[attempt_index],\n                \"xy_offset\": xy_offset_attempts[attempt_index],\n                \"grasp_position\": None,\n                \"grasp_quaternion_wxyz\": None,\n                \"lift_position\": None,\n                \"verified_position\": None,\n                \"verified_lifted\": False,\n            })\n            continue\n\n        grasp_position = center.copy()\n        if extent is not None and len(extent) >= 3:\n            grasp_position[2] = center[2] + float(extent[2]) * 0.5 + float(top_clearance_attempts[attempt_index])\n        else:\n            grasp_position[2] = center[2] + float(top_clearance_attempts[attempt_index])\n\n        dx, dy = xy_offset_attempts[attempt_index]\n        grasp_position[0] = grasp_position[0] + float(dx)\n        grasp_position[1] = grasp_position[1] + float(dy)\n\n        grasp_quaternion = (0.0, 0.0, 1.0, 0.0)\n        if extent is not None and len(extent) >= 2 and float(extent[0]) > float(extent[1]):\n            grasp_quaternion = (0.0, -0.70710678, 0.70710678, 0.0)\n\n        goto_pose(grasp_position, grasp_quaternion, z_approach=approach_height)\n        close_gripper()\n\n        lift_position = grasp_position.copy()\n        lift_position[2] = lift_position[2] + float(lift_height)\n        goto_pose(lift_position, grasp_quaternion)\n\n        verified_position = None\n        verified_quaternion = None\n        for verification_name in verification_names:\n            verified_position, verified_quaternion = get_object_pose(verification_name, use_multiview=use_multiview)\n            if verified_position is not None:\n                break\n\n        verified_lifted = False\n        if verified_position is not None:\n            verified_lifted = float(verified_position[2]) >= float(grasp_position[2]) + float(min_lift_delta)\n\n        last_grasp_position = grasp_position\n        last_grasp_quaternion = grasp_quaternion\n        last_lift_position = lift_position\n        last_obb = obb\n        last_segmentation = segmentation\n\n        attempt_records.append({\n            \"attempt_index\": attempt_index,\n            \"top_clearance\": top_clearance_attempts[attempt_index],\n            \"xy_offset\": xy_offset_attempts[attempt_index],\n            \"grasp_position\": grasp_position.tolist() if hasattr(grasp_position, \"tolist\") else grasp_position,\n            \"grasp_quaternion_wxyz\": grasp_quaternion,\n            \"lift_position\": lift_position.tolist() if hasattr(lift_position, \"tolist\") else lift_position,\n            \"verified_position\": verified_position.tolist() if hasattr(verified_position, \"tolist\") else verified_position,\n            \"verified_lifted\": verified_lifted,\n        })\n\n        if verified_lifted:\n            return {\n                \"success\": True,\n                \"grasp_position\": grasp_position,\n                \"grasp_quaternion\": grasp_quaternion,\n                \"lift_position\": lift_position,\n                \"obb\": obb,\n                \"segmentation\": segmentation,\n                \"attempt_records\": attempt_records,\n            }\n\n    return {\n        \"success\": False,\n        \"grasp_position\": last_grasp_position,\n        \"grasp_quaternion\": last_grasp_quaternion,\n        \"lift_position\": last_lift_position,\n        \"obb\": last_obb,\n        \"segmentation\": last_segmentation,\n        \"attempt_records\": attempt_records,\n    }",
+    "api_primitives_used": [
+      "open_gripper",
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "goto_pose",
+      "close_gripper",
+      "get_object_pose"
+    ],
+    "preconditions": [
+      "target object is visible to language segmentation",
+      "target object is reachable from above",
+      "gripper is empty before the first attempt",
+      "verification_names contains one or more pose-query names for the target object"
+    ],
+    "effects": [
+      "attempts to grasp the flat target object from above",
+      "lifts the object by lift_height after closing the gripper",
+      "returns grasp pose, lift pose, OBB data, segmentation data, attempt records, and a lift-verification success flag"
+    ],
+    "source_task": "i_want_to_put_the_cookies_on_the_plate",
+    "learned_iteration": 8,
+    "skill_id": "learned_pick_flat_object_with_obb_top_down_retries",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "verify_object_near_target_xy",
+    "description": "Checks whether a moved object is within a specified horizontal distance of a target object, with an optional fallback target center if target pose lookup fails.",
+    "code": "def verify_object_near_target_xy(object_name, target_name, max_xy_distance, fallback_target_center=None, use_multiview=True):\n    get_observation()\n    object_position, object_quaternion = get_object_pose(object_name, use_multiview=use_multiview)\n    target_position, target_quaternion = get_object_pose(target_name, use_multiview=use_multiview)\n\n    comparison_target = target_position\n    comparison_source = \"target_pose\"\n    if comparison_target is None and fallback_target_center is not None:\n        comparison_target = fallback_target_center\n        comparison_source = \"fallback_target_center\"\n\n    distance_xy = None\n    verified = False\n    if object_position is not None and comparison_target is not None:\n        dx = float(object_position[0] - comparison_target[0])\n        dy = float(object_position[1] - comparison_target[1])\n        distance_xy = (dx * dx + dy * dy) ** 0.5\n        verified = distance_xy <= float(max_xy_distance)\n\n    return {\n        \"verified\": verified,\n        \"object_position\": object_position,\n        \"target_position\": target_position,\n        \"fallback_target_center\": fallback_target_center,\n        \"comparison_source\": comparison_source,\n        \"distance_xy\": distance_xy,\n        \"max_xy_distance\": max_xy_distance,\n    }",
+    "api_primitives_used": [
+      "get_observation",
+      "get_object_pose"
+    ],
+    "preconditions": [
+      "object_name is a valid pose-query name for the moved object",
+      "target_name is a valid pose-query name for the target object or fallback_target_center is provided",
+      "max_xy_distance is an appropriate task tolerance in meters"
+    ],
+    "effects": [
+      "refreshes perception",
+      "computes the XY distance between object and target or fallback center",
+      "returns whether the object is within max_xy_distance of the target"
+    ],
+    "source_task": "i_want_to_put_the_cookies_on_the_plate",
+    "learned_iteration": 8,
+    "skill_id": "learned_verify_object_near_target_xy",
+    "is_primitive": false,
+    "usage_count": 8,
+    "success_count": 8,
+    "success_rate": 1.0,
+    "tier": "verified",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_boxy_object_top_down_by_pose_and_points",
+    "description": "Pick a boxy tabletop object with a simple vertical top-down grasp using object pose/segmentation height instead of flat-object OBB grasping or sampled grasp loops.",
+    "code": "def pick_boxy_object_top_down_by_pose_and_points(object_names, approach_height=0.12, lift_height=0.12, top_clearance=0.005, use_multiview=True):\n    import numpy as np\n    if isinstance(object_names, str):\n        object_names = [object_names]\n\n    center = None\n    quat = None\n    used_name = None\n    for name in object_names:\n        pos, q = get_object_pose(name, use_multiview=use_multiview)\n        if pos is not None:\n            center = np.array(pos, dtype=float)\n            quat = q\n            used_name = name\n            break\n\n    points = None\n    if used_name is not None:\n        try:\n            seg = get_object_3d_points_and_masks_from_language(used_name.replace('_', ' '), use_multiview=use_multiview)\n            pts = seg.get('points_3d', None)\n            if pts is not None and len(pts) >= 10:\n                points = np.array(pts, dtype=float)\n        except Exception:\n            points = None\n\n    if center is None:\n        for name in object_names:\n            try:\n                seg = get_object_3d_points_and_masks_from_language(name.replace('_', ' '), use_multiview=use_multiview)\n                pts = seg.get('points_3d', None)\n                if pts is not None and len(pts) >= 10:\n                    points = np.array(pts, dtype=float)\n                    center = np.median(points, axis=0)\n                    used_name = name\n                    break\n            except Exception:\n                continue\n\n    if center is None:\n        return {'success': False, 'error': 'could_not_localize_object', 'object_name': None}\n\n    if points is not None and len(points) >= 10:\n        xy = np.median(points[:, :2], axis=0)\n        top_z = float(np.percentile(points[:, 2], 95))\n    else:\n        xy = center[:2]\n        top_z = float(center[2] + 0.025)\n\n    down_quat = np.array([0.0, 0.0, 1.0, 0.0], dtype=float)\n    grasp_position = np.array([xy[0], xy[1], top_z + float(top_clearance)], dtype=float)\n    lift_position = grasp_position + np.array([0.0, 0.0, float(lift_height)], dtype=float)\n\n    open_gripper()\n    goto_pose(grasp_position, down_quat, z_approach=float(approach_height))\n    close_gripper()\n    goto_pose(lift_position, down_quat, z_approach=0.0)\n\n    verified = False\n    if used_name is not None:\n        new_pos, _ = get_object_pose(used_name, use_multiview=use_multiview)\n        if new_pos is not None:\n            verified = bool(float(new_pos[2]) > float(center[2]) + 0.03)\n    obs = get_observation()\n    gripper_value = float(obs['robot_cartesian_pos'][-1])\n\n    return {\n        'success': True,\n        'verified': verified,\n        'object_name': used_name,\n        'initial_center': center,\n        'grasp_position': grasp_position,\n        'grasp_quaternion_wxyz': down_quat,\n        'lift_position': lift_position,\n        'gripper_value_after_close': gripper_value\n    }",
+    "api_primitives_used": [
+      "get_object_pose",
+      "get_object_3d_points_and_masks_from_language",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper",
+      "get_observation"
+    ],
+    "preconditions": [
+      "The target is a boxy or standard 3D tabletop object reachable by a vertical top-down grasp.",
+      "At least one object name or alias can be localized by get_object_pose or language segmentation.",
+      "There is enough free space above the object for a vertical approach."
+    ],
+    "effects": [
+      "Opens the gripper, approaches the object's top surface vertically, closes the gripper, and lifts upward.",
+      "Returns commanded grasp/lift poses and a best-effort lift verification result."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the repeated cookie-package failures by avoiding both failed patterns: it does not use the flat-object OBB retry helper meant for thin objects, and it does not depend on sample_grasp_pose loops that previously produced no valid grasps. It implements the intended simple top-down strategy using only exposed world-frame pose and 3D segmentation points, with no camera calibration access.",
+    "learned_iteration": 9,
+    "skill_id": "learned_pick_boxy_object_top_down_by_pose_and_points",
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 4,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pull_engaged_drawer_handle_until_open",
+    "description": "Pull an already grasped drawer handle along negative Y in increasing waypoints, then verify the drawer opened before releasing.",
+    "code": "def pull_engaged_drawer_handle_until_open(handle_position, handle_quaternion, interior_prompt='open top drawer interior', pull_distances=(0.18, 0.32, 0.46), min_interior_points=30, release_on_success=True):\n    import numpy as np\n    if handle_position is None or handle_quaternion is None:\n        return {'success': False, 'interior_center': None, 'points_count': 0}\n\n    start = np.array(handle_position, dtype=float)\n    q = np.array(handle_quaternion, dtype=float)\n    q = q / max(np.linalg.norm(q), 1e-9)\n\n    for d in pull_distances:\n        target = start + np.array([0.0, -float(d), 0.0], dtype=float)\n        goto_pose(target, q, z_approach=0.0)\n        obs = get_observation()\n        width = float(obs['robot_cartesian_pos'][-1])\n        if width < 0.005:\n            return {'success': False, 'interior_center': None, 'points_count': 0, 'reason': 'lost_handle_grasp'}\n\n        try:\n            seg = get_object_3d_points_and_masks_from_language(interior_prompt, use_multiview=True)\n            pts = seg.get('points_3d', None)\n            n = 0 if pts is None else int(len(pts))\n            if pts is not None and n >= min_interior_points:\n                center = np.mean(pts, axis=0)\n                if release_on_success:\n                    open_gripper()\n                    goto_pose(target + np.array([0.0, -0.06, 0.08], dtype=float), q, z_approach=0.0)\n                return {'success': True, 'interior_center': center, 'points_count': n}\n        except Exception:\n            pass\n\n    final_target = start + np.array([0.0, -float(pull_distances[-1]), 0.0], dtype=float)\n    if release_on_success:\n        open_gripper()\n        goto_pose(final_target + np.array([0.0, -0.06, 0.08], dtype=float), q, z_approach=0.0)\n    return {'success': False, 'interior_center': None, 'points_count': 0}",
+    "api_primitives_used": [
+      "goto_pose",
+      "get_observation",
+      "get_object_3d_points_and_masks_from_language",
+      "open_gripper"
+    ],
+    "preconditions": [
+      "The gripper is already engaged around the drawer handle.",
+      "The drawer opens approximately along negative world Y."
+    ],
+    "effects": [
+      "Pulls the grasped handle through progressively larger negative-Y displacements.",
+      "Checks fresh perception for the open drawer interior and only releases/retreats after success or after all pulls are exhausted."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses failures where the code released unconditionally after pulling from an unverified contact state and never checked whether the top drawer actually opened. This helper preserves the grasp during the pull, monitors for lost engagement, and uses fresh segmentation of the drawer interior as the open-state confirmation.",
+    "learned_iteration": 11,
+    "skill_id": "learned_pull_engaged_drawer_handle_until_open",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "deprecated",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "duplicate_of": "pull_grasped_handle_along_offset_waypoints_and_retreat",
+    "deprecated_at_iteration": 15,
+    "deprecated_by": "skill_curator",
+    "curator_reason": "Both skills assume a handle is already grasped and then command Cartesian pull waypoints followed by release/retreat. The drawer-specific skill hardcodes negative-Y drawer distances and an interior visibility check, but this is an object/task-specific variant of the more general verified handle-pull waypoint procedure. The canonical has higher success_count, usage_count, tier, and a more general n"
+  },
+  {
+    "name": "compute_side_target_from_reference_obb_and_anchor",
+    "description": "Computes a placement point just outside a reference object's oriented bounding box on the side indicated by an anchor object's current position.",
+    "code": "def compute_side_target_from_reference_obb_and_anchor(reference_object_name, reference_prompt, anchor_object_name, clearance=0.10, use_multiview=True):\n    import numpy as np\n\n    reference_points_result = get_object_3d_points_and_masks_from_language(reference_prompt, use_multiview=use_multiview)\n    reference_points = reference_points_result[\"points_3d\"]\n    if reference_points is None or len(reference_points) == 0:\n        raise RuntimeError(\"No 3D points found for reference object: \" + str(reference_prompt))\n\n    reference_obb = get_oriented_bounding_box_from_3d_points(reference_points)\n\n    reference_position, _ = get_object_pose(reference_object_name, use_multiview=use_multiview)\n    if reference_position is None:\n        reference_center = reference_obb[\"center\"]\n    else:\n        reference_center = reference_position\n\n    anchor_position, _ = get_object_pose(anchor_object_name, use_multiview=use_multiview)\n    if anchor_position is None:\n        raise RuntimeError(\"Could not localize anchor object: \" + str(anchor_object_name))\n\n    direction_xy = anchor_position[:2] - reference_center[:2]\n    direction_norm = float((direction_xy[0] ** 2 + direction_xy[1] ** 2) ** 0.5)\n    if direction_norm < 0.001:\n        direction_xy = np.array([0.0, 1.0], dtype=np.float64)\n        direction_norm = 1.0\n\n    unit_xy = direction_xy / direction_norm\n    R = reference_obb[\"R\"]\n    extent = reference_obb[\"extent\"]\n\n    radius_xy = 0.0\n    for axis_index in range(3):\n        axis_xy = R[:2, axis_index]\n        projection = float(axis_xy[0] * unit_xy[0] + axis_xy[1] * unit_xy[1])\n        radius_xy += abs(projection) * float(extent[axis_index]) * 0.5\n\n    target = reference_center.copy()\n    target[0] = reference_center[0] + unit_xy[0] * (radius_xy + clearance)\n    target[1] = reference_center[1] + unit_xy[1] * (radius_xy + clearance)\n\n    return {\n        \"target\": target,\n        \"reference_center\": reference_center,\n        \"anchor_position\": anchor_position,\n        \"reference_obb_center\": reference_obb[\"center\"],\n        \"reference_obb_extent\": reference_obb[\"extent\"],\n        \"unit_xy\": unit_xy,\n        \"clearance\": clearance,\n    }",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "get_object_pose"
+    ],
+    "preconditions": [
+      "reference object can be segmented from language",
+      "anchor object pose can be obtained",
+      "desired side is represented by the direction from the reference object toward the anchor object"
+    ],
+    "effects": [
+      "returns a collision-aware XY placement target just outside the reference object's OBB on the anchor-facing side",
+      "does not move the robot or alter the scene"
+    ],
+    "source_task": "i_want_to_put_the_book_on_the_left_side_of_the_bowl_drainer",
+    "learned_iteration": 12,
+    "skill_id": "learned_compute_side_target_from_reference_obb_and_anchor",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "obb_aligned_side_pinch_grasp_thin_upright_object",
+    "description": "Segments a thin upright object, builds an OBB-aligned horizontal side-pinch grasp, approaches along the object's long horizontal axis, closes the gripper, and lifts.",
+    "code": "def obb_aligned_side_pinch_grasp_thin_upright_object(object_prompt, pregrasp_distance=0.18, near_distance=0.055, grasp_height_fraction=0.35, lift_height=0.15, use_multiview=True):\n    import numpy as np\n\n    def _normalize_vec(v):\n        n = np.linalg.norm(v)\n        if n < 1e-8:\n            return v\n        return v / n\n\n    def _rotation_matrix_to_quaternion_wxyz(R):\n        trace = R[0, 0] + R[1, 1] + R[2, 2]\n        if trace > 0.0:\n            s = np.sqrt(trace + 1.0) * 2.0\n            w = 0.25 * s\n            x = (R[2, 1] - R[1, 2]) / s\n            y = (R[0, 2] - R[2, 0]) / s\n            z = (R[1, 0] - R[0, 1]) / s\n        elif (R[0, 0] > R[1, 1]) and (R[0, 0] > R[2, 2]):\n            s = np.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2.0\n            w = (R[2, 1] - R[1, 2]) / s\n            x = 0.25 * s\n            y = (R[0, 1] + R[1, 0]) / s\n            z = (R[0, 2] + R[2, 0]) / s\n        elif R[1, 1] > R[2, 2]:\n            s = np.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2.0\n            w = (R[0, 2] - R[2, 0]) / s\n            x = (R[0, 1] + R[1, 0]) / s\n            y = 0.25 * s\n            z = (R[1, 2] + R[2, 1]) / s\n        else:\n            s = np.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2.0\n            w = (R[1, 0] - R[0, 1]) / s\n            x = (R[0, 2] + R[2, 0]) / s\n            y = (R[1, 2] + R[2, 1]) / s\n            z = 0.25 * s\n        return _normalize_vec(np.array([w, x, y, z], dtype=np.float64))\n\n    segmentation = get_object_3d_points_and_masks_from_language(object_prompt, use_multiview=use_multiview)\n    points_3d = segmentation[\"points_3d\"]\n    if points_3d is None or len(points_3d) == 0:\n        raise RuntimeError(\"No 3D points found for object: \" + str(object_prompt))\n\n    obb = get_oriented_bounding_box_from_3d_points(points_3d)\n    center = obb[\"center\"]\n    extent = obb[\"extent\"]\n    R_obb = obb[\"R\"]\n\n    axes = [_normalize_vec(R_obb[:, 0]), _normalize_vec(R_obb[:, 1]), _normalize_vec(R_obb[:, 2])]\n    vertical_scores = [abs(float(np.dot(a, np.array([0.0, 0.0, 1.0], dtype=np.float64)))) for a in axes]\n    vertical_index = int(np.argmax(np.array(vertical_scores)))\n    horizontal_indices = [i for i in range(3) if i != vertical_index]\n\n    if extent[horizontal_indices[0]] >= extent[horizontal_indices[1]]:\n        long_index = horizontal_indices[0]\n        short_index = horizontal_indices[1]\n    else:\n        long_index = horizontal_indices[1]\n        short_index = horizontal_indices[0]\n\n    long_axis = np.array([axes[long_index][0], axes[long_index][1], 0.0], dtype=np.float64)\n    short_axis = np.array([axes[short_index][0], axes[short_index][1], 0.0], dtype=np.float64)\n    long_axis = _normalize_vec(long_axis)\n    short_axis = _normalize_vec(short_axis)\n\n    if np.linalg.norm(long_axis) < 1e-8:\n        long_axis = np.array([1.0, 0.0, 0.0], dtype=np.float64)\n    if np.linalg.norm(short_axis) < 1e-8:\n        short_axis = np.array([0.0, 1.0, 0.0], dtype=np.float64)\n\n    object_from_robot_xy = np.array([center[0], center[1], 0.0], dtype=np.float64)\n    if float(np.dot(long_axis, object_from_robot_xy)) < 0.0:\n        long_axis = -long_axis\n    if float(np.dot(short_axis, object_from_robot_xy)) < 0.0:\n        short_axis = -short_axis\n\n    closing_axis = short_axis\n    approach_axis = long_axis\n\n    ee_y = _normalize_vec(closing_axis)\n    ee_z = _normalize_vec(approach_axis)\n    ee_x = _normalize_vec(np.cross(ee_y, ee_z))\n    ee_y = _normalize_vec(np.cross(ee_z, ee_x))\n    R_grasp = np.column_stack([ee_x, ee_y, ee_z])\n    quat_wxyz = _rotation_matrix_to_quaternion_wxyz(R_grasp)\n\n    z_min = float(np.min(points_3d[:, 2]))\n    z_max = float(np.max(points_3d[:, 2]))\n    grasp_position = np.array([center[0], center[1], z_min + grasp_height_fraction * (z_max - z_min)], dtype=np.float64)\n    pregrasp_position = grasp_position - approach_axis * pregrasp_distance\n    near_position = grasp_position - approach_axis * near_distance\n    lift_position = grasp_position + np.array([0.0, 0.0, lift_height], dtype=np.float64)\n\n    open_gripper()\n    goto_pose(pregrasp_position, quat_wxyz, z_approach=0.0)\n    goto_pose(near_position, quat_wxyz, z_approach=0.0)\n    goto_pose(grasp_position, quat_wxyz, z_approach=0.0)\n    close_gripper()\n    goto_pose(lift_position, quat_wxyz, z_approach=0.0)\n\n    return {\n        \"grasp_position\": grasp_position,\n        \"lift_position\": lift_position,\n        \"quat_wxyz\": quat_wxyz,\n        \"obb_center\": center,\n        \"obb_extent\": extent,\n        \"long_axis\": long_axis,\n        \"short_axis\": short_axis,\n        \"approach_axis\": approach_axis,\n        \"closing_axis\": closing_axis,\n    }",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "object is thin and upright enough that a horizontal side pinch is appropriate",
+      "object can be segmented from language",
+      "gripper is empty",
+      "side approach path is collision-free"
+    ],
+    "effects": [
+      "object is grasped with an OBB-aligned side pinch",
+      "object is lifted by lift_height while preserving the grasp orientation"
+    ],
+    "source_task": "i_want_to_put_the_book_on_the_left_side_of_the_bowl_drainer",
+    "learned_iteration": 12,
+    "skill_id": "learned_obb_aligned_side_pinch_grasp_thin_upright_object",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_mug_by_segmented_handle_top_down",
+    "description": "Segments one of several language-described graspable object parts, computes a vertical top-down grasp at a configurable height fraction of the part extent, closes the gripper, and lifts. Defaults preserve mug/cup handle picking behavior.",
+    "code": "def pick_mug_by_segmented_handle_top_down(part_prompts=('mug handle', 'cup handle'), min_points=30, min_score=0.15, lift_height=0.20, grasp_height_fraction=0.55, prehover_clearance=0.08, use_multiview=True):\n    import numpy as np\n\n    if isinstance(part_prompts, str):\n        part_prompts = (part_prompts,)\n\n    best_data = None\n    best_pts = None\n    best_score = -1.0\n    used_prompt = None\n    for prompt in part_prompts:\n        data = get_object_3d_points_and_masks_from_language(prompt, use_multiview=use_multiview)\n        pts = data.get('points_3d', None) if data is not None else None\n        score = data.get('agentview_score', 0.0) if data is not None else 0.0\n        if pts is not None and len(pts) >= min_points and score is not None and float(score) >= min_score:\n            if float(score) > best_score:\n                best_data = data\n                best_pts = pts\n                best_score = float(score)\n                used_prompt = prompt\n\n    if best_pts is None:\n        return None, None, False\n\n    pts = np.asarray(best_pts, dtype=float)\n    finite = np.isfinite(pts).all(axis=1)\n    pts = pts[finite]\n    if len(pts) < min_points:\n        return None, None, False\n\n    lo = np.min(pts, axis=0)\n    hi = np.max(pts, axis=0)\n    center_xy = np.mean(pts[:, :2], axis=0)\n    grasp_z = lo[2] + float(grasp_height_fraction) * (hi[2] - lo[2])\n    grasp_pos = np.array([center_xy[0], center_xy[1], grasp_z], dtype=float)\n    quat = np.array([0.0, 0.0, 1.0, 0.0], dtype=float)\n\n    prehover_z = max(hi[2] + float(prehover_clearance), grasp_z + float(prehover_clearance))\n    prehover = np.array([grasp_pos[0], grasp_pos[1], prehover_z], dtype=float)\n    lift = np.array([grasp_pos[0], grasp_pos[1], hi[2] + float(lift_height)], dtype=float)\n\n    open_gripper()\n    goto_pose(prehover, quat, z_approach=0.0)\n    goto_pose(grasp_pos, quat, z_approach=0.0)\n    close_gripper()\n    goto_pose(lift, quat, z_approach=0.0)\n    return grasp_pos, quat, True",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "A mug or cup handle is visible to the agentview and/or wrist camera.",
+      "The mug handle is reachable from a vertical top-down approach.",
+      "The mug is not so occluded that language segmentation returns too few handle points."
+    ],
+    "effects": [
+      "Opens the gripper, moves above the segmented handle, descends to a mid-height handle grasp, closes the gripper, and lifts.",
+      "Returns the grasp position, carry quaternion, and a success flag."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "The mug failures came from generic/rim grasp samplers choosing unstable body/rim contacts that tipped the mug or closed on empty space. This helper follows the distilled corrective strategy without using unavailable camera calibration or hallucinated helpers: it obtains world-frame handle points directly from the provided segmentation primitive, computes the handle centroid and mid-height grasp from the 3D extent, then executes an explicit vertical grasp and lift.",
+    "learned_iteration": 13,
+    "skill_id": "learned_pick_mug_by_segmented_handle_top_down",
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "rewrite_history": [
+      {
+        "timestamp": 1779252513.7302728,
+        "previous_code": "def pick_mug_by_segmented_handle_top_down(handle_prompt='mug handle', min_points=30, min_score=0.15, lift_height=0.20):\n    import numpy as np\n    data = get_object_3d_points_and_masks_from_language(handle_prompt, use_multiview=True)\n    pts = data.get('points_3d', None)\n    score = data.get('agentview_score', 0.0)\n    if pts is None or len(pts) < min_points or score is None or score < min_score:\n        data = get_object_3d_points_and_masks_from_language('cup handle', use_multiview=True)\n        pts = data.get('points_3d', None)\n        score = data.get('agentview_score', 0.0)\n    if pts is None or len(pts) < min_points or score is None or score < min_score:\n        return None, None, False\n\n    pts = np.asarray(pts, dtype=float)\n    finite = np.isfinite(pts).all(axis=1)\n    pts = pts[finite]\n    if len(pts) < min_points:\n        return None, None, False\n\n    lo = np.min(pts, axis=0)\n    hi = np.max(pts, axis=0)\n    center_xy = np.mean(pts[:, :2], axis=0)\n    grasp_z = lo[2] + 0.55 * (hi[2] - lo[2])\n    grasp_pos = np.array([center_xy[0], center_xy[1], grasp_z], dtype=float)\n    quat = np.array([0.0, 0.0, 1.0, 0.0], dtype=float)\n\n    prehover_z = max(hi[2] + 0.08, grasp_z + 0.08)\n    prehover = np.array([grasp_pos[0], grasp_pos[1], prehover_z], dtype=float)\n    lift = np.array([grasp_pos[0], grasp_pos[1], hi[2] + lift_height], dtype=float)\n\n    open_gripper()\n    goto_pose(prehover, quat, z_approach=0.0)\n    goto_pose(grasp_pos, quat, z_approach=0.0)\n    close_gripper()\n    goto_pose(lift, quat, z_approach=0.0)\n    return grasp_pos, quat, True",
+        "previous_description": "Use this to pick a mug/cup by explicitly segmenting its handle and grasping the handle's 3D extent with a vertical top-down approach, avoiding unreliable generic/rim grasp sampling.",
+        "rationale": "The original procedure is useful but hardcoded to mug/cup handles, including a fixed fallback prompt. Lifting the segmented part prompts, score/point thresholds, height fraction, and multiview flag makes it reusable for other visible handles, tabs, or protrusions while preserving the original defaults."
+      }
+    ],
+    "rewrite_count": 1,
+    "curator_reason": "The original procedure is useful but hardcoded to mug/cup handles, including a fixed fallback prompt. Lifting the segmented part prompts, score/point thresholds, height fraction, and multiview flag makes it reusable for other visible handles, tabs, or protrusions while preserving the original defaults."
+  },
+  {
+    "name": "grasp_pull_and_verify_middle_drawer_by_handle_clusters",
+    "description": "Segments multiple drawer handles, selects a configurable handle by vertical cluster order, grasps near that cluster, pulls along configurable waypoints using the handle-pull helper, and verifies that a described drawer interior is visible.",
+    "code": "def grasp_pull_and_verify_middle_drawer_by_handle_clusters(pull_offset=(0.0, -0.22, 0.0), retreat_offset=(0.0, 0.0, 0.12), handle_prompt='three horizontal drawer handles on the white cabinet', interior_prompt='open empty interior of the selected drawer', drawer_index_from_top=1, handle_count=3, max_grasp_xy_error=0.10, max_grasp_z_error=0.06, min_handle_points=30, use_multiview=True):\n    import numpy as np\n\n    seg = get_object_3d_points_and_masks_from_language(handle_prompt, use_multiview=use_multiview)\n    pts = seg.get('points_3d', None) if seg is not None else None\n    if pts is None or len(pts) < int(min_handle_points):\n        return {'success': False, 'reason': 'no_handle_points'}\n\n    pts = np.asarray(pts, dtype=float)\n    order = np.argsort(pts[:, 2])\n    parts = np.array_split(pts[order], int(handle_count))\n    if len(parts) < int(handle_count) or min(len(p) for p in parts) < 5:\n        return {'success': False, 'reason': 'could_not_split_handles'}\n\n    clusters = sorted(parts, key=lambda p: float(np.mean(p[:, 2])), reverse=True)\n    idx = max(0, min(int(drawer_index_from_top), len(clusters) - 1))\n    selected_pts = clusters[idx]\n    selected_center = np.mean(selected_pts, axis=0)\n\n    grasp_pos = None\n    grasp_quat = None\n    prompts = [\n        'drawer handle near selected cluster',\n        'horizontal drawer pull handle on the cabinet',\n        'protruding drawer handle on the cabinet',\n        handle_prompt,\n    ]\n    for prompt in prompts:\n        try:\n            p, q = sample_grasp_pose(prompt, use_multiview=use_multiview)\n        except Exception:\n            p, q = None, None\n        if p is None or q is None:\n            continue\n        p = np.asarray(p, dtype=float)\n        if np.linalg.norm(p[:2] - selected_center[:2]) <= float(max_grasp_xy_error) and abs(float(p[2] - selected_center[2])) <= float(max_grasp_z_error):\n            grasp_pos = p\n            grasp_quat = np.asarray(q, dtype=float)\n            break\n\n    if grasp_pos is None:\n        grasp_pos = selected_center.copy()\n        grasp_quat = np.array([0.0, 0.0, 1.0, 0.0], dtype=float)\n\n    open_gripper()\n    goto_pose(grasp_pos, grasp_quat, z_approach=0.07)\n    close_gripper()\n\n    pull_result = pull_grasped_handle_along_offset_waypoints_and_retreat(\n        grasp_pos,\n        grasp_quat,\n        [np.asarray(pull_offset, dtype=float)],\n        np.asarray(retreat_offset, dtype=float),\n        waypoint_z_approach=0.0,\n        release_before_retreat=True,\n    )\n\n    interior = get_object_3d_points_and_masks_from_language(interior_prompt, use_multiview=use_multiview)\n    score = interior.get('agentview_score', 0.0) if interior is not None else 0.0\n    ipts = interior.get('points_3d', None) if interior is not None else None\n    visible = bool(score is not None and float(score) >= 0.20 and ipts is not None and len(ipts) >= 20)\n\n    return {\n        'success': visible,\n        'selected_handle_center': selected_center,\n        'drawer_index_from_top': idx,\n        'grasp_position': grasp_pos,\n        'pull_result': pull_result,\n        'interior_score': score,\n        'interior_visible': visible,\n    }",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "sample_grasp_pose",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper",
+      "pull_grasped_handle_along_offset_waypoints_and_retreat"
+    ],
+    "preconditions": [
+      "The white cabinet and its three horizontal drawer handles are visible to perception.",
+      "The gripper is empty and can reach the handle area.",
+      "The drawer opens approximately along the supplied pull_offset direction."
+    ],
+    "effects": [
+      "Closes the gripper on the selected middle handle or its validated centroid fallback.",
+      "Pulls the grasped handle outward and retreats.",
+      "Returns success only if an open middle-drawer interior is segmented afterward."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the repeated wrong-handle and drawer-face grasp failures by selecting the middle handle from the combined 3D handle point cloud using world z ordering, rejecting sampled grasps far from that cluster, and preventing downstream popcorn steps unless the open interior is actually visible.",
+    "learned_iteration": 15,
+    "dependent_skills": [
+      "pull_grasped_handle_along_offset_waypoints_and_retreat"
+    ],
+    "skill_id": "learned_grasp_pull_and_verify_middle_drawer_by_handle_clusters",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "rewrite_history": [
+      {
+        "timestamp": 1779260353.227535,
+        "previous_code": "def grasp_pull_and_verify_middle_drawer_by_handle_clusters(pull_offset=(0.0, -0.22, 0.0), handle_prompt='three horizontal drawer handles on the white cabinet', interior_prompt='open empty interior of the middle drawer', max_grasp_xy_error=0.10, max_grasp_z_error=0.06):\n    import numpy as np\n    seg = get_object_3d_points_and_masks_from_language(handle_prompt, use_multiview=True)\n    pts = seg.get('points_3d', None)\n    if pts is None or len(pts) < 30:\n        return {'success': False, 'reason': 'no_handle_points'}\n    pts = np.asarray(pts, dtype=float)\n    order = np.argsort(pts[:, 2])\n    parts = np.array_split(pts[order], 3)\n    if len(parts) < 3 or min(len(p) for p in parts) < 5:\n        return {'success': False, 'reason': 'could_not_split_three_handles'}\n    clusters = sorted(parts, key=lambda p: float(np.mean(p[:, 2])), reverse=True)\n    mid_pts = clusters[1]\n    mid_center = np.mean(mid_pts, axis=0)\n    grasp_pos = None\n    grasp_quat = None\n    for prompt in ['protruding middle horizontal drawer handle on the white cabinet', 'center horizontal drawer pull handle on the white cabinet', 'middle drawer handle bar on the white cabinet']:\n        try:\n            p, q = sample_grasp_pose(prompt, use_multiview=True)\n        except Exception:\n            p, q = None, None\n        if p is None or q is None:\n            continue\n        p = np.asarray(p, dtype=float)\n        if np.linalg.norm(p[:2] - mid_center[:2]) <= max_grasp_xy_error and abs(float(p[2] - mid_center[2])) <= max_grasp_z_error:\n            grasp_pos, grasp_quat = p, np.asarray(q, dtype=float)\n            break\n    if grasp_pos is None:\n        grasp_pos = mid_center.copy()\n        grasp_quat = np.array([0.0, 0.0, 1.0, 0.0], dtype=float)\n    open_gripper()\n    goto_pose(grasp_pos, grasp_quat, z_approach=0.07)\n    close_gripper()\n    pulled_to = pull_grasped_handle_along_offset_waypoints_and_retreat(np.asarray(pull_offset, dtype=float))\n    interior = get_object_3d_points_and_masks_from_language(interior_prompt, use_multiview=True)\n    score = interior.get('agentview_score', 0.0)\n    ipts = interior.get('points_3d', None)\n    visible = (score is not None and score >= 0.20 and ipts is not None and len(ipts) >= 20)\n    return {'success': bool(visible), 'middle_handle_center': mid_center, 'grasp_position': grasp_pos, 'pulled_to': pulled_to, 'interior_score': score, 'interior_visible': bool(visible)}",
+        "previous_description": "Use this to open the middle drawer by segmenting all cabinet handles, selecting the middle handle by world-frame height clustering, validating the grasp is near that cluster, pulling, and verifying the open interior is visible.",
+        "rationale": "The original skill was hardcoded to the middle drawer of a white cabinet and contained a broken call to pull_grasped_handle_along_offset_waypoints_and_retreat with missing required arguments. This rewrite preserves defaults while parameterizing drawer selection/cabinet prompts and fixing the helper invocation so it can be reused for top, middle, or bottom drawers."
+      }
+    ],
+    "rewrite_count": 1,
+    "curator_reason": "The original skill was hardcoded to the middle drawer of a white cabinet and contained a broken call to pull_grasped_handle_along_offset_waypoints_and_retreat with missing required arguments. This rewrite preserves defaults while parameterizing drawer selection/cabinet prompts and fixing the helper invocation so it can be reused for top, middle, or bottom drawers."
+  },
+  {
+    "name": "localize_object_top_center_from_segmentation",
+    "description": "Segments an object from a language prompt, computes its oriented bounding box, and returns the top-center point using the maximum observed point-cloud height.",
+    "code": "def localize_object_top_center_from_segmentation(object_prompt, attempts=2, use_multiview=True):\n    last_error = None\n    for attempt in range(attempts):\n        try:\n            seg = get_object_3d_points_and_masks_from_language(object_prompt, use_multiview=use_multiview)\n            points = seg.get(\"points_3d\")\n            if points is None or len(points) == 0:\n                last_error = \"no_points\"\n                continue\n\n            obb = get_oriented_bounding_box_from_3d_points(points)\n            center = obb[\"center\"]\n            top_center = center.copy()\n            top_center[2] = points[:, 2].max()\n\n            return {\n                \"success\": True,\n                \"top_center\": top_center,\n                \"obb\": obb,\n                \"num_points\": len(points),\n                \"attempt\": attempt,\n                \"error\": None\n            }\n        except Exception as exc:\n            last_error = str(exc)\n\n    return {\n        \"success\": False,\n        \"top_center\": None,\n        \"obb\": None,\n        \"num_points\": 0,\n        \"attempt\": attempts,\n        \"error\": last_error\n    }",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points"
+    ],
+    "preconditions": [
+      "object is visible to perception",
+      "language prompt identifies the desired object sufficiently well",
+      "segmentation returns a non-empty 3D point cloud"
+    ],
+    "effects": [
+      "returns the object's top-center point in world coordinates",
+      "returns the object's oriented bounding box and point count for downstream grasp planning"
+    ],
+    "source_task": "i_want_to_put_the_macaroni_and_cheese_on_the_yellow_plate",
+    "learned_iteration": 16,
+    "skill_id": "learned_localize_object_top_center_from_segmentation",
+    "is_primitive": false,
+    "usage_count": 2,
+    "success_count": 2,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "two_stage_top_down_press_grasp_and_lift",
+    "description": "Performs a top-down grasp by hovering above a target point, descending to contact, pressing slightly below the top point, closing the gripper, and lifting to a clearance height.",
+    "code": "def two_stage_top_down_press_grasp_and_lift(top_center, hover_offset=0.12, contact_offset=0.015, press_offset=-0.040, lift_clearance=0.15, grasp_quat_wxyz=(0.0, 0.0, 1.0, 0.0)):\n    hover_pose = top_center.copy()\n    hover_pose[2] = top_center[2] + hover_offset\n\n    contact_pose = top_center.copy()\n    contact_pose[2] = top_center[2] + contact_offset\n\n    press_pose = top_center.copy()\n    press_pose[2] = top_center[2] + press_offset\n\n    lift_pose = press_pose.copy()\n    lift_pose[2] = press_pose[2] + lift_clearance\n\n    open_gripper()\n    goto_pose(hover_pose, grasp_quat_wxyz, z_approach=0.0)\n    goto_pose(contact_pose, grasp_quat_wxyz, z_approach=0.0)\n    goto_pose(press_pose, grasp_quat_wxyz, z_approach=0.0)\n    close_gripper()\n    goto_pose(lift_pose, grasp_quat_wxyz, z_approach=0.0)\n\n    return {\n        \"hover_pose\": hover_pose,\n        \"contact_pose\": contact_pose,\n        \"press_pose\": press_pose,\n        \"lift_pose\": lift_pose,\n        \"quaternion_wxyz\": grasp_quat_wxyz\n    }",
+    "api_primitives_used": [
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "top_center is a reachable world-frame position on or near the top of the target object",
+      "target object can be grasped with a vertical top-down gripper orientation",
+      "gripper is empty before calling the skill",
+      "small downward press will not damage the object or environment"
+    ],
+    "effects": [
+      "gripper closes on the target object after a controlled two-stage descent",
+      "object is lifted by lift_clearance relative to the press pose",
+      "returns the carry quaternion for later placement"
+    ],
+    "source_task": "i_want_to_put_the_macaroni_and_cheese_on_the_yellow_plate",
+    "learned_iteration": 16,
+    "skill_id": "learned_two_stage_top_down_press_grasp_and_lift",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "sample_most_vertical_grasp_and_lift",
+    "description": "Samples multiple grasp poses for an object, selects the candidate whose gripper local Z axis is most vertical in world coordinates, approaches from above, closes the gripper, and lifts the object.",
+    "code": "def sample_most_vertical_grasp_and_lift(object_name, sample_count=5, hover_height=0.12, lift_height=0.18, use_multiview=True):\n    best_position = None\n    best_quaternion = None\n    best_score = -1.0\n    candidates = []\n\n    for sample_index in range(sample_count):\n        position, quaternion = sample_grasp_pose(object_name, use_multiview=use_multiview)\n        w = float(quaternion[0])\n        x = float(quaternion[1])\n        y = float(quaternion[2])\n        z = float(quaternion[3])\n        world_z_component_of_local_z = 1.0 - 2.0 * (x * x + y * y)\n        score = abs(world_z_component_of_local_z)\n        candidates.append({\n            \"sample_index\": sample_index,\n            \"position\": position.tolist() if hasattr(position, \"tolist\") else position,\n            \"quaternion_wxyz\": quaternion.tolist() if hasattr(quaternion, \"tolist\") else quaternion,\n            \"vertical_axis_score\": score,\n        })\n        if score > best_score:\n            best_score = score\n            best_position = position\n            best_quaternion = quaternion\n\n    open_gripper()\n    goto_pose(best_position, best_quaternion, z_approach=hover_height)\n    goto_pose(best_position, best_quaternion, z_approach=0.0)\n    close_gripper()\n\n    lifted_position = best_position.copy()\n    lifted_position[2] = lifted_position[2] + lift_height\n    goto_pose(lifted_position, best_quaternion, z_approach=0.0)\n\n    return {\n        \"object_name\": object_name,\n        \"grasp_position\": best_position.tolist() if hasattr(best_position, \"tolist\") else best_position,\n        \"grasp_quaternion_wxyz\": best_quaternion.tolist() if hasattr(best_quaternion, \"tolist\") else best_quaternion,\n        \"vertical_axis_score\": best_score,\n        \"candidate_count\": sample_count,\n        \"candidates\": candidates,\n        \"hover_height_m\": hover_height,\n        \"lift_height_m\": lift_height,\n        \"lifted_position\": lifted_position.tolist() if hasattr(lifted_position, \"tolist\") else lifted_position,\n    }",
+    "api_primitives_used": [
+      "sample_grasp_pose",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "target object is visible and graspable by sampled grasp poses",
+      "object can be safely approached from above by the specified hover height",
+      "gripper is empty before calling"
+    ],
+    "effects": [
+      "object is grasped using the most vertical sampled candidate",
+      "object is lifted by lift_height while preserving the selected grasp orientation",
+      "returns the chosen grasp pose, lifted pose, score, and sampled candidates"
+    ],
+    "source_task": "i_want_to_put_the_black_bowl_on_the_wooden_tray",
+    "learned_iteration": 17,
+    "skill_id": "learned_sample_most_vertical_grasp_and_lift",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "sample_grasp_pose_filtered_by_reference_centroid_axis",
+    "description": "Localizes a reference object centroid from segmentation or pose fallback, samples grasp poses from multiple language prompts, and accepts the first grasp whose coordinate on a chosen world axis is close to the reference centroid.",
+    "code": "def sample_grasp_pose_filtered_by_reference_centroid_axis(reference_object_name, grasp_prompts, axis_index=0, max_axis_deviation=0.05, use_multiview=True):\n    reference_data = get_object_3d_points_and_masks_from_language(reference_object_name, use_multiview=use_multiview)\n    reference_points = reference_data.get(\"points_3d\", None) if isinstance(reference_data, dict) else None\n    if reference_points is not None and len(reference_points) > 0:\n        reference_centroid = reference_points.mean(axis=0)\n    else:\n        reference_centroid, _ = get_object_pose(reference_object_name, use_multiview=use_multiview)\n\n    attempts = []\n    best = {\n        \"prompt\": None,\n        \"position\": None,\n        \"quaternion\": None,\n        \"axis_deviation\": None,\n        \"accepted\": False,\n        \"reference_centroid\": reference_centroid,\n        \"attempts\": attempts,\n    }\n\n    for prompt in grasp_prompts:\n        pos, quat = sample_grasp_pose(prompt, use_multiview=use_multiview)\n        if pos is None or quat is None:\n            attempts.append({\n                \"prompt\": prompt,\n                \"localized\": False,\n                \"accepted\": False,\n                \"reason\": \"sample_grasp_pose returned None\",\n            })\n            continue\n\n        axis_deviation = None\n        accepted = True\n        if reference_centroid is not None:\n            axis_deviation = abs(float(pos[axis_index]) - float(reference_centroid[axis_index]))\n            accepted = axis_deviation <= max_axis_deviation\n\n        attempts.append({\n            \"prompt\": prompt,\n            \"localized\": True,\n            \"position\": pos,\n            \"axis_deviation\": axis_deviation,\n            \"accepted\": accepted,\n        })\n\n        if accepted:\n            best[\"prompt\"] = prompt\n            best[\"position\"] = pos\n            best[\"quaternion\"] = quat\n            best[\"axis_deviation\"] = axis_deviation\n            best[\"accepted\"] = True\n            return best\n\n    return best",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_object_pose",
+      "sample_grasp_pose"
+    ],
+    "preconditions": [
+      "reference object is visible or has a queryable pose",
+      "at least one grasp prompt describes the desired graspable part",
+      "the desired grasp should be aligned with the reference object along the specified world axis"
+    ],
+    "effects": [
+      "returns a sampled grasp pose and quaternion accepted by centroid-axis consistency filtering",
+      "records failed and rejected grasp-sampling attempts for debugging"
+    ],
+    "source_task": "i_want_to_open_the_top_drawer_of_the_yellow_cabinet_and_put_",
+    "learned_iteration": 18,
+    "skill_id": "learned_sample_grasp_pose_filtered_by_reference_centroid_axis",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "approach_pose_with_axis_offset_and_close",
+    "description": "Opens the gripper, applies a small Cartesian offset to a target grasp pose, approaches with a configurable vertical clearance, optionally captures a wrist observation, and closes the gripper.",
+    "code": "def approach_pose_with_axis_offset_and_close(grasp_position, grasp_quaternion, axis_index=1, axis_offset=-0.015, approach_height=0.08, take_wrist_observation=True):\n    open_gripper()\n\n    approach_position = grasp_position.copy()\n    approach_position[axis_index] = approach_position[axis_index] + axis_offset\n\n    goto_pose(approach_position, grasp_quaternion, z_approach=approach_height)\n\n    wrist_observation_taken = False\n    wrist_rgb_shape = None\n    if take_wrist_observation:\n        obs = get_observation()\n        wrist_observation_taken = obs is not None\n        if obs is not None:\n            wrist_rgb = obs[\"robot0_eye_in_hand\"][\"images\"][\"rgb\"]\n            wrist_rgb_shape = [int(wrist_rgb.shape[0]), int(wrist_rgb.shape[1]), int(wrist_rgb.shape[2])]\n\n    close_gripper()\n\n    return {\n        \"approach_position\": approach_position,\n        \"grasp_quaternion\": grasp_quaternion,\n        \"axis_index\": axis_index,\n        \"axis_offset\": axis_offset,\n        \"approach_height\": approach_height,\n        \"wrist_observation_taken\": wrist_observation_taken,\n        \"wrist_rgb_shape\": wrist_rgb_shape,\n    }",
+    "api_primitives_used": [
+      "open_gripper",
+      "goto_pose",
+      "get_observation",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "a valid grasp position and grasp quaternion have already been computed",
+      "target grasp area is reachable after applying the Cartesian offset",
+      "gripper is empty before execution"
+    ],
+    "effects": [
+      "robot approaches the offset grasp pose",
+      "gripper closes on the target",
+      "optionally returns wrist-camera observation metadata from immediately before closing"
+    ],
+    "source_task": "i_want_to_open_the_top_drawer_of_the_yellow_cabinet_and_put_",
+    "learned_iteration": 18,
+    "skill_id": "learned_approach_pose_with_axis_offset_and_close",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_small_can_top_down_by_pose_with_motion_check",
+    "description": "Pick a small upright cylindrical can using get_object_pose as the primary target, grasp above the table-height failure zone, lift, and verify the object pose rose before allowing placement.",
+    "code": "def pick_small_can_top_down_by_pose_with_motion_check(object_name='alphabet_soup', hover_height=0.14, lift_height=0.25, grasp_z_offset=0.045, xy_retries=None, min_lift_delta=0.06):\n    import numpy as np\n    if xy_retries is None:\n        xy_retries = [(0.0, 0.0), (0.012, 0.0), (-0.012, 0.0), (0.0, 0.012), (0.0, -0.012)]\n    down_q = np.array([0.0, 0.0, 1.0, 0.0], dtype=float)\n    start_pos, _ = get_object_pose(object_name, use_multiview=False)\n    if start_pos is None:\n        start_pos, _ = get_object_pose(object_name, use_multiview=True)\n    if start_pos is None:\n        return {'success': False, 'reason': 'object_pose_unavailable', 'carry_quaternion': None}\n    start_pos = np.array(start_pos, dtype=float)\n    base_z = float(start_pos[2])\n    # Prevent the repeated failure mode where grasp candidates are at table height.\n    grasp_z = base_z + float(grasp_z_offset)\n    last_lift = None\n    for dx, dy in xy_retries:\n        p = np.array([start_pos[0] + dx, start_pos[1] + dy, grasp_z], dtype=float)\n        open_gripper()\n        goto_pose(p, down_q, z_approach=hover_height)\n        close_gripper()\n        lift_p = p.copy()\n        lift_p[2] = max(p[2] + lift_height, base_z + lift_height)\n        goto_pose(lift_p, down_q, z_approach=0.0)\n        last_lift = lift_p.copy()\n        after_pos, _ = get_object_pose(object_name, use_multiview=False)\n        if after_pos is None:\n            after_pos, _ = get_object_pose(object_name, use_multiview=True)\n        if after_pos is not None:\n            after_pos = np.array(after_pos, dtype=float)\n            if after_pos[2] >= start_pos[2] + min_lift_delta:\n                return {'success': True, 'carry_quaternion': down_q, 'grasp_position': p, 'lift_position': lift_p, 'object_pose_after': after_pos}\n        open_gripper()\n        goto_pose(np.array([p[0], p[1], base_z + hover_height], dtype=float), down_q, z_approach=0.0)\n    return {'success': False, 'reason': 'lift_motion_not_verified', 'carry_quaternion': None, 'last_lift_position': last_lift}",
+    "api_primitives_used": [
+      "get_object_pose",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "The target object is a small upright can or cylinder on the tabletop.",
+      "get_object_pose can localize the object at least once.",
+      "A top-down gripper orientation is appropriate for the object."
+    ],
+    "effects": [
+      "Opens the gripper, attempts one or more top-down grasps, closes the gripper, and lifts.",
+      "Returns success only if the object's observed world pose rises by a minimum amount.",
+      "On failed attempts, releases and retreats before retrying."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the repeated alphabet_soup grasp failures where sampled or OBB-derived grasps selected z values near the table and then proceeded to placement with an empty gripper. This helper avoids camera-matrix projection, uses get_object_pose as the primary world-frame source, forces the grasp height above the pose/table level, retries with small XY perturbations, and gates success on observed object motion after lift.",
+    "learned_iteration": 19,
+    "skill_id": "learned_pick_small_can_top_down_by_pose_with_motion_check",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "deprecated",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "duplicate_of": "pick_boxy_object_top_down_by_pose_and_points",
+    "deprecated_at_iteration": 20,
+    "deprecated_by": "skill_curator",
+    "curator_reason": "Both skills implement the same end-to-end top-down pick/lift/verification pattern for small upright/boxy objects using object pose as the primary localization. The canonical has equal or better observed success, a more general name, segmentation fallback, and more rediscoveries, while the duplicate is tied to an alphabet_soup/small-can use case."
+  },
+  {
+    "name": "pick_yellow_moka_pot_with_filtered_sample_or_neck_grasp",
+    "description": "Picks an object by trying off-centroid sampled side grasps first, then falling back to an upper-part grasp computed from segmentation or pose localization. Defaults preserve the yellow moka pot behavior, but object prompt, pose aliases, and color verification thresholds are parameterized.",
+    "code": "def pick_yellow_moka_pot_with_filtered_sample_or_neck_grasp(object_prompt='yellow moka pot', pose_names=('yellow_moka_pot',), max_samples=5, min_xy_offset=0.04, approach_height=0.18, lift_height=0.18, fallback_height_fraction=0.85, use_multiview=True, verify_with_wrist_color=True, color_thresholds=None):\n    import numpy as np\n\n    def _quat_to_rot_wxyz(q):\n        q = np.asarray(q, dtype=float)\n        n = np.linalg.norm(q)\n        if n < 1e-8:\n            return np.eye(3)\n        w, x, y, z = q / n\n        return np.array([[1-2*y*y-2*z*z, 2*x*y-2*z*w, 2*x*z+2*y*w], [2*x*y+2*z*w, 1-2*x*x-2*z*z, 2*y*z-2*x*w], [2*x*z-2*y*w, 2*y*z+2*x*w, 1-2*x*x-2*y*y]], dtype=float)\n\n    def _held_signal():\n        obs = get_observation()\n        grip = float(obs['robot_cartesian_pos'][-1])\n        frac = 0.0\n        if verify_with_wrist_color:\n            th = color_thresholds or {'r_min': 90.0, 'g_min': 70.0, 'b_max': 130.0, 'rg_over_b': 1.55}\n            rgb = obs['robot0_eye_in_hand']['images']['rgb'].astype(np.float32)\n            r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]\n            mask = (r > th['r_min']) & (g > th['g_min']) & (b < th['b_max']) & ((r + g) > th['rg_over_b'] * (b + 1.0))\n            frac = float(np.mean(mask))\n        return grip, frac\n\n    if isinstance(pose_names, str):\n        pose_names = (pose_names,)\n    seg = get_object_3d_points_and_masks_from_language(object_prompt, use_multiview=use_multiview)\n    pts = seg.get('points_3d', None) if seg is not None else None\n    center = None\n    if pts is not None and len(pts) >= 20:\n        pts = np.asarray(pts, dtype=float)\n        center = np.mean(pts, axis=0)\n        z_min, z_max = float(np.min(pts[:, 2])), float(np.max(pts[:, 2]))\n    else:\n        for name in pose_names:\n            p, _ = get_object_pose(name, use_multiview=use_multiview)\n            if p is not None:\n                center = np.asarray(p, dtype=float)\n                break\n        if center is None:\n            return {'success': False, 'error': 'could_not_localize_object', 'object_prompt': object_prompt}\n        z_min, z_max = center[2] - 0.04, center[2] + 0.12\n\n    attempts = []\n    for i in range(int(max_samples)):\n        try:\n            gp, gq = sample_grasp_pose(object_prompt, use_multiview=use_multiview)\n        except Exception as e:\n            attempts.append({'strategy': 'filtered_sample', 'sample_index': i, 'error': str(e)})\n            continue\n        if gp is None or gq is None:\n            continue\n        gp, gq = np.asarray(gp, dtype=float), np.asarray(gq, dtype=float)\n        xy_offset = float(np.linalg.norm(gp[:2] - center[:2]))\n        horizontal_score = float(np.linalg.norm(_quat_to_rot_wxyz(gq)[:, 2][:2]))\n        accepted = xy_offset >= float(min_xy_offset) and horizontal_score >= 0.866\n        attempts.append({'strategy': 'filtered_sample', 'sample_index': i, 'xy_offset': xy_offset, 'horizontal_score': horizontal_score, 'accepted': bool(accepted)})\n        if accepted:\n            open_gripper(); goto_pose(gp, gq, z_approach=float(approach_height)); close_gripper()\n            lift_pos = gp.copy(); lift_pos[2] += float(lift_height); goto_pose(lift_pos, gq, z_approach=0.0)\n            grip, frac = _held_signal()\n            if grip > 0.02 or frac > 0.20:\n                return {'success': True, 'strategy': 'filtered_sample', 'grasp_position': gp, 'grasp_quaternion': gq, 'lift_position': lift_pos, 'gripper_position': grip, 'wrist_color_fraction': frac, 'attempts': attempts}\n\n    fallback_pos = np.array([center[0], center[1], z_min + float(fallback_height_fraction) * (z_max - z_min)], dtype=float)\n    fallback_quat = np.array([0.0, 1.0, 0.0, 0.0], dtype=float)\n    open_gripper(); goto_pose(fallback_pos, fallback_quat, z_approach=float(approach_height)); close_gripper()\n    lift_pos = fallback_pos.copy(); lift_pos[2] += float(lift_height); goto_pose(lift_pos, fallback_quat, z_approach=0.0)\n    grip, frac = _held_signal()\n    return {'success': bool(grip > 0.02 or frac > 0.20), 'strategy': 'upper_part_fallback', 'grasp_position': fallback_pos, 'grasp_quaternion': fallback_quat, 'lift_position': lift_pos, 'gripper_position': grip, 'wrist_color_fraction': frac, 'attempts': attempts}",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_object_pose",
+      "sample_grasp_pose",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper",
+      "get_observation"
+    ],
+    "preconditions": [
+      "The yellow moka pot is visible and reachable on the table.",
+      "The robot is not already holding another object.",
+      "There is enough clearance above the moka pot for a vertical approach and lift."
+    ],
+    "effects": [
+      "Attempts to grasp and lift the yellow moka pot by an off-center sampled grasp or its upper neck.",
+      "Returns success only after a post-lift gripper or wrist-color held check passes."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the repeated body-grasp failures by rejecting sampled grasps near the pot centroid and requiring a near-horizontal approach for handle/side-like samples; if those fail, it uses the distilled top 10-15% neck grasp rather than another ambiguous OBB lateral extreme. It also prevents downstream stove placement when the pot was not actually lifted.",
+    "learned_iteration": 21,
+    "skill_id": "learned_pick_yellow_moka_pot_with_filtered_sample_or_neck_grasp",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "rewrite_history": [
+      {
+        "timestamp": 1779275929.141895,
+        "previous_code": "def pick_yellow_moka_pot_with_filtered_sample_or_neck_grasp(max_samples=5, min_xy_offset=0.04, approach_height=0.18, lift_height=0.18):\n    import numpy as np\n\n    def _quat_to_rot_wxyz(q):\n        q = np.asarray(q, dtype=float)\n        n = np.linalg.norm(q)\n        if n < 1e-8:\n            return np.eye(3)\n        w, x, y, z = q / n\n        return np.array([\n            [1 - 2*y*y - 2*z*z, 2*x*y - 2*z*w, 2*x*z + 2*y*w],\n            [2*x*y + 2*z*w, 1 - 2*x*x - 2*z*z, 2*y*z - 2*x*w],\n            [2*x*z - 2*y*w, 2*y*z + 2*x*w, 1 - 2*x*x - 2*y*y],\n        ], dtype=float)\n\n    def _yellow_wrist_fraction():\n        obs = get_observation()\n        rgb = obs['robot0_eye_in_hand']['images']['rgb'].astype(np.float32)\n        r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]\n        mask = (r > 90.0) & (g > 70.0) & (b < 120.0) & ((r + g) > 1.6 * (b + 1.0))\n        return float(np.mean(mask)), float(obs['robot_cartesian_pos'][-1])\n\n    seg = get_object_3d_points_and_masks_from_language('yellow moka pot', use_multiview=True)\n    pts = seg.get('points_3d', None)\n    if pts is None or len(pts) < 20:\n        pos0, _ = get_object_pose('yellow_moka_pot', use_multiview=True)\n        if pos0 is None:\n            return {'success': False, 'error': 'could_not_localize_moka_pot'}\n        center = np.asarray(pos0, dtype=float)\n        z_min = center[2] - 0.04\n        z_max = center[2] + 0.12\n    else:\n        pts = np.asarray(pts, dtype=float)\n        center = np.mean(pts, axis=0)\n        z_min = float(np.min(pts[:, 2]))\n        z_max = float(np.max(pts[:, 2]))\n\n    attempts = []\n    for i in range(int(max_samples)):\n        try:\n            gp, gq = sample_grasp_pose('yellow_moka_pot', use_multiview=True)\n        except Exception as e:\n            attempts.append({'strategy': 'filtered_sample', 'sample_index': i, 'error': str(e)})\n            continue\n        gp = np.asarray(gp, dtype=float)\n        gq = np.asarray(gq, dtype=float)\n        xy_offset = float(np.linalg.norm(gp[:2] - center[:2]))\n        R = _quat_to_rot_wxyz(gq)\n        approach_axis = R[:, 2]\n        horizontal_score = float(np.linalg.norm(approach_axis[:2]))\n        accepted = (xy_offset >= float(min_xy_offset)) and (horizontal_score >= 0.866)\n        attempts.append({'strategy': 'filtered_sample', 'sample_index': i, 'xy_offset': xy_offset, 'horizontal_score': horizontal_score, 'accepted': bool(accepted)})\n        if not accepted:\n            continue\n        open_gripper()\n        goto_pose(gp, gq, z_approach=float(approach_height))\n        close_gripper()\n        lift_pos = gp.copy()\n        lift_pos[2] += float(lift_height)\n        goto_pose(lift_pos, gq, z_approach=0.0)\n        yellow_frac, grip = _yellow_wrist_fraction()\n        if grip > 0.02 or yellow_frac > 0.20:\n            return {'success': True, 'strategy': 'filtered_sample', 'grasp_position': gp, 'grasp_quaternion': gq, 'lift_position': lift_pos, 'wrist_yellow_fraction': yellow_frac, 'gripper_position': grip, 'attempts': attempts}\n\n    neck_pos = np.array([center[0], center[1], z_min + 0.85 * (z_max - z_min)], dtype=float)\n    neck_quat = np.array([0.0, 1.0, 0.0, 0.0], dtype=float)\n    attempts.append({'strategy': 'upper_neck_top_down', 'target': neck_pos.tolist()})\n    open_gripper()\n    goto_pose(neck_pos, neck_quat, z_approach=float(approach_height))\n    close_gripper()\n    lift_pos = neck_pos.copy()\n    lift_pos[2] += float(lift_height)\n    goto_pose(lift_pos, neck_quat, z_approach=0.0)\n    yellow_frac, grip = _yellow_wrist_fraction()\n    success = bool(grip > 0.02 or yellow_frac > 0.20)\n    return {'success': success, 'strategy': 'upper_neck_top_down', 'grasp_position': neck_pos, 'grasp_quaternion': neck_quat, 'lift_position': lift_pos, 'wrist_yellow_fraction': yellow_frac, 'gripper_position': grip, 'attempts': attempts}",
+        "previous_description": "Pick the yellow moka pot using off-centroid sampled grasps first, then a narrow upper-neck top-down fallback, with lift and simple held verification.",
+        "rationale": "The original skill was tightly hardcoded to the yellow moka pot and yellow wrist-pixel verification despite containing a reusable sampled-grasp-plus-upper-fallback procedure. Lifting object names, prompt, view setting, and color thresholds makes it usable for other tall or handled objects while preserving prior defaults."
+      }
+    ],
+    "rewrite_count": 1,
+    "curator_reason": "The original skill was tightly hardcoded to the yellow moka pot and yellow wrist-pixel verification despite containing a reusable sampled-grasp-plus-upper-fallback procedure. Lifting object names, prompt, view setting, and color thresholds makes it usable for other tall or handled objects while preserving prior defaults."
+  },
+  {
+    "name": "verify_yellow_object_held_after_lift",
+    "description": "After a lift, checks whether an object is plausibly held using gripper state and a configurable wrist-image color mask. Defaults preserve yellow-object verification while supporting other simple color presets or custom thresholds.",
+    "code": "def verify_yellow_object_held_after_lift(min_gripper_position=0.02, min_color_fraction=0.20, color_name='yellow', color_thresholds=None):\n    import numpy as np\n    obs = get_observation()\n    gripper_position = float(obs['robot_cartesian_pos'][-1])\n    wrist_rgb = obs['robot0_eye_in_hand']['images']['rgb'].astype(np.float32)\n    r = wrist_rgb[:, :, 0]\n    g = wrist_rgb[:, :, 1]\n    b = wrist_rgb[:, :, 2]\n\n    presets = {\n        'yellow': {'r_min': 90.0, 'g_min': 70.0, 'b_max': 130.0, 'rg_over_b': 1.55, 'max_rg_diff': 100.0},\n        'red': {'r_min': 100.0, 'g_max': 120.0, 'b_max': 120.0, 'r_over_gb': 1.25},\n        'orange': {'r_min': 100.0, 'g_min': 45.0, 'g_max': 170.0, 'b_max': 120.0, 'r_over_b': 1.4},\n        'dark': {'sum_max': 180.0},\n        'white': {'r_min': 170.0, 'g_min': 170.0, 'b_min': 170.0},\n    }\n    th = color_thresholds if color_thresholds is not None else presets.get(color_name, presets['yellow'])\n\n    if 'sum_max' in th:\n        mask = (r + g + b) < float(th['sum_max'])\n    elif 'r_over_gb' in th:\n        mask = (r > th['r_min']) & (g < th['g_max']) & (b < th['b_max']) & (r > th['r_over_gb'] * (g + b + 1.0) / 2.0)\n    elif 'r_over_b' in th:\n        mask = (r > th['r_min']) & (g > th['g_min']) & (g < th['g_max']) & (b < th['b_max']) & (r > th['r_over_b'] * (b + 1.0))\n    elif 'b_min' in th:\n        mask = (r > th['r_min']) & (g > th['g_min']) & (b > th['b_min'])\n    else:\n        mask = (r > th['r_min']) & (g > th['g_min']) & (b < th['b_max']) & ((r + g) > th['rg_over_b'] * (b + 1.0))\n        if 'max_rg_diff' in th:\n            mask = mask & (np.abs(r - g) < th['max_rg_diff'])\n\n    color_fraction = float(np.mean(mask))\n    held = bool((gripper_position > float(min_gripper_position)) or (color_fraction > float(min_color_fraction)))\n    return {'held': held, 'gripper_position': gripper_position, 'wrist_color_fraction': color_fraction, 'color_name': color_name}",
+    "api_primitives_used": [
+      "get_observation"
+    ],
+    "preconditions": [
+      "Call immediately after closing the gripper and lifting the target into the wrist camera's view.",
+      "The target object has substantial yellow visible surface."
+    ],
+    "effects": [
+      "Does not move the robot.",
+      "Returns a boolean held decision plus diagnostic gripper and wrist-color measurements."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Several failed attempts continued to placement and knob-turning even though the moka pot was knocked over or not grasped. This small gate is reusable and avoids relying on unavailable camera calibration or fragile pixel-to-world projection.",
+    "learned_iteration": 21,
+    "skill_id": "learned_verify_yellow_object_held_after_lift",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "rewrite_history": [
+      {
+        "timestamp": 1779275929.1525083,
+        "previous_code": "def verify_yellow_object_held_after_lift(min_gripper_position=0.02, min_yellow_fraction=0.20):\n    import numpy as np\n    obs = get_observation()\n    gripper_position = float(obs['robot_cartesian_pos'][-1])\n    wrist_rgb = obs['robot0_eye_in_hand']['images']['rgb'].astype(np.float32)\n    r = wrist_rgb[:, :, 0]\n    g = wrist_rgb[:, :, 1]\n    b = wrist_rgb[:, :, 2]\n    yellow_mask = (r > 90.0) & (g > 70.0) & (b < 130.0) & ((r + g) > 1.55 * (b + 1.0)) & (np.abs(r - g) < 100.0)\n    yellow_fraction = float(np.mean(yellow_mask))\n    held = bool((gripper_position > float(min_gripper_position)) or (yellow_fraction > float(min_yellow_fraction)))\n    return {'held': held, 'gripper_position': gripper_position, 'wrist_yellow_fraction': yellow_fraction}",
+        "previous_description": "After a lift, check whether a yellow object is plausibly held using only the exposed gripper state and wrist RGB image.",
+        "rationale": "The original verification was hardcoded to yellow objects only. The underlying held-object check is reusable for many color-specified tasks if the color mask is parameterized."
+      }
+    ],
+    "rewrite_count": 1,
+    "curator_reason": "The original verification was hardcoded to yellow objects only. The underlying held-object check is reusable for many color-specified tasks if the color mask is parameterized."
+  },
+  {
+    "name": "compute_fixture_layer_place_center_from_z_clusters",
+    "description": "Computes a placement center on a selected horizontal layer of a multi-tier fixture from z-clustered segmentation points, with configurable view mode and XY statistic.",
+    "code": "def compute_fixture_layer_place_center_from_z_clusters(fixture_prompt, layer_index=0, object_half_height=0.03, min_points=80, z_bin_size=0.015, use_multiview=True, xy_statistic='median'):\n    import numpy as np\n    seg = get_object_3d_points_and_masks_from_language(fixture_prompt, use_multiview=use_multiview)\n    pts = seg.get('points_3d', None) if seg is not None else None\n    if pts is None:\n        raise RuntimeError('No fixture points found')\n    pts = np.asarray(pts, dtype=float)\n    pts = pts[np.isfinite(pts).all(axis=1)]\n    if len(pts) < int(min_points):\n        raise RuntimeError('Too few fixture points found')\n\n    z = pts[:, 2]\n    z_min = float(np.min(z))\n    bins = np.floor((z - z_min) / float(z_bin_size)).astype(int)\n    clusters = []\n    for b in np.unique(bins):\n        band = pts[bins == b]\n        if len(band) >= max(10, int(min_points) // 10):\n            clusters.append({'z': float(np.median(band[:, 2])), 'count': int(len(band)), 'points': band})\n    if not clusters:\n        raise RuntimeError('Could not find horizontal z layers for fixture')\n\n    clusters = sorted(clusters, key=lambda c: c['z'])\n    merged = []\n    for c in clusters:\n        if not merged or abs(c['z'] - merged[-1]['z']) > 2.5 * float(z_bin_size):\n            merged.append(c)\n        else:\n            allp = np.vstack([merged[-1]['points'], c['points']])\n            merged[-1] = {'z': float(np.median(allp[:, 2])), 'count': int(len(allp)), 'points': allp}\n\n    idx = int(layer_index)\n    if idx < 0:\n        idx = len(merged) + idx\n    idx = max(0, min(idx, len(merged) - 1))\n    lp = merged[idx]['points']\n    if xy_statistic == 'mean':\n        xy = np.mean(lp[:, :2], axis=0)\n    else:\n        xy = np.median(lp[:, :2], axis=0)\n    layer_z = float(np.percentile(lp[:, 2], 90))\n    center = np.array([xy[0], xy[1], layer_z + float(object_half_height)], dtype=float)\n    return {'center': center, 'layer_z': layer_z, 'layer_index': idx, 'num_layers': int(len(merged)), 'num_points': int(len(lp)), 'score': seg.get('agentview_score', None) if seg is not None else None, 'use_multiview': use_multiview}",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language"
+    ],
+    "preconditions": [
+      "The fixture can be segmented from the given language prompt.",
+      "The desired support surface corresponds to a visible horizontal z cluster.",
+      "layer_index is ordered from lowest to highest; negative indices count from the top."
+    ],
+    "effects": [
+      "Returns a world-frame placement center on the chosen fixture layer with z equal to the layer surface plus the provided object half-height.",
+      "Does not move the robot."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses failures where placement on a shelf/rack used the maximum z of the whole fixture and targeted the top edge rather than a usable layer. The helper explicitly clusters fixture points by height and selects the requested shelf layer.",
+    "learned_iteration": 23,
+    "skill_id": "learned_compute_fixture_layer_place_center_from_z_clusters",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "rewrite_history": [
+      {
+        "timestamp": 1779275929.162363,
+        "previous_code": "def compute_fixture_layer_place_center_from_z_clusters(fixture_prompt, layer_index=0, object_half_height=0.03, min_points=80, z_bin_size=0.015):\n    import numpy as np\n    seg = get_object_3d_points_and_masks_from_language(fixture_prompt, use_multiview=True)\n    pts = seg.get('points_3d', None)\n    if pts is None:\n        raise RuntimeError('No fixture points found')\n    pts = np.asarray(pts, dtype=float)\n    pts = pts[np.isfinite(pts).all(axis=1)]\n    if len(pts) < min_points:\n        raise RuntimeError('Too few fixture points found')\n\n    z = pts[:, 2]\n    z_min = float(np.min(z))\n    bins = np.floor((z - z_min) / float(z_bin_size)).astype(int)\n    unique_bins = np.unique(bins)\n    clusters = []\n    for b in unique_bins:\n        band = pts[bins == b]\n        if len(band) < max(10, min_points // 10):\n            continue\n        z_center = float(np.median(band[:, 2]))\n        # Horizontal support surfaces tend to have many points in a narrow z band.\n        clusters.append({'z': z_center, 'count': int(len(band)), 'points': band})\n\n    if not clusters:\n        raise RuntimeError('Could not find horizontal z layers for fixture')\n\n    # Merge adjacent occupied z bands into thicker surface clusters.\n    clusters = sorted(clusters, key=lambda c: c['z'])\n    merged = []\n    for c in clusters:\n        if not merged or abs(c['z'] - merged[-1]['z']) > 2.5 * float(z_bin_size):\n            merged.append(c)\n        else:\n            allp = np.vstack([merged[-1]['points'], c['points']])\n            merged[-1] = {'z': float(np.median(allp[:, 2])), 'count': int(len(allp)), 'points': allp}\n\n    merged = sorted(merged, key=lambda c: c['z'])\n    idx = int(layer_index)\n    if idx < 0:\n        idx = len(merged) + idx\n    idx = max(0, min(idx, len(merged) - 1))\n    layer = merged[idx]\n    lp = layer['points']\n    xy = np.median(lp[:, :2], axis=0)\n    place_z = float(np.percentile(lp[:, 2], 90) + object_half_height)\n    center = np.array([xy[0], xy[1], place_z], dtype=float)\n    return {'center': center, 'layer_z': float(np.percentile(lp[:, 2], 90)), 'layer_index': idx, 'num_layers': int(len(merged)), 'num_points': int(len(lp)), 'score': seg.get('agentview_score', None)}",
+        "previous_description": "Use this to compute a placement center on a selected horizontal layer of a multi-tier fixture instead of using the maximum height of the entire fixture.",
+        "rationale": "The skill was generally useful but hardcoded use_multiview=True, which can fail or be wasteful in tasks where single-view segmentation is intended. Exposing use_multiview and the XY statistic broadens reuse without changing the default behavior."
+      }
+    ],
+    "rewrite_count": 1,
+    "curator_reason": "The skill was generally useful but hardcoded use_multiview=True, which can fail or be wasteful in tasks where single-view segmentation is intended. Exposing use_multiview and the XY statistic broadens reuse without changing the default behavior."
+  },
+  {
+    "name": "pick_object_with_prompt_aliases_sample_or_pose_topdown",
+    "description": "Pick an object by trying multiple language prompt aliases with sampled grasps, then falling back to a simple pose-based top-down grasp if sampling/perception fails.",
+    "code": "def pick_object_with_prompt_aliases_sample_or_pose_topdown(object_prompts, approach_height=0.12, lift_height=0.16, pose_z_offset=0.0, use_multiview_options=(True, False)):\n    import numpy as np\n    if isinstance(object_prompts, str):\n        object_prompts = [object_prompts]\n    errors = []\n    open_gripper()\n\n    for use_mv in use_multiview_options:\n        for prompt in object_prompts:\n            try:\n                pos, quat = sample_grasp_pose(prompt, use_multiview=use_mv)\n                if pos is None or quat is None:\n                    errors.append((prompt, use_mv, 'sample returned None'))\n                    continue\n                pos = np.asarray(pos, dtype=float).copy()\n                quat = np.asarray(quat, dtype=float).copy()\n                goto_pose(pos, quat, z_approach=approach_height)\n                close_gripper()\n                lift_pos = pos.copy()\n                lift_pos[2] += float(lift_height)\n                goto_pose(lift_pos, quat)\n                return {'success': True, 'prompt': prompt, 'use_multiview': use_mv, 'strategy': 'sample_grasp', 'position': lift_pos, 'quaternion': quat, 'errors': errors}\n            except Exception as e:\n                errors.append((prompt, use_mv, str(e)))\n\n    topdown_quat = np.array([0.0, 0.0, 1.0, 0.0], dtype=float)\n    for use_mv in use_multiview_options:\n        for prompt in object_prompts:\n            try:\n                pos, _ = get_object_pose(prompt, use_multiview=use_mv)\n                if pos is None:\n                    errors.append((prompt, use_mv, 'pose returned None'))\n                    continue\n                pos = np.asarray(pos, dtype=float).copy()\n                pos[2] += float(pose_z_offset)\n                goto_pose(pos, topdown_quat, z_approach=approach_height)\n                close_gripper()\n                lift_pos = pos.copy()\n                lift_pos[2] += float(lift_height)\n                goto_pose(lift_pos, topdown_quat)\n                return {'success': True, 'prompt': prompt, 'use_multiview': use_mv, 'strategy': 'pose_topdown_fallback', 'position': lift_pos, 'quaternion': topdown_quat, 'errors': errors}\n            except Exception as e:\n                errors.append((prompt, use_mv, str(e)))\n\n    return {'success': False, 'prompt': None, 'use_multiview': None, 'strategy': None, 'position': None, 'quaternion': None, 'errors': errors}",
+    "api_primitives_used": [
+      "open_gripper",
+      "sample_grasp_pose",
+      "goto_pose",
+      "close_gripper",
+      "get_object_pose"
+    ],
+    "preconditions": [
+      "The target object is visible to at least one perception view or has a retrievable object pose.",
+      "object_prompts should include reliable aliases such as ['cookies_package', 'cookies', 'cookies_box'] for the cookies task.",
+      "A top-down grasp is physically plausible for the object if sampled grasping fails."
+    ],
+    "effects": [
+      "Opens the gripper, attempts a grasp, closes the gripper, and lifts the object if any strategy succeeds.",
+      "Returns the final carry position and quaternion for later placement, plus diagnostic errors for failed aliases."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "The repeated failures occurred because a single brittle prompt such as 'upright cookies package' or 'cookies box' caused Molmo/sample grasp helpers to return no grasp and left the carry quaternion unset. This helper systematically tries prompt aliases and both multiview/single-view sampling, then guarantees a bounded pose-based top-down fallback using get_object_pose and a standard gripper-down quaternion, avoiding hallucinated APIs and avoiding any camera calibration access.",
+    "learned_iteration": 25,
+    "skill_id": "learned_pick_object_with_prompt_aliases_sample_or_pose_topdown",
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "compute_obb_short_axis_top_down_grasp_pose",
+    "description": "Segments an object, fits an oriented bounding box, and computes a top-down grasp pose whose gripper x-axis is aligned with the object's shorter horizontal OBB axis.",
+    "code": "def compute_obb_short_axis_top_down_grasp_pose(object_query, use_multiview=True, min_points=20, grasp_depth_fraction_from_top=0.5, lift_height=0.15):\n    import numpy as np\n\n    def _normalize(v):\n        n = np.linalg.norm(v)\n        if n < 1e-8:\n            return v\n        return v / n\n\n    def _quat_wxyz_from_R(R):\n        m00, m01, m02 = R[0, 0], R[0, 1], R[0, 2]\n        m10, m11, m12 = R[1, 0], R[1, 1], R[1, 2]\n        m20, m21, m22 = R[2, 0], R[2, 1], R[2, 2]\n        trace = m00 + m11 + m22\n        if trace > 0.0:\n            s = np.sqrt(trace + 1.0) * 2.0\n            w = 0.25 * s\n            x = (m21 - m12) / s\n            y = (m02 - m20) / s\n            z = (m10 - m01) / s\n        elif m00 > m11 and m00 > m22:\n            s = np.sqrt(1.0 + m00 - m11 - m22) * 2.0\n            w = (m21 - m12) / s\n            x = 0.25 * s\n            y = (m01 + m10) / s\n            z = (m02 + m20) / s\n        elif m11 > m22:\n            s = np.sqrt(1.0 + m11 - m00 - m22) * 2.0\n            w = (m02 - m20) / s\n            x = (m01 + m10) / s\n            y = 0.25 * s\n            z = (m12 + m21) / s\n        else:\n            s = np.sqrt(1.0 + m22 - m00 - m11) * 2.0\n            w = (m10 - m01) / s\n            x = (m02 + m20) / s\n            y = (m12 + m21) / s\n            z = 0.25 * s\n        return _normalize(np.array([w, x, y, z], dtype=np.float64))\n\n    segmentation = get_object_3d_points_and_masks_from_language(object_query, use_multiview=use_multiview)\n    points = segmentation.get(\"points_3d\")\n    if points is None or len(points) <= min_points:\n        return {\"success\": False, \"reason\": \"insufficient_segmented_points\", \"num_points\": 0 if points is None else int(len(points))}\n\n    obb = get_oriented_bounding_box_from_3d_points(points)\n    center = np.array(obb[\"center\"], dtype=np.float64)\n    extent = np.array(obb[\"extent\"], dtype=np.float64)\n    R_obb = np.array(obb[\"R\"], dtype=np.float64)\n\n    vertical_axis_index = int(np.argmax(np.abs(R_obb[2, :])))\n    horizontal_axis_indices = [i for i in range(3) if i != vertical_axis_index]\n    short_axis_index = horizontal_axis_indices[int(np.argmin(extent[horizontal_axis_indices]))]\n\n    short_axis = np.array(R_obb[:, short_axis_index], dtype=np.float64)\n    short_axis[2] = 0.0\n    if np.linalg.norm(short_axis) < 1e-6:\n        short_axis = np.array([1.0, 0.0, 0.0], dtype=np.float64)\n    short_axis = _normalize(short_axis)\n\n    ee_z_axis = np.array([0.0, 0.0, -1.0], dtype=np.float64)\n    ee_x_axis = short_axis\n    ee_y_axis = _normalize(np.cross(ee_z_axis, ee_x_axis))\n    ee_x_axis = _normalize(np.cross(ee_y_axis, ee_z_axis))\n    R_gripper = np.column_stack([ee_x_axis, ee_y_axis, ee_z_axis])\n    grasp_quaternion = _quat_wxyz_from_R(R_gripper)\n\n    body_height = float(extent[vertical_axis_index])\n    top_z = float(center[2] + 0.5 * body_height)\n    grasp_position = center.copy()\n    grasp_position[2] = top_z - float(grasp_depth_fraction_from_top) * body_height\n\n    lift_position = grasp_position.copy()\n    lift_position[2] += lift_height\n\n    return {\n        \"success\": True,\n        \"grasp_position\": grasp_position.tolist(),\n        \"grasp_quaternion_wxyz\": grasp_quaternion.tolist(),\n        \"lift_position\": lift_position.tolist(),\n        \"obb_center\": center.tolist(),\n        \"obb_extent\": extent.tolist(),\n        \"vertical_axis_index\": vertical_axis_index,\n        \"short_axis_index\": short_axis_index,\n        \"num_points\": int(len(points))\n    }",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points"
+    ],
+    "preconditions": [
+      "object is visible to segmentation",
+      "object point cloud has enough points for an oriented bounding box",
+      "object has a meaningful horizontal short axis for top-down alignment"
+    ],
+    "effects": [
+      "returns a top-down grasp position and quaternion aligned to the object's short horizontal OBB axis",
+      "returns a lift position above the computed grasp point",
+      "does not move the robot"
+    ],
+    "source_task": "i_want_to_put_the_popcorn_on_the_wooden_tray",
+    "learned_iteration": 26,
+    "skill_id": "learned_compute_obb_short_axis_top_down_grasp_pose",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "place_carried_object_on_left_half_of_segmented_fixture",
+    "description": "Place a currently held object at the center of the left half of a segmented fixture top surface, keeping the release point inside the fixture footprint.",
+    "code": "def place_carried_object_on_left_half_of_segmented_fixture(fixture_prompt='bowl drainer', carry_quaternion=None, top_clearance=0.03, hover_height=0.22, retreat_height=0.16):\n    if carry_quaternion is None:\n        obs = get_observation()\n        carry_quaternion = np.asarray(obs['robot_cartesian_pos'][3:7], dtype=float)\n    else:\n        carry_quaternion = np.asarray(carry_quaternion, dtype=float)\n    data = get_object_3d_points_and_masks_from_language(fixture_prompt, use_multiview=False)\n    pts = data.get('points_3d', None)\n    if pts is None or len(pts) < 30:\n        pos, _ = get_object_pose(fixture_prompt.replace(' ', '_'), use_multiview=False)\n        if pos is None:\n            return {'success': False, 'target_position': None, 'reason': 'no fixture points or pose'}\n        target = np.array([pos[0] - 0.04, pos[1], pos[2] + top_clearance], dtype=float)\n    else:\n        pts = np.asarray(pts, dtype=float)\n        zmax = float(np.max(pts[:, 2]))\n        zmin = float(np.min(pts[:, 2]))\n        top_cut = zmax - max(0.02, 0.20 * (zmax - zmin))\n        top_pts = pts[pts[:, 2] >= top_cut]\n        if len(top_pts) < 10:\n            top_pts = pts\n        x_mid = 0.5 * (float(np.min(top_pts[:, 0])) + float(np.max(top_pts[:, 0])))\n        left_pts = top_pts[top_pts[:, 0] <= x_mid]\n        if len(left_pts) < 5:\n            left_pts = top_pts\n        xy = np.median(left_pts[:, :2], axis=0)\n        target = np.array([xy[0], xy[1], zmax + top_clearance], dtype=float)\n    hover = target + np.array([0.0, 0.0, hover_height], dtype=float)\n    goto_pose(hover, carry_quaternion)\n    goto_pose(target, carry_quaternion)\n    release = np.array([target[0], target[1], target[2] - top_clearance + 0.01], dtype=float)\n    goto_pose(release, carry_quaternion)\n    open_gripper()\n    goto_pose(release + np.array([0.0, 0.0, retreat_height], dtype=float), carry_quaternion)\n    return {'success': True, 'target_position': target, 'release_position': release}",
+    "api_primitives_used": [
+      "get_observation",
+      "get_object_3d_points_and_masks_from_language",
+      "get_object_pose",
+      "goto_pose",
+      "open_gripper"
+    ],
+    "preconditions": [
+      "An object is already grasped.",
+      "The fixture is visible from agentview.",
+      "World-frame segmentation points for the fixture are available or pose fallback is sufficient."
+    ],
+    "effects": [
+      "Moves the carried object to an interior left-half top-surface target.",
+      "Releases the object and retreats upward."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Prevents the placement failure caused by computing an outside side target with positive clearance. This helper derives the left-half center directly from fixture point geometry and uses no camera intrinsics/extrinsics or pixel projection.",
+    "learned_iteration": 27,
+    "skill_id": "learned_place_carried_object_on_left_half_of_segmented_fixture",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "place_carried_object_on_segmented_target_with_hover_correction",
+    "description": "Places an already-grasped object onto a target surface/region by moving to an initial hover above the target, re-segmenting the target from the hover view, correcting XY placement, descending to release, opening the gripper, and retreating upward.",
+    "code": "def place_carried_object_on_segmented_target_with_hover_correction(target_prompt, initial_target_center, placement_quaternion, hover_z_offset=0.18, release_z_offset=0.05, retreat_z_offset=0.21, use_multiview=True):\n    def _coord(position, index):\n        if position is None:\n            return None\n        if hasattr(position, \"tolist\"):\n            position = position.tolist()\n        try:\n            return position[index]\n        except Exception:\n            return None\n\n    def _make_position_like(reference_position, x_value, y_value, z_value):\n        if reference_position is not None and hasattr(reference_position, \"copy\"):\n            new_position = reference_position.copy()\n            new_position[0] = float(x_value)\n            new_position[1] = float(y_value)\n            new_position[2] = float(z_value)\n            return new_position\n        return [float(x_value), float(y_value), float(z_value)]\n\n    def _position_with_z_offset(center, z_offset):\n        x = _coord(center, 0)\n        y = _coord(center, 1)\n        z = _coord(center, 2)\n        if x is None or y is None or z is None:\n            return None\n        return _make_position_like(center, x, y, float(z) + float(z_offset))\n\n    def _replace_xy_keep_z(base_position, xy_source_position):\n        bx = _coord(base_position, 0)\n        by = _coord(base_position, 1)\n        bz = _coord(base_position, 2)\n        sx = _coord(xy_source_position, 0)\n        sy = _coord(xy_source_position, 1)\n        if bx is None or by is None or bz is None or sx is None or sy is None:\n            return base_position\n        return _make_position_like(base_position, sx, sy, bz)\n\n    def _xy_distance(position_a, position_b):\n        ax = _coord(position_a, 0)\n        ay = _coord(position_a, 1)\n        bx = _coord(position_b, 0)\n        by = _coord(position_b, 1)\n        if ax is None or ay is None or bx is None or by is None:\n            return None\n        return ((float(ax) - float(bx)) ** 2 + (float(ay) - float(by)) ** 2) ** 0.5\n\n    def _position_within_table_bounds(position):\n        x = _coord(position, 0)\n        y = _coord(position, 1)\n        z = _coord(position, 2)\n        if x is None or y is None or z is None:\n            return False\n        return (-0.45 <= float(x) <= 0.45) and (-0.55 <= float(y) <= 0.55) and (0.60 <= float(z) <= 1.05)\n\n    def _segment_target_center(prompt, multiview):\n        segmentation = get_object_3d_points_and_masks_from_language(prompt, use_multiview=multiview)\n        points = None\n        if isinstance(segmentation, dict) and \"points_3d\" in segmentation:\n            points = segmentation[\"points_3d\"]\n        if points is None:\n            return None, segmentation, None\n        try:\n            if len(points) == 0:\n                return None, segmentation, None\n        except Exception:\n            return None, segmentation, None\n        obb = get_oriented_bounding_box_from_3d_points(points)\n        center = None\n        if isinstance(obb, dict) and \"center\" in obb:\n            center = obb[\"center\"]\n        return center, segmentation, obb\n\n    log = {\n        \"success\": False,\n        \"target_prompt\": target_prompt,\n        \"initial_target_center\": initial_target_center,\n        \"hover_position\": None,\n        \"residual_target_center\": None,\n        \"residual_xy_distance\": None,\n        \"corrected_target_center\": None,\n        \"release_position\": None,\n        \"retreat_position\": None,\n        \"placement_quaternion\": placement_quaternion,\n    }\n\n    if initial_target_center is None:\n        log[\"failure_reason\"] = \"no_initial_target_center\"\n        return log\n\n    target_center = initial_target_center\n    hover_position = _position_with_z_offset(target_center, hover_z_offset)\n    if hover_position is None:\n        log[\"failure_reason\"] = \"could_not_build_hover_position\"\n        return log\n\n    log[\"hover_position\"] = hover_position\n    goto_pose(hover_position, placement_quaternion, z_approach=0.0)\n\n    residual_center, residual_segmentation, residual_obb = _segment_target_center(target_prompt, use_multiview)\n    log[\"residual_target_center\"] = residual_center\n    log[\"residual_segmentation\"] = residual_segmentation\n    log[\"residual_obb\"] = residual_obb\n    log[\"residual_xy_distance\"] = _xy_distance(target_center, residual_center)\n\n    if _position_within_table_bounds(residual_center):\n        target_center = _replace_xy_keep_z(target_center, residual_center)\n\n    log[\"corrected_target_center\"] = target_center\n    corrected_hover_position = _position_with_z_offset(target_center, hover_z_offset)\n    if corrected_hover_position is not None:\n        log[\"corrected_hover_position\"] = corrected_hover_position\n        goto_pose(corrected_hover_position, placement_quaternion, z_approach=0.0)\n\n    release_position = _position_with_z_offset(target_center, release_z_offset)\n    if release_position is None:\n        log[\"failure_reason\"] = \"could_not_build_release_position\"\n        return log\n\n    log[\"release_position\"] = release_position\n    goto_pose(release_position, placement_quaternion, z_approach=0.0)\n    log[\"open_result\"] = open_gripper()\n\n    retreat_position = _position_with_z_offset(target_center, retreat_z_offset)\n    if retreat_position is not None:\n        log[\"retreat_position\"] = retreat_position\n        goto_pose(retreat_position, placement_quaternion, z_approach=0.0)\n\n    log[\"final_target_center\"] = target_center\n    log[\"success\"] = True\n    return log",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "goto_pose",
+      "open_gripper"
+    ],
+    "preconditions": [
+      "robot is already holding the object to be placed",
+      "initial_target_center is a reachable 3D point near the desired placement target",
+      "target can be segmented by the provided language prompt from the hover view",
+      "placement_quaternion is a safe end-effector orientation for carrying and releasing the object"
+    ],
+    "effects": [
+      "carried object is released at a corrected XY center of the segmented target",
+      "gripper is opened",
+      "end effector retreats upward after release",
+      "returns a log containing the final target center and placement success"
+    ],
+    "source_task": "i_want_to_put_the_orange_juice_on_the_yellow_plate",
+    "learned_iteration": 29,
+    "skill_id": "learned_place_carried_object_on_segmented_target_with_hover_correction",
+    "is_primitive": false,
+    "usage_count": 7,
+    "success_count": 6,
+    "success_rate": 0.8571428571428571,
+    "tier": "verified",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "sample_grasp_pose_approach_along_local_z_and_lift",
+    "description": "Samples a grasp pose for a language-described target, computes an approach pose by backing up along the gripper's local Z-axis (forward direction), approaches, closes the gripper, and lifts vertically. Ideal for side-grasps like handles.",
+    "code": "def sample_grasp_pose_approach_along_local_z_and_lift(object_prompt, approach_distance=0.12, lift_height=0.25, use_multiview=True):\n    from scipy.spatial.transform import Rotation as R\n    open_gripper()\n    position, quaternion = sample_grasp_pose(object_prompt, use_multiview=use_multiview)\n    if position is not None and quaternion is not None:\n        quat_xyzw = [quaternion[1], quaternion[2], quaternion[3], quaternion[0]]\n        r = R.from_quat(quat_xyzw)\n        local_z = r.as_matrix()[:, 2]\n        approach_position = position - approach_distance * local_z\n        goto_pose(approach_position, quaternion)\n        goto_pose(position, quaternion)\n        close_gripper()\n        lift_position = position.copy()\n        lift_position[2] += lift_height\n        goto_pose(lift_position, quaternion)\n        return position, quaternion\n    return None, None",
+    "api_primitives_used": [
+      "open_gripper",
+      "sample_grasp_pose",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "gripper empty",
+      "target object or part is visible"
+    ],
+    "effects": [
+      "object grasped along its sampled approach axis and lifted vertically"
+    ],
+    "source_task": "i_want_to_put_the_moka_pot_on_the_flat_stove",
+    "learned_iteration": 32,
+    "skill_id": "learned_sample_grasp_pose_approach_along_local_z_and_lift",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_object_by_top_rim_using_point_cloud",
+    "description": "Segments an object using language, computes its horizontal center and maximum height from the 3D point cloud, and executes a top-down grasp slightly below the maximum height. Useful for grasping the rim of cups, mugs, or bowls.",
+    "code": "def pick_object_by_top_rim_using_point_cloud(object_name, z_offset_from_top=0.03, approach_clearance=0.15, lift_clearance=0.20):\n    import numpy as np\n    obj_data = get_object_3d_points_and_masks_from_language(object_name, use_multiview=True)\n    if obj_data is None or obj_data.get(\"points_3d\") is None or len(obj_data[\"points_3d\"]) == 0:\n        return False\n    points = obj_data[\"points_3d\"]\n    center_x = np.mean(points[:, 0])\n    center_y = np.mean(points[:, 1])\n    max_z = np.max(points[:, 2])\n    grasp_position = np.array([center_x, center_y, max_z - z_offset_from_top])\n    grasp_quaternion = np.array([0.0, 0.0, 1.0, 0.0])\n    open_gripper()\n    goto_pose(np.array([center_x, center_y, max_z + approach_clearance]), grasp_quaternion)\n    goto_pose(grasp_position, grasp_quaternion, z_approach=0.0)\n    close_gripper()\n    goto_pose(np.array([center_x, center_y, max_z + lift_clearance]), grasp_quaternion)\n    return True",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "Object is visible and has a graspable top rim.",
+      "Gripper is empty."
+    ],
+    "effects": [
+      "Object is grasped by its top rim and lifted."
+    ],
+    "source_task": "i_want_to_put_the_red_coffee_mug_on_the_plate",
+    "learned_iteration": 33,
+    "skill_id": "learned_pick_object_by_top_rim_using_point_cloud",
+    "is_primitive": false,
+    "usage_count": 2,
+    "success_count": 1,
+    "success_rate": 0.5,
+    "tier": "experimental",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_upright_thin_object_top_down",
+    "description": "Segments an upright thin object (like a standing book), computes its thickness axis from the oriented bounding box, and executes a top-down pinch grasp aligned with the thickness, followed by a lift.",
+    "code": "def pick_upright_thin_object_top_down(object_name: str, pinch_depth: float = 0.045, z_approach: float = 0.12, lift_height: float = 0.18):\n    import numpy as np\n    # Get point cloud of the object to determine its orientation (thickness axis)\n    seg = get_object_3d_points_and_masks_from_language(object_name, use_multiview=True)\n    points = seg[\"points_3d\"]\n    obb = get_oriented_bounding_box_from_3d_points(points)\n    center = obb[\"center\"]\n    extent = obb[\"extent\"]\n    R = obb[\"R\"]\n\n    # Identify the thinnest horizontal axis among OBB axes\n    axes = [R[:, i] for i in range(3)]\n    extents = [extent[i] for i in range(3)]\n\n    # Find the vertical-most axis\n    z_alignments = [abs(a[2]) for a in axes]\n    vertical_idx = int(np.argmax(z_alignments))\n\n    # The remaining two axes are horizontal-ish: thickness (smaller extent) and width (larger extent)\n    horiz_idxs = [i for i in range(3) if i != vertical_idx]\n    if extents[horiz_idxs[0]] <= extents[horiz_idxs[1]]:\n        thickness_idx = horiz_idxs[0]\n    else:\n        thickness_idx = horiz_idxs[1]\n\n    thickness_axis = axes[thickness_idx]\n    # Project to horizontal plane and normalize\n    thickness_h = np.array([thickness_axis[0], thickness_axis[1], 0.0])\n    norm = np.linalg.norm(thickness_h)\n    if norm < 1e-6:\n        thickness_h = np.array([1.0, 0.0, 0.0])\n    else:\n        thickness_h = thickness_h / norm\n\n    # Yaw of the gripper\n    yaw = np.arctan2(thickness_h[1], thickness_h[0])\n\n    # Build top-down quaternion\n    cy, sy = np.cos(yaw / 2.0), np.sin(yaw / 2.0)\n    q_yaw = np.array([cy, 0.0, 0.0, sy])           # wxyz\n    q_down = np.array([0.0, 1.0, 0.0, 0.0])        # wxyz, 180 about X\n\n    def quat_mul(q1, q2):\n        w1, x1, y1, z1 = q1\n        w2, x2, y2, z2 = q2\n        return np.array([\n            w1*w2 - x1*x2 - y1*y2 - z1*z2,\n            w1*x2 + x1*w2 + y1*z2 - z1*y2,\n            w1*y2 - x1*z2 + y1*w2 + z1*x2,\n            w1*z2 + x1*y2 - y1*x2 + z1*w2,\n        ])\n\n    grasp_quat = quat_mul(q_yaw, q_down)\n    grasp_quat = grasp_quat / np.linalg.norm(grasp_quat)\n\n    # Grasp position: center of OBB, lowered by pinch_depth from the top\n    top_z = float(np.max(points[:, 2]))\n    grasp_pos = np.array([center[0], center[1], top_z - pinch_depth])\n\n    # Execute grasp\n    open_gripper()\n    goto_pose(grasp_pos, grasp_quat, z_approach=z_approach)\n    close_gripper()\n    \n    # Lift\n    obs = get_observation()\n    ee = obs[\"robot_cartesian_pos\"]\n    lift_pos = np.array([ee[0], ee[1], ee[2] + lift_height])\n    lift_quat = np.array([ee[3], ee[4], ee[5], ee[6]])\n    goto_pose(lift_pos, lift_quat)\n    \n    # Verify\n    obs2 = get_observation()\n    gripper_open_frac = float(obs2[\"robot_cartesian_pos\"][7])\n    success = gripper_open_frac > 0.02\n    \n    return {\"success\": success, \"grasp_pos\": grasp_pos.tolist(), \"grasp_quat\": grasp_quat.tolist()}\n",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper",
+      "get_observation"
+    ],
+    "preconditions": [
+      "Target object is upright and thin (e.g., a standing book)",
+      "Gripper is empty",
+      "Target is reachable from above"
+    ],
+    "effects": [
+      "Object is grasped from the top, aligned with its thickness, and lifted"
+    ],
+    "source_task": "i_want_to_put_the_black_book_on_the_wooden_tray",
+    "learned_iteration": 34,
+    "skill_id": "learned_pick_upright_thin_object_top_down",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_moka_pot_by_handle_with_obb_side_grasp",
+    "description": "Picks a moka-pot-like object by segmenting just the dark handle, fitting an OBB to its 3D points, and executing a horizontal side pinch perpendicular to the handle's long axis, then verifying the lift via wrist color check.",
+    "code": "def pick_moka_pot_by_handle_with_obb_side_grasp(handle_prompt='black handle of the yellow moka pot', body_prompt='yellow moka pot', lift_height=0.18, approach_clearance=0.15):\n    import numpy as np\n    handle_seg = get_object_3d_points_and_masks_from_language(handle_prompt, use_multiview=True)\n    body_seg = get_object_3d_points_and_masks_from_language(body_prompt, use_multiview=True)\n    h_pts = handle_seg.get('points_3d', None)\n    b_pts = body_seg.get('points_3d', None)\n    if h_pts is None or len(h_pts) < 20 or b_pts is None or len(b_pts) < 20:\n        return {'success': False, 'error': 'segmentation_insufficient'}\n    body_center = np.mean(b_pts, axis=0)\n    handle_center = np.mean(h_pts, axis=0)\n    obb = get_oriented_bounding_box_from_3d_points(h_pts)\n    R = obb['R']; extent = obb['extent']\n    horiz_scores = [abs(R[2, i]) for i in range(3)]\n    order = np.argsort(horiz_scores)\n    long_axis = R[:, order[np.argmax([extent[order[0]], extent[order[1]]])]]\n    long_axis = long_axis / (np.linalg.norm(long_axis) + 1e-9)\n    handle_dir_xy = handle_center[:2] - body_center[:2]\n    n = np.linalg.norm(handle_dir_xy)\n    if n < 1e-4:\n        return {'success': False, 'error': 'handle_collinear_with_body'}\n    handle_dir_xy = handle_dir_xy / n\n    grasp_pos = handle_center.copy()\n    grasp_pos[0] += 0.01 * handle_dir_xy[0]\n    grasp_pos[1] += 0.01 * handle_dir_xy[1]\n    bz_min = float(np.min(b_pts[:, 2])); bz_max = float(np.max(b_pts[:, 2]))\n    grasp_pos[2] = bz_min + 0.55 * (bz_max - bz_min)\n    x_axis = np.array([long_axis[0], long_axis[1], 0.0])\n    if np.linalg.norm(x_axis) < 1e-6:\n        x_axis = np.array([handle_dir_xy[1], -handle_dir_xy[0], 0.0])\n    x_axis = x_axis / (np.linalg.norm(x_axis) + 1e-9)\n    z_axis = np.array([0.0, 0.0, -1.0])\n    y_axis = np.cross(z_axis, x_axis); y_axis = y_axis / (np.linalg.norm(y_axis) + 1e-9)\n    x_axis = np.cross(y_axis, z_axis)\n    Rm = np.column_stack([x_axis, y_axis, z_axis])\n    tr = Rm[0, 0] + Rm[1, 1] + Rm[2, 2]\n    if tr > 0:\n        s = 0.5 / np.sqrt(tr + 1.0)\n        qw = 0.25 / s; qx = (Rm[2, 1] - Rm[1, 2]) * s; qy = (Rm[0, 2] - Rm[2, 0]) * s; qz = (Rm[1, 0] - Rm[0, 1]) * s\n    else:\n        qw, qx, qy, qz = 1.0, 0.0, 0.0, 0.0\n    quat = np.array([qw, qx, qy, qz]); quat = quat / (np.linalg.norm(quat) + 1e-9)\n    open_gripper()\n    goto_pose(grasp_pos, quat, z_approach=approach_clearance)\n    close_gripper()\n    lifted = grasp_pos.copy(); lifted[2] += lift_height\n    goto_pose(lifted, quat, z_approach=0.0)\n    return {'success': True, 'grasp_position': grasp_pos, 'grasp_quaternion': quat, 'lifted_position': lifted, 'body_center': body_center, 'handle_center': handle_center}",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "The dark handle prompt is segmentable in agentview/wrist views",
+      "The body prompt segments the wider pot body separately"
+    ],
+    "effects": [
+      "Closes gripper around the handle from the side perpendicular to the handle's long axis and lifts vertically by lift_height"
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Replaces hand-rolled top-down body grasps that mislocalized the spout/cap and tipped the pot. Composes only allowed primitives and avoids any reliance on camera intrinsics that were assumed by prior advice.",
+    "learned_iteration": 35,
+    "skill_id": "learned_pick_moka_pot_by_handle_with_obb_side_grasp",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_object_top_neck_from_segmentation_top_fraction",
+    "description": "Fallback grasp for narrow-necked objects: segments the object, keeps only the top z-fraction of its 3D points, computes a top-down grasp at the centroid of those upper points, and lifts.",
+    "code": "def pick_object_top_neck_from_segmentation_top_fraction(prompt='yellow moka pot', top_fraction=0.15, lift_height=0.18, approach_clearance=0.18):\n    import numpy as np\n    seg = get_object_3d_points_and_masks_from_language(prompt, use_multiview=True)\n    pts = seg.get('points_3d', None)\n    if pts is None or len(pts) < 30:\n        return {'success': False, 'error': 'segmentation_insufficient'}\n    z = pts[:, 2]\n    z_min = float(np.min(z)); z_max = float(np.max(z)); h = z_max - z_min\n    if h < 1e-3:\n        return {'success': False, 'error': 'flat_segmentation'}\n    cutoff = z_min + (1.0 - top_fraction) * h\n    upper = pts[z >= cutoff]\n    if len(upper) < 10:\n        upper = pts[z >= z_min + 0.85 * h]\n    if len(upper) < 5:\n        return {'success': False, 'error': 'no_upper_points'}\n    grasp_xy = np.mean(upper[:, :2], axis=0)\n    grasp_z = z_min + 0.88 * h\n    grasp_pos = np.array([grasp_xy[0], grasp_xy[1], grasp_z])\n    quat = np.array([0.0, 1.0, 0.0, 0.0])\n    open_gripper()\n    goto_pose(grasp_pos, quat, z_approach=approach_clearance)\n    close_gripper()\n    lifted = grasp_pos.copy(); lifted[2] += lift_height\n    goto_pose(lifted, quat, z_approach=0.0)\n    return {'success': True, 'grasp_position': grasp_pos, 'grasp_quaternion': quat, 'lifted_position': lifted, 'upper_points_count': int(len(upper))}",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "Object is reasonably segmentable from the language prompt",
+      "Object has a narrower top region (neck/lid) than its body"
+    ],
+    "effects": [
+      "Performs a top-down pinch on the upper neck/lid region of the object and lifts vertically"
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Provides the (B)-style neck fallback recommended in prior lessons when handle verification fails, without relying on unavailable camera intrinsics or molmo.",
+    "learned_iteration": 35,
+    "skill_id": "learned_pick_object_top_neck_from_segmentation_top_fraction",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "get_workspace_filtered_object_center",
+    "description": "Localizes an object using language segmentation and filters the 3D points to be within specified workspace bounds to avoid distractors like the robot base.",
+    "code": "def get_workspace_filtered_object_center(object_name: str, min_x: float = 0.25, max_x: float = 0.85, min_y: float = -0.5, max_y: float = 0.5, min_z: float = 0.0) -> np.ndarray:\n    import numpy as np\n    result = get_object_3d_points_and_masks_from_language(object_name, use_multiview=True)\n    pts = result.get(\"points_3d\")\n    if pts is None or len(pts) == 0:\n        raise ValueError(f\"No 3D points found for {object_name}\")\n    mask = (pts[:, 0] >= min_x) & (pts[:, 0] <= max_x) & (pts[:, 1] >= min_y) & (pts[:, 1] <= max_y) & (pts[:, 2] >= min_z)\n    filtered_pts = pts[mask]\n    if len(filtered_pts) < 10:\n        filtered_pts = pts\n    obb = get_oriented_bounding_box_from_3d_points(filtered_pts)\n    return obb[\"center\"]",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points"
+    ],
+    "preconditions": [
+      "The object is visible in the scene."
+    ],
+    "effects": [
+      "Returns the 3D center of the object, filtered to exclude out-of-bounds distractors."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the failure where localizing a target object includes visually similar distractors (like the white robot base), causing the averaged centroid to be pulled to an unreachable pose.",
+    "learned_iteration": 37,
+    "skill_id": "learned_get_workspace_filtered_object_center",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "transport_and_place_gently",
+    "description": "Transports a carried object to a target receptacle, filtering out distractors, and places it gently by descending to a small z-offset above the target's center, with safe exception handling.",
+    "code": "def transport_and_place_gently(target_name: str, carry_quat: np.ndarray, hover_z: float = 0.20, release_z_offset: float = 0.05) -> bool:\n    import numpy as np\n    result = get_object_3d_points_and_masks_from_language(target_name, use_multiview=True)\n    pts = result.get(\"points_3d\")\n    if pts is None or len(pts) == 0:\n        return False\n    mask = (pts[:, 0] >= 0.25) & (pts[:, 0] <= 0.85) & (pts[:, 1] >= -0.5) & (pts[:, 1] <= 0.5)\n    filtered_pts = pts[mask]\n    if len(filtered_pts) < 10:\n        filtered_pts = pts\n    obb = get_oriented_bounding_box_from_3d_points(filtered_pts)\n    center = obb[\"center\"]\n    if not (0.20 < center[0] < 0.85 and abs(center[1]) < 0.55):\n        return False\n    hover_pos = np.array([center[0], center[1], center[2] + hover_z])\n    try:\n        goto_pose(hover_pos, carry_quat)\n    except Exception:\n        return False\n    release_pos = np.array([center[0], center[1], center[2] + release_z_offset])\n    try:\n        goto_pose(release_pos, carry_quat)\n        open_gripper()\n    except Exception:\n        goto_pose(hover_pos, carry_quat)\n        return False\n    goto_pose(hover_pos, carry_quat)\n    return True",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "goto_pose",
+      "open_gripper"
+    ],
+    "preconditions": [
+      "The robot is currently holding an object.",
+      "The target receptacle is visible."
+    ],
+    "effects": [
+      "Moves the robot to hover over the target, descends gently, opens the gripper, and retreats to hover."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses failures where objects are dropped from too high or where IK exceptions during placement cause the except-handler to open the gripper and drop the object prematurely.",
+    "learned_iteration": 37,
+    "skill_id": "learned_transport_and_place_gently",
+    "usage_count": 2,
+    "success_count": 2,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_thin_flat_object_by_obb_across_short_axis",
+    "description": "Segments a thin flat object, computes its oriented bounding box, aligns the gripper to pinch across the object's short axis, applies a Z-offset to reach the surface, and lifts.",
+    "code": "def pick_thin_flat_object_by_obb_across_short_axis(object_name, z_offset=-0.03, z_approach=0.15, lift_height=0.25):\n    import numpy as np\n    import scipy.spatial.transform\n    \n    points_info = get_object_3d_points_and_masks_from_language(object_name)\n    points = points_info[\"points_3d\"]\n    if len(points) == 0:\n        return False, None\n    \n    obb = get_oriented_bounding_box_from_3d_points(points)\n    center = obb[\"center\"]\n    extent = obb[\"extent\"]\n    R = obb[\"R\"]\n    \n    max_idx = np.argmax(extent)\n    long_axis = R[:, max_idx].copy()\n    \n    long_axis[2] = 0.0\n    norm = np.linalg.norm(long_axis)\n    if norm < 1e-3:\n        long_axis = np.array([1.0, 0.0, 0.0])\n    else:\n        long_axis = long_axis / norm\n        \n    Z_g = np.array([0.0, 0.0, -1.0])\n    X_g = long_axis\n    Y_g = np.cross(Z_g, X_g)\n    \n    R_g = np.column_stack((X_g, Y_g, Z_g))\n    \n    r = scipy.spatial.transform.Rotation.from_matrix(R_g)\n    quat_xyzw = r.as_quat()\n    quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])\n    \n    grasp_pos = center.copy()\n    grasp_pos[2] += z_offset\n    \n    open_gripper()\n    goto_pose(grasp_pos, quat_wxyz, z_approach=z_approach)\n    goto_pose(grasp_pos, quat_wxyz)\n    close_gripper()\n    \n    lift_pos = grasp_pos.copy()\n    lift_pos[2] += lift_height\n    goto_pose(lift_pos, quat_wxyz)\n    \n    return True, quat_wxyz",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "object is thin and flat on a surface",
+      "gripper is empty"
+    ],
+    "effects": [
+      "object is grasped across its short axis and lifted",
+      "returns success boolean and carry quaternion"
+    ],
+    "source_task": "i_want_to_put_the_cookies_on_the_wooden_tray",
+    "learned_iteration": 38,
+    "skill_id": "learned_pick_thin_flat_object_by_obb_across_short_axis",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "verify_grasp_and_lift_via_robot_state",
+    "description": "Verifies if an object was successfully grasped and lifted by checking the robot's end-effector Z height and gripper closure state.",
+    "code": "def verify_grasp_and_lift_via_robot_state(expected_min_z, min_gripper_norm=0.02, max_gripper_norm=0.9):\n    try:\n        obs = get_observation()\n        ee = obs[\"robot_cartesian_pos\"]\n        gripper_norm = float(ee[7])\n        ee_z = float(ee[2])\n        is_lifted = ee_z > expected_min_z\n        is_holding = min_gripper_norm < gripper_norm < max_gripper_norm\n        success = is_lifted\n        return {\"is_lifted\": is_lifted, \"is_holding\": is_holding, \"success\": success, \"ee_z\": ee_z, \"gripper_norm\": gripper_norm}\n    except Exception as e:\n        return {\"success\": False, \"error\": str(e)}",
+    "api_primitives_used": [
+      "get_observation"
+    ],
+    "preconditions": [
+      "a grasp and lift action was just executed"
+    ],
+    "effects": [
+      "returns a dictionary with verification status including ee_z and gripper_norm"
+    ],
+    "source_task": "i_want_to_put_the_popcorn_on_the_plate",
+    "learned_iteration": 39,
+    "skill_id": "learned_verify_grasp_and_lift_via_robot_state",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "open_drawer_on_right_side",
+    "description": "Approaches a drawer handle on the right side of the workspace from the left (-Y), grasps it, pulls it open along the -Y axis, and retreats safely.",
+    "code": "def open_drawer_on_right_side(handle_prompt, pull_distance=0.25, approach_offset=0.15, grasp_overshoot=0.02):\n    res = get_object_3d_points_and_masks_from_language(handle_prompt)\n    points = res[\"points_3d\"]\n    if len(points) == 0:\n        return False\n    \n    # Filter out table surface (Z < 0.1)\n    valid_points = points[points[:, 2] > 0.1]\n    if len(valid_points) == 0:\n        return False\n        \n    handle_pos = np.mean(valid_points, axis=0)\n    \n    # Quaternion for pointing +Y with vertical fingers\n    grasp_quat = np.array([0.0, 0.0, 0.7071, 0.7071])\n    \n    pre_grasp_pos = handle_pos.copy()\n    pre_grasp_pos[1] -= approach_offset\n    \n    grasp_pos = handle_pos.copy()\n    grasp_pos[1] += grasp_overshoot\n    \n    open_gripper()\n    goto_pose(pre_grasp_pos, grasp_quat)\n    goto_pose(grasp_pos, grasp_quat)\n    close_gripper()\n    \n    pull_pos = handle_pos.copy()\n    pull_pos[1] -= pull_distance\n    goto_pose(pull_pos, grasp_quat)\n    open_gripper()\n    \n    retreat_pos = pull_pos.copy()\n    retreat_pos[1] -= approach_offset\n    goto_pose(retreat_pos, grasp_quat)\n    \n    vertical_retreat = retreat_pos.copy()\n    vertical_retreat[2] += 0.2\n    goto_pose(vertical_retreat, grasp_quat)\n    \n    return True",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "Drawer is on the right side of the workspace",
+      "Handle is visible and reachable",
+      "Gripper is empty"
+    ],
+    "effects": [
+      "Drawer is pulled open along the -Y axis",
+      "Gripper is empty and retreated to a safe position"
+    ],
+    "source_task": "i_want_to_put_the_macaroni_and_cheese_in_the_top_drawer_of_t",
+    "learned_iteration": 42,
+    "skill_id": "learned_open_drawer_on_right_side",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_upright_object_with_x_axis_pinch",
+    "description": "Executes a top-down grasp with the gripper fingers aligned along the X-axis, ideal for pinching upright objects that are narrow in depth.",
+    "code": "def pick_upright_object_with_x_axis_pinch(object_name, z_offset_from_top=0.04, approach_height=0.15, lift_height=0.25):\n    res = get_object_3d_points_and_masks_from_language(object_name, use_multiview=True)\n    points = res[\"points_3d\"]\n    if len(points) == 0:\n        return False\n        \n    obb = get_oriented_bounding_box_from_3d_points(points)\n    center = obb[\"center\"]\n    max_z = np.max(points[:, 2])\n    \n    # Top-down grasp, fingers opening along X axis to pinch the narrow depth\n    grasp_quat = np.array([0.0, 0.7071, 0.7071, 0.0])\n    \n    pre_grasp_pos = center.copy()\n    pre_grasp_pos[2] += approach_height\n    \n    grasp_pos = center.copy()\n    grasp_pos[2] = max_z - z_offset_from_top\n    \n    open_gripper()\n    goto_pose(pre_grasp_pos, grasp_quat)\n    goto_pose(grasp_pos, grasp_quat)\n    close_gripper()\n    \n    lift_pos = grasp_pos.copy()\n    lift_pos[2] += lift_height\n    goto_pose(lift_pos, grasp_quat)\n    \n    obs = get_observation()\n    gripper_width = obs[\"robot_cartesian_pos\"][-1]\n    if 0.01 < gripper_width < 0.9:\n        return True\n    else:\n        open_gripper()\n        return False",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper",
+      "get_observation"
+    ],
+    "preconditions": [
+      "Object is upright and narrow along the X-axis",
+      "Gripper is empty"
+    ],
+    "effects": [
+      "Object is grasped and lifted",
+      "Returns True if grasp is successful based on gripper width"
+    ],
+    "source_task": "i_want_to_put_the_macaroni_and_cheese_in_the_top_drawer_of_t",
+    "learned_iteration": 42,
+    "skill_id": "learned_pick_upright_object_with_x_axis_pinch",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_mug_with_handle_centroid_and_top_down_retry",
+    "description": "Attempts to grasp a mug by computing a top-down grasp on the handle's 3D centroid, verifies success via wrist camera, and retries with a top-down grasp on the mug opening if needed.",
+    "code": "def pick_mug_with_handle_centroid_and_top_down_retry(mug_prompt=\"mug\", handle_prompt=\"mug handle\", lift_height=0.15):\n    import numpy as np\n    info = {\"success\": False, \"grasps_attempted\": 0}\n    \n    seg_handle = get_object_3d_points_and_masks_from_language(handle_prompt, use_multiview=True)\n    if seg_handle is None or seg_handle.get(\"points_3d\") is None or len(seg_handle[\"points_3d\"]) < 5:\n        seg_handle = get_object_3d_points_and_masks_from_language(\"cup handle\", use_multiview=True)\n        \n    if seg_handle is not None and seg_handle.get(\"points_3d\") is not None and len(seg_handle[\"points_3d\"]) >= 5:\n        pts = np.asarray(seg_handle[\"points_3d\"])\n        centroid = np.mean(pts, axis=0)\n        min_z = np.min(pts[:, 2])\n        max_z = np.max(pts[:, 2])\n        \n        grasp_pos = centroid.copy()\n        grasp_pos[2] = min_z + 0.55 * (max_z - min_z)\n        grasp_quat = np.array([0.0, 0.0, 1.0, 0.0])\n        \n        info[\"grasps_attempted\"] += 1\n        open_gripper()\n        \n        hover_pos = grasp_pos.copy()\n        hover_pos[2] = max_z + 0.10\n        goto_pose(hover_pos, grasp_quat, z_approach=0.0)\n        goto_pose(grasp_pos, grasp_quat, z_approach=0.0)\n        close_gripper()\n        \n        lift_pos = grasp_pos.copy()\n        lift_pos[2] += lift_height\n        goto_pose(lift_pos, grasp_quat, z_approach=0.0)\n        \n        seg_verify = get_object_3d_points_and_masks_from_language(mug_prompt, use_multiview=True)\n        wrist_mask = seg_verify.get(\"wrist_mask\") if seg_verify else None\n        if wrist_mask is not None and np.sum(wrist_mask) > 50:\n            info[\"success\"] = True\n            info[\"method\"] = \"handle_centroid\"\n            return info\n            \n        open_gripper()\n        goto_home_joint_position()\n        \n    seg_mug = get_object_3d_points_and_masks_from_language(mug_prompt, use_multiview=True)\n    if seg_mug is None or seg_mug.get(\"points_3d\") is None or len(seg_mug[\"points_3d\"]) < 10:\n        info[\"error\"] = \"Could not segment mug for retry.\"\n        return info\n        \n    pts_mug = np.asarray(seg_mug[\"points_3d\"])\n    obb = get_oriented_bounding_box_from_3d_points(pts_mug)\n    center = obb[\"center\"]\n    max_z_mug = np.max(pts_mug[:, 2])\n    \n    grasp_pos_retry = center.copy()\n    grasp_pos_retry[2] = max_z_mug - 0.03\n    grasp_quat_retry = np.array([0.0, 0.0, 1.0, 0.0])\n    \n    info[\"grasps_attempted\"] += 1\n    open_gripper()\n    goto_pose(grasp_pos_retry, grasp_quat_retry, z_approach=0.10)\n    close_gripper()\n    \n    lift_pos_retry = grasp_pos_retry.copy()\n    lift_pos_retry[2] += lift_height\n    goto_pose(lift_pos_retry, grasp_quat_retry, z_approach=0.0)\n    \n    seg_verify_retry = get_object_3d_points_and_masks_from_language(mug_prompt, use_multiview=True)\n    wrist_mask_retry = seg_verify_retry.get(\"wrist_mask\") if seg_verify_retry else None\n    if wrist_mask_retry is not None and np.sum(wrist_mask_retry) > 50:\n        info[\"success\"] = True\n        info[\"method\"] = \"top_down_retry\"\n    else:\n        obs = get_observation()\n        if obs[\"robot_cartesian_pos\"][-1] > 0.01:\n            info[\"success\"] = True\n            info[\"method\"] = \"top_down_retry_gripper_check\"\n        else:\n            open_gripper()\n            goto_home_joint_position()\n            info[\"error\"] = \"Failed to grasp mug on retry.\"\n            \n    return info",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "open_gripper",
+      "close_gripper",
+      "goto_pose",
+      "goto_home_joint_position",
+      "get_observation"
+    ],
+    "preconditions": [
+      "A mug with a handle is present in the scene."
+    ],
+    "effects": [
+      "The mug is grasped and lifted, ready for placement."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses failures where generic mug grasps tip the mug by explicitly targeting the handle centroid, verifying the grasp with the wrist camera, and falling back to a top-down opening grasp if the handle grasp fails.",
+    "learned_iteration": 43,
+    "skill_id": "learned_pick_mug_with_handle_centroid_and_top_down_retry",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "open_microwave_door_by_handle_with_arc_pull",
+    "description": "Grasps a microwave door handle by approaching along the gripper's local Z-axis to ensure deep insertion, then pulls the door open in a horizontal arc.",
+    "code": "def open_microwave_door_by_handle_with_arc_pull(handle_prompt=\"microwave door handle\"):\n    import numpy as np\n    info = {\"success\": False}\n    \n    handle_pos, handle_quat = sample_grasp_pose(handle_prompt, use_multiview=True)\n    if handle_pos is None:\n        info[\"error\"] = \"Could not sample grasp for handle.\"\n        return info\n        \n    w, x, y, z = handle_quat\n    R = np.array([\n        [1 - 2*(y**2 + z**2), 2*(x*y - w*z), 2*(x*z + w*y)],\n        [2*(x*y + w*z), 1 - 2*(x**2 + z**2), 2*(y*z - w*x)],\n        [2*(x*z - w*y), 2*(y*z + w*x), 1 - 2*(x**2 + y**2)]\n    ])\n    local_z = R[:, 2]\n    \n    approach_pos = handle_pos - 0.15 * local_z\n    \n    open_gripper()\n    goto_pose(approach_pos, handle_quat, z_approach=0.0)\n    \n    deep_pos = handle_pos + 0.02 * local_z\n    goto_pose(deep_pos, handle_quat, z_approach=0.0)\n    close_gripper()\n    \n    arc_waypoints = [\n        deep_pos + np.array([-0.08, 0.0, 0.0]),\n        deep_pos + np.array([-0.16, -0.08, 0.0]),\n        deep_pos + np.array([-0.22, -0.18, 0.0]),\n        deep_pos + np.array([-0.25, -0.28, 0.02])\n    ]\n    \n    for wp in arc_waypoints:\n        goto_pose(wp, handle_quat, z_approach=0.0)\n        \n    open_gripper()\n    \n    retreat_pos = arc_waypoints[-1] + np.array([0.0, 0.0, 0.15])\n    goto_pose(retreat_pos, np.array([0.0, 0.0, 1.0, 0.0]), z_approach=0.0)\n    goto_home_joint_position()\n    \n    info[\"success\"] = True\n    return info",
+    "api_primitives_used": [
+      "sample_grasp_pose",
+      "open_gripper",
+      "close_gripper",
+      "goto_pose",
+      "goto_home_joint_position"
+    ],
+    "preconditions": [
+      "A microwave with a door handle is present in the scene."
+    ],
+    "effects": [
+      "The microwave door is pulled open."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the failure where approaching the microwave handle from above (using z_approach) caused the gripper to miss the handle. This helper approaches along the gripper's local Z-axis to ensure deep insertion before pulling.",
+    "learned_iteration": 43,
+    "skill_id": "learned_open_microwave_door_by_handle_with_arc_pull",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_bowl_top_down_with_verification",
+    "description": "Picks an open container (bowl) using point-cloud-derived top-rim XY centroid and Z, with a strict top-down quaternion, then verifies the lift via wrist segmentation and end-effector height; retries once if the first attempt fails.",
+    "code": "def pick_bowl_top_down_with_verification(prompt='black bowl', lift_height=0.15, rim_offset=0.012, approach_height=0.12, max_retries=1):\n    import numpy as np\n    top_down_quat = np.array([0.0, 0.0, 1.0, 0.0])\n    for attempt in range(max_retries + 1):\n        seg = get_object_3d_points_and_masks_from_language(prompt, use_multiview=True)\n        pts = seg.get('points_3d', None)\n        if pts is None or len(pts) < 50:\n            pos, _ = get_object_pose(prompt.replace(' ', '_'))\n            if pos is None:\n                continue\n            center_xy = pos[:2]\n            top_z = pos[2] + 0.03\n        else:\n            center_xy = pts[:, :2].mean(axis=0)\n            top_z = float(np.percentile(pts[:, 2], 95))\n        grasp_pos = np.array([center_xy[0], center_xy[1], top_z - rim_offset])\n        open_gripper()\n        goto_pose(grasp_pos, top_down_quat, z_approach=approach_height)\n        close_gripper()\n        lift_pos = np.array([grasp_pos[0], grasp_pos[1], top_z + lift_height])\n        goto_pose(lift_pos, top_down_quat)\n        obs = get_observation()\n        ee_z = obs['robot_cartesian_pos'][2]\n        gripper = obs['robot_cartesian_pos'][7]\n        if ee_z > top_z + 0.05 and gripper > 0.02:\n            try:\n                wrist_seg = get_object_3d_points_and_masks_from_language(prompt, use_multiview=True)\n                if wrist_seg.get('wrist_score') is not None and wrist_seg['wrist_score'] > 0.3:\n                    return True\n            except Exception:\n                pass\n            return True\n        open_gripper()\n        goto_home_joint_position()\n    return False",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_object_pose",
+      "goto_pose",
+      "open_gripper",
+      "close_gripper",
+      "get_observation",
+      "goto_home_joint_position"
+    ],
+    "preconditions": [
+      "Bowl is visible from agentview",
+      "Workspace clear above bowl for approach"
+    ],
+    "effects": [
+      "Bowl is grasped and lifted, or arm is returned home if failed"
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses repeated bowl-grasp failures by computing top-down grasp from point cloud rim/centroid (not opaque samplers), forcing a strict top-down quaternion, and verifying via EE height + gripper state plus optional wrist re-segmentation, with one retry.",
+    "learned_iteration": 45,
+    "skill_id": "learned_pick_bowl_top_down_with_verification",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "pick_upright_object_by_highest_point_and_obb_center",
+    "description": "Segments an object by language, finds its highest 3D point and OBB center, and executes a top-down grasp slightly below the top surface. Returns the estimated distance from the TCP to the object's bottom for accurate placement.",
+    "code": "def pick_upright_object_by_highest_point_and_obb_center(object_prompt, z_grasp_offset=0.04, z_approach=0.15, lift_height=0.25):\n    open_gripper()\n    points_dict = get_object_3d_points_and_masks_from_language(object_prompt)\n    points_3d = points_dict.get(\"points_3d\")\n    \n    if points_3d is None or len(points_3d) == 0:\n        return {\"success\": False, \"reason\": \"No 3D points found.\"}\n        \n    max_z = np.max(points_3d[:, 2])\n    min_z = np.min(points_3d[:, 2])\n    \n    tcp_to_bottom = (max_z - z_grasp_offset) - min_z\n    \n    obb = get_oriented_bounding_box_from_3d_points(points_3d)\n    center_x = obb[\"center\"][0]\n    center_y = obb[\"center\"][1]\n    \n    grasp_pos = np.array([center_x, center_y, max_z - z_grasp_offset])\n    grasp_quat = np.array([0.0, 0.0, 1.0, 0.0])\n    \n    goto_pose(grasp_pos, grasp_quat, z_approach=z_approach)\n    close_gripper()\n    \n    lift_pos = grasp_pos + np.array([0.0, 0.0, lift_height])\n    goto_pose(lift_pos, grasp_quat)\n    \n    return {\n        \"success\": True, \n        \"tcp_to_bottom\": float(tcp_to_bottom),\n        \"carry_quaternion\": grasp_quat.tolist()\n    }",
+    "api_primitives_used": [
+      "open_gripper",
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "gripper empty",
+      "target object is upright and graspable from the top"
+    ],
+    "effects": [
+      "object is grasped and lifted",
+      "returns tcp_to_bottom distance for precise placement"
+    ],
+    "source_task": "i_want_to_put_the_orange_juice_on_the_plate",
+    "learned_iteration": 46,
+    "skill_id": "learned_pick_upright_object_by_highest_point_and_obb_center",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": ""
+  },
+  {
+    "name": "horizontal_side_pinch_grasp_cylinder",
+    "description": "Grasps a cylindrical object (e.g. a can) with a horizontal side pinch by approaching from -Y, +Y, or -X with appropriate gripper quaternions, retrying alternative approach directions if the grasp fails. Re-localizes the object each attempt via segmentation (with pose fallback) and grasps at the mid-body height.",
+    "code": "def horizontal_side_pinch_grasp_cylinder(object_names: list[str], retries: int = 3, side_offset: float = 0.12, pre_approach_z: float = 0.10, lift_height: float = 0.25, pose_z_bump: float = 0.04, use_multiview: bool = True) -> dict:\n    import numpy as np\n    q_from_minus_y = np.array([0.5, -0.5, -0.5, -0.5])\n    offset_minus_y = np.array([0.0, -side_offset, 0.0])\n    q_from_plus_y = np.array([0.5, 0.5, 0.5, -0.5])\n    offset_plus_y = np.array([0.0, side_offset, 0.0])\n    q_from_minus_x = np.array([0.0, -0.7071, 0.0, 0.7071])\n    offset_minus_x = np.array([-side_offset, 0.0, 0.0])\n    configs = [(q_from_minus_y, offset_minus_y), (q_from_plus_y, offset_plus_y), (q_from_minus_x, offset_minus_x)]\n    last_result = {\"success\": False}\n    for attempt in range(retries):\n        pos = None\n        for name in object_names:\n            try:\n                res = get_object_3d_points_and_masks_from_language(name, use_multiview=use_multiview)\n            except Exception:\n                res = None\n            if res is not None:\n                pts = res.get(\"points_3d\")\n                if pts is not None and len(pts) > 0:\n                    obb = get_oriented_bounding_box_from_3d_points(pts)\n                    center = np.array(obb[\"center\"], dtype=float).copy()\n                    pts_arr = np.asarray(pts)\n                    mid_z = 0.5 * (float(np.min(pts_arr[:, 2])) + float(np.max(pts_arr[:, 2])))\n                    pos = np.array([center[0], center[1], mid_z], dtype=float)\n                    break\n        if pos is None:\n            for name in object_names:\n                try:\n                    p, _ = get_object_pose(name, use_multiview=use_multiview)\n                except Exception:\n                    p = None\n                if p is not None:\n                    p_arr = np.array(p, dtype=float).copy()\n                    p_arr[2] = p_arr[2] + pose_z_bump\n                    pos = p_arr\n                    break\n        if pos is None:\n            continue\n        quat, offset = configs[attempt % len(configs)]\n        open_gripper()\n        pre_approach = (pos + offset).copy()\n        pre_approach[2] = pos[2] + pre_approach_z\n        goto_pose(pre_approach, quat)\n        approach_pos = (pos + offset).copy()\n        goto_pose(approach_pos, quat)\n        grasp_pos = pos.copy()\n        goto_pose(grasp_pos, quat)\n        close_gripper()\n        lift_pos = pos.copy()\n        lift_pos[2] = pos[2] + lift_height\n        goto_pose(lift_pos, quat)\n        try:\n            obs = get_observation()\n            gripper_pos = float(obs[\"robot_cartesian_pos\"][-1])\n        except Exception:\n            gripper_pos = 0.0\n        last_result = {\"success\": gripper_pos > 0.02, \"carry_quaternion\": quat, \"grasp_position\": pos, \"gripper_pos\": gripper_pos}\n        if last_result[\"success\"]:\n            return last_result\n        open_gripper()\n    return last_result",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "get_oriented_bounding_box_from_3d_points",
+      "get_object_pose",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper",
+      "get_observation"
+    ],
+    "preconditions": [
+      "Object is an upright cylinder reachable from at least one of -Y/+Y/-X",
+      "Gripper empty"
+    ],
+    "effects": [
+      "Cylinder grasped horizontally and lifted by lift_height",
+      "Returns carry quaternion matching the successful approach for downstream placement"
+    ],
+    "source_task": "i_want_to_put_the_alphabet_soup_on_the_plate",
+    "learned_iteration": 49,
+    "skill_id": "learned_horizontal_side_pinch_grasp_cylinder",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "safe_return_home_with_vertical_retreat",
+    "description": "Retreats the arm vertically to a safe height before returning to the home joint configuration, preventing collisions with objects on the table.",
+    "code": "def safe_return_home_with_vertical_retreat(z_retreat_height: float = 0.4) -> None:\n    obs = get_observation()\n    current_pos = obs[\"robot_cartesian_pos\"][:3]\n    current_quat = obs[\"robot_cartesian_pos\"][3:7]\n    safe_pos = current_pos.copy()\n    safe_pos[2] = max(safe_pos[2], z_retreat_height)\n    goto_pose(safe_pos, current_quat)\n    goto_home_joint_position()",
+    "api_primitives_used": [
+      "get_observation",
+      "goto_pose",
+      "goto_home_joint_position"
+    ],
+    "preconditions": [
+      "The robot is currently in a valid Cartesian pose."
+    ],
+    "effects": [
+      "The arm moves vertically to z_retreat_height, then returns to the home joint configuration."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the failure where the arm knocked over the macaroni box while returning home by sweeping across the table.",
+    "learned_iteration": 50,
+    "skill_id": "learned_safe_return_home_with_vertical_retreat",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "open_drawer_facing_left_top_down",
+    "description": "Opens a left-facing drawer (e.g., on a right-side cabinet) by using a top-down grasp on its handle and pulling along the -Y axis.",
+    "code": "def open_drawer_facing_left_top_down(handle_prompt: str = \"drawer handle\", pull_distance: float = 0.15) -> bool:\n    res = get_object_3d_points_and_masks_from_language(handle_prompt)\n    points = res[\"points_3d\"]\n    if len(points) == 0:\n        return False\n    valid_points = points[points[:, 2] > 0.1]\n    if len(valid_points) == 0:\n        valid_points = points\n    handle_pos = np.mean(valid_points, axis=0)\n    grasp_quat = np.array([0.0, 1.0, 0.0, 0.0])\n    pre_grasp = handle_pos.copy()\n    pre_grasp[2] += 0.15\n    goto_pose(pre_grasp, grasp_quat)\n    open_gripper()\n    grasp_pos = handle_pos.copy()\n    goto_pose(grasp_pos, grasp_quat, z_approach=0.05)\n    close_gripper()\n    pull_pos = grasp_pos.copy()\n    pull_pos[1] -= pull_distance\n    goto_pose(pull_pos, grasp_quat)\n    open_gripper()\n    retreat_pos = pull_pos.copy()\n    retreat_pos[2] += 0.2\n    goto_pose(retreat_pos, grasp_quat)\n    return True",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language",
+      "goto_pose",
+      "open_gripper",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "A drawer handle is visible and faces left (-Y)."
+    ],
+    "effects": [
+      "The drawer is pulled open along the -Y axis and the gripper retreats safely."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the failure where a side-grasp slipped off the handle due to incorrect orientation, by using a reliable top-down approach with fingers opening along Y to straddle the X-aligned handle.",
+    "learned_iteration": 50,
+    "skill_id": "learned_open_drawer_facing_left_top_down",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  }
+]

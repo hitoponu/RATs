@@ -1,0 +1,1273 @@
+[
+  {
+    "skill_id": "primitive_get_observation",
+    "name": "get_observation",
+    "description": "Get nested observation dict. Access per-camera keys obs['agentview']['images']['rgb'|'depth'], obs['agentview']['intrinsics'], obs['agentview']['pose_mat'] (camera-to-world 4x4); same layout under 'robot0_eye_in_hand'. Also obs['robot_cartesian_pos'] (8,), obs['robot_joint_pos'] (8,), obs['robot_base_pose'] (7,). Do NOT read obs['rgb'] / obs['depth'] / obs['intrinsics'] / obs['extrinsics'] \u2014 those keys do not exist.",
+    "code": "# Built-in MolmoSpaces primitive: get_observation() -> dict\n# obs['agentview']['images']['rgb']      -> ndarray(H,W,3) uint8\n# obs['agentview']['images']['depth']    -> ndarray(H,W) float32\n# obs['agentview']['intrinsics']         -> ndarray(3,3) float64\n# obs['agentview']['pose_mat']           -> ndarray(4,4) float64 (camera-to-world)\n# (same layout under 'robot0_eye_in_hand')\n# obs['robot_cartesian_pos']             -> ndarray(8,)  [x,y,z, qw,qx,qy,qz, gripper]\n# obs['robot_joint_pos']                 -> ndarray(8,)\n# obs['robot_base_pose']                 -> ndarray(7,)  [x,y,z, qw,qx,qy,qz]",
+    "api_primitives_used": [
+      "get_observation"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_segment_sam3_text_prompt",
+    "name": "segment_sam3_text_prompt",
+    "description": "Run SAM3 segmentation on an RGB image conditioned on a text prompt. Returns masks with score and box.",
+    "code": "# Built-in MolmoSpaces primitive: segment_sam3_text_prompt(rgb: ndarray(H,W,3), text_prompt: str) -> list[dict]",
+    "api_primitives_used": [
+      "segment_sam3_text_prompt"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_segment_sam3_point_prompt",
+    "name": "segment_sam3_point_prompt",
+    "description": "Run SAM3 segmentation with a point prompt. Returns masks with score.",
+    "code": "# Built-in MolmoSpaces primitive: segment_sam3_point_prompt(rgb: ndarray(H,W,3), point_coords: tuple(x,y)) -> list[dict]",
+    "api_primitives_used": [
+      "segment_sam3_point_prompt"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_point_prompt_molmo",
+    "name": "point_prompt_molmo",
+    "description": "Use Molmo to localize an object description in the image. Returns dict mapping text prompt to (x, y), or (None, None).",
+    "code": "# Built-in MolmoSpaces primitive: point_prompt_molmo(image: ndarray(H,W,3), text_prompt: str) -> dict[str, tuple]",
+    "api_primitives_used": [
+      "point_prompt_molmo"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_vlm_verify",
+    "name": "vlm_verify",
+    "description": "Use a VLM to verify visual evidence. Primary use: validate that a SAM3 mask actually corresponds to the target object before converting the mask to world points.",
+    "code": "# Built-in MolmoSpaces primitive: vlm_verify(rgb: ndarray(H,W,3), target_description: str, mask: ndarray(H,W)|dict|None = None, *, question: str|None = None, target_pixel: tuple[int,int]|None = None, crop_padding: int = 32) -> dict",
+    "api_primitives_used": [
+      "vlm_verify"
+    ],
+    "preconditions": [],
+    "effects": [
+      "visual_evidence_verified"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_plan_grasp_from_point_clouds",
+    "name": "plan_grasp_from_point_clouds",
+    "description": "Plan grasp candidates using Contact-GraspNet from a full scene point cloud and segmented object point cloud in world frame.",
+    "code": "# Built-in MolmoSpaces primitive: plan_grasp_from_point_clouds(pc_full: ndarray(N,3), pc_segment: ndarray(M,3)) -> tuple[ndarray(K,4,4), ndarray(K,)]",
+    "api_primitives_used": [
+      "plan_grasp_from_point_clouds"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_solve_ik",
+    "name": "solve_ik",
+    "description": "Solve inverse kinematics for the Franka arm. Includes orientation fallbacks if the requested quaternion is bad.",
+    "code": "# Built-in MolmoSpaces primitive: solve_ik(position: ndarray(3,), quaternion_wxyz: ndarray(4,)) -> ndarray(7,)",
+    "api_primitives_used": [
+      "solve_ik"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_move_to_joints",
+    "name": "move_to_joints",
+    "description": "Move the robot to a 7-DOF joint configuration in a blocking manner.",
+    "code": "# Built-in MolmoSpaces primitive: move_to_joints(joints: ndarray(7,)) -> None",
+    "api_primitives_used": [
+      "move_to_joints"
+    ],
+    "preconditions": [],
+    "effects": [
+      "robot_moved"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_goto_pose",
+    "name": "goto_pose",
+    "description": "Move the end-effector to a target pose. Use separate explicit goto_pose calls for pregrasp, approach, retreat, or lift waypoints.",
+    "code": "# Built-in MolmoSpaces primitive: goto_pose(position: ndarray(3,), quaternion_wxyz: ndarray(4,)) -> None",
+    "api_primitives_used": [
+      "goto_pose"
+    ],
+    "preconditions": [],
+    "effects": [
+      "robot_moved"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_open_gripper",
+    "name": "open_gripper",
+    "description": "Open the Franka gripper fully.",
+    "code": "# Built-in MolmoSpaces primitive: open_gripper() -> None",
+    "api_primitives_used": [
+      "open_gripper"
+    ],
+    "preconditions": [],
+    "effects": [
+      "gripper_open"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_close_gripper",
+    "name": "close_gripper",
+    "description": "Close the Franka gripper fully.",
+    "code": "# Built-in MolmoSpaces primitive: close_gripper() -> None",
+    "api_primitives_used": [
+      "close_gripper"
+    ],
+    "preconditions": [],
+    "effects": [
+      "gripper_closed"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_goto_home_joint_position",
+    "name": "goto_home_joint_position",
+    "description": "Move to the home joint configuration to get a stable, broad camera view before re-localization.",
+    "code": "# Built-in MolmoSpaces primitive: goto_home_joint_position() -> None",
+    "api_primitives_used": [
+      "goto_home_joint_position"
+    ],
+    "preconditions": [],
+    "effects": [
+      "robot_at_home"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_select_top_down_grasp",
+    "name": "select_top_down_grasp",
+    "description": "Pick the best near-top-down grasp from grasp matrices and scores. Returns (grasp_4x4_world|None, score). Pass world_from_grasp_frame=None (or omit) when grasps came from plan_grasp_from_point_clouds(world_pc_full, world_pc_segment) \u2014 they're already in world frame. Pass camera_pose_mat ONLY when grasps came from plan_grasp(depth, intrinsics, seg) which returns camera-frame grasps. apply_grasp_yaw=True (default) post-applies the +90 deg yaw used by sample_grasp_pose so the gripper closes across the approach.",
+    "code": "# Built-in MolmoSpaces skill helper:\n# select_top_down_grasp(grasps, scores,\n#                       world_from_grasp_frame=None,  # None == identity (world-frame grasps)\n#                       vertical_threshold=0.8,\n#                       apply_grasp_yaw=True) -> tuple[grasp_4x4|None, score]",
+    "api_primitives_used": [
+      "select_top_down_grasp"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_molmospaces_nonpriv_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "name": "localize_object_with_molmo_sam3",
+    "description": "Localizes an object in the agentview using Molmo for point prompting and SAM3 for segmentation, returning its mean 3D world position.",
+    "code": "def localize_object_with_molmo_sam3(object_name: str) -> np.ndarray:\n    obs = get_observation()\n    rgb = obs[\"agentview\"][\"images\"][\"rgb\"]\n    depth = obs[\"agentview\"][\"images\"][\"depth\"]\n    K = obs[\"agentview\"][\"intrinsics\"]\n    T = obs[\"agentview\"][\"pose_mat\"]\n\n    pt = point_prompt_molmo(rgb, object_name)\n    u, v = pt.get(object_name, (None, None))\n    if u is None:\n        return None\n\n    masks = segment_sam3_point_prompt(rgb, (u, v))\n    if len(masks) == 0:\n        return None\n\n    valid_mask = masks[0][\"mask\"]\n    pts = mask_to_world_points(valid_mask, depth, K, T)\n    if len(pts) == 0:\n        return None\n\n    return pts.mean(axis=0)",
+    "api_primitives_used": [
+      "get_observation",
+      "point_prompt_molmo",
+      "segment_sam3_point_prompt",
+      "mask_to_world_points"
+    ],
+    "preconditions": [
+      "Object is visible in the agentview camera."
+    ],
+    "effects": [
+      "None (purely observational)."
+    ],
+    "source_task": "molmospaces:playtime:lift:5125:objanightvisionscope_060a8c828d7a48789fbade22b83a2f15_1_0_2:e6b21e3d",
+    "learned_iteration": 1,
+    "skill_id": "learned_localize_object_with_molmo_sam3",
+    "is_primitive": false,
+    "usage_count": 47,
+    "success_count": 15,
+    "success_rate": 0.3191489361702128,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "plan_top_down_grasp_at_wrist",
+    "description": "Moves the wrist camera to hover over a target position, uses Molmo and SAM3 to segment the object, and plans a top-down grasp from the resulting point clouds.",
+    "code": "def plan_top_down_grasp_at_wrist(object_name: str, target_world_pos: np.ndarray, hover_height: float = 0.15) -> np.ndarray:\n    wrist_obs = inspect_at_wrist(target_world_pos, hover_height=hover_height)\n    if not wrist_obs[\"ok\"]:\n        return None\n\n    w_rgb = wrist_obs[\"wrist\"][\"rgb\"]\n    w_depth = wrist_obs[\"wrist\"][\"depth\"]\n    w_K = wrist_obs[\"wrist\"][\"intrinsics\"]\n    w_T = wrist_obs[\"wrist\"][\"pose_mat\"]\n\n    pt_w = point_prompt_molmo(w_rgb, object_name)\n    u_w, v_w = pt_w.get(object_name, (None, None))\n    if u_w is None:\n        return None\n\n    w_masks = segment_sam3_point_prompt(w_rgb, (u_w, v_w))\n    if len(w_masks) == 0:\n        return None\n\n    w_valid_mask = w_masks[0][\"mask\"]\n    pc_segment = mask_to_world_points(w_valid_mask, w_depth, w_K, w_T)\n    \n    full_mask = (w_depth > 0) & (w_depth < 2.0)\n    pc_full = mask_to_world_points(full_mask, w_depth, w_K, w_T)\n\n    if len(pc_segment) == 0 or len(pc_full) == 0:\n        return None\n\n    pc_full = subsample_point_cloud(pc_full, 10000)\n    pc_segment = subsample_point_cloud(pc_segment, 5000)\n\n    grasps, scores = plan_grasp_from_point_clouds(pc_full, pc_segment, object_name)\n    if len(grasps) == 0:\n        return None\n\n    best_grasp, best_score = select_top_down_grasp(grasps, scores)\n    return best_grasp",
+    "api_primitives_used": [
+      "inspect_at_wrist",
+      "point_prompt_molmo",
+      "segment_sam3_point_prompt",
+      "mask_to_world_points",
+      "subsample_point_cloud",
+      "plan_grasp_from_point_clouds",
+      "select_top_down_grasp"
+    ],
+    "preconditions": [
+      "Target position is reachable by the robot arm.",
+      "Object is visible from the hover position."
+    ],
+    "effects": [
+      "Robot arm moves to the hover position above the target."
+    ],
+    "source_task": "molmospaces:playtime:lift:5125:objanightvisionscope_060a8c828d7a48789fbade22b83a2f15_1_0_2:e6b21e3d",
+    "learned_iteration": 1,
+    "skill_id": "learned_plan_top_down_grasp_at_wrist",
+    "is_primitive": false,
+    "usage_count": 26,
+    "success_count": 6,
+    "success_rate": 0.23076923076923078,
+    "tier": "deprecated",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "deprecated_at_iteration": 25,
+    "deprecated_by": "molmospaces_attempt_code",
+    "deprecated_reason": "usage_count=25, success_count=5, success_rate=0.200"
+  },
+  {
+    "name": "get_axis_aligned_pull_direction",
+    "description": "Computes the axis-aligned pull direction (e.g., [1, 0, 0] or [0, -1, 0]) pointing from the target position towards the robot base, useful for determining which way a drawer or cabinet door opens.",
+    "code": "def get_axis_aligned_pull_direction(target_pos: np.ndarray) -> np.ndarray:\n    import numpy as np\n    obs = get_observation()\n    robot_pos = obs[\"robot_base_pose\"][:3]\n    direction = robot_pos - target_pos\n    direction[2] = 0\n    axis_idx = np.argmax(np.abs(direction))\n    pull_dir = np.zeros(3)\n    pull_dir[axis_idx] = np.sign(direction[axis_idx]) if direction[axis_idx] != 0 else 1.0\n    return pull_dir",
+    "api_primitives_used": [
+      "get_observation"
+    ],
+    "preconditions": [
+      "Target position is known."
+    ],
+    "effects": [
+      "Returns a 3D vector."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses Attempt 1's failure where the LLM failed to deduce the correct approach direction from the scene layout. This heuristic automatically determines the correct pull direction based on the robot's position relative to the handle.",
+    "learned_iteration": 2,
+    "skill_id": "learned_get_axis_aligned_pull_direction",
+    "usage_count": 30,
+    "success_count": 10,
+    "success_rate": 0.3333333333333333,
+    "tier": "verified",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "select_grasp_for_pulling",
+    "description": "Selects the highest-scoring grasp for pulling a handle, ensuring the approach opposes the pull direction and automatically applying grasp yaw to match the requested finger orientation.",
+    "code": "def select_grasp_for_pulling(grasps: np.ndarray, scores: np.ndarray, pull_direction: np.ndarray, vertical_fingers: bool, world_from_grasp_frame: np.ndarray | None = None) -> tuple[np.ndarray | None, float]:\n    import numpy as np\n    pull_dir = np.array(pull_direction, dtype=float)\n    norm = np.linalg.norm(pull_dir)\n    if norm > 0:\n        pull_dir = pull_dir / norm\n    best_grasp = None\n    best_score = -float('inf')\n    yaw_mat = np.eye(4)\n    yaw_mat[:3, :3] = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])\n    for g, s in zip(grasps, scores):\n        g_world = world_from_grasp_frame @ g if world_from_grasp_frame is not None else g\n        approach_axis = g_world[:3, 2]\n        if np.dot(approach_axis, pull_dir) < -0.5:\n            if abs(pull_dir[2]) < 0.5 and abs(approach_axis[2]) > 0.6:\n                continue\n            z_comp_x = abs(g_world[2, 0])\n            z_comp_y = abs(g_world[2, 1])\n            if vertical_fingers:\n                if z_comp_x > z_comp_y:\n                    if z_comp_x > 0.5 and s > best_score:\n                        best_score, best_grasp = s, g_world\n                else:\n                    if z_comp_y > 0.5 and s > best_score:\n                        best_score, best_grasp = s, g_world @ yaw_mat\n            else:\n                if z_comp_x < z_comp_y:\n                    if z_comp_x < 0.5 and s > best_score:\n                        best_score, best_grasp = s, g_world\n                else:\n                    if z_comp_y < 0.5 and s > best_score:\n                        best_score, best_grasp = s, g_world @ yaw_mat\n    return best_grasp, best_score",
+    "api_primitives_used": [],
+    "preconditions": [
+      "Grasp candidates and scores are available."
+    ],
+    "effects": [
+      "Returns the best grasp matrix and its score."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses Attempt 1 (approaching from the wrong side) by filtering for approach alignment, and Attempt 2 (horizontal fingers on a horizontal handle) by automatically checking the X and Y axes and applying yaw only when necessary to achieve the requested finger orientation.",
+    "learned_iteration": 2,
+    "skill_id": "learned_select_grasp_for_pulling",
+    "usage_count": 5,
+    "success_count": 1,
+    "success_rate": 0.2,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "execute_top_down_grasp_and_lift",
+    "description": "Executes a top-down grasp and lift sequence given a target 3D position. Approaches from above, descends to a grasp offset, closes the gripper, and lifts.",
+    "code": "def execute_top_down_grasp_and_lift(target_pos: np.ndarray, grasp_z_offset: float = 0.035, pre_grasp_height: float = 0.10, lift_height: float = 0.20) -> dict[str, np.ndarray]:\n    open_gripper()\n    quat = np.array([0.0, 1.0, 0.0, 0.0])\n    pre_grasp_pos = target_pos + np.array([0.0, 0.0, pre_grasp_height])\n    goto_pose(pre_grasp_pos, quat)\n    grasp_pos = target_pos + np.array([0.0, 0.0, grasp_z_offset])\n    goto_pose(grasp_pos, quat)\n    close_gripper()\n    lift_pos = target_pos + np.array([0.0, 0.0, lift_height])\n    goto_pose(lift_pos, quat)\n    return {\"grasp_pos\": grasp_pos, \"lift_pos\": lift_pos}",
+    "api_primitives_used": [
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "gripper empty",
+      "target_pos is reachable from above"
+    ],
+    "effects": [
+      "object at target_pos is grasped and lifted"
+    ],
+    "source_task": "molmospaces:playtime:lift:4928:objainsect_a8a437cfa05f400c853cebfa4cf8c2c9_1_0_2:a5fc41b7",
+    "learned_iteration": 3,
+    "skill_id": "learned_execute_top_down_grasp_and_lift",
+    "is_primitive": false,
+    "usage_count": 12,
+    "success_count": 5,
+    "success_rate": 0.4166666666666667,
+    "tier": "verified",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "push_surface_inward",
+    "description": "Closes the gripper and pushes a surface inward (opposite to its outward direction) to close a drawer or door, catching exceptions to handle expected stalls when fully closed.",
+    "code": "def push_surface_inward(target_pos: np.ndarray, pull_dir: np.ndarray, push_distance: float = 0.10, approach_distance: float = 0.15) -> bool:\n    R_top_down = np.array([\n        [1, 0, 0],\n        [0, -1, 0],\n        [0, 0, -1]\n    ])\n    quat = rotation_matrix_to_quaternion(R_top_down)\n    close_gripper()\n    start_pos = target_pos + approach_distance * pull_dir\n    push_pos = target_pos - push_distance * pull_dir\n    goto_pose(start_pos, quat)\n    try:\n        goto_pose(push_pos, quat)\n    except Exception:\n        pass\n    try:\n        goto_pose(start_pos, quat)\n    except Exception:\n        pass\n    return True",
+    "api_primitives_used": [
+      "rotation_matrix_to_quaternion",
+      "close_gripper",
+      "goto_pose"
+    ],
+    "preconditions": [
+      "Target surface is reachable.",
+      "Path from approach position to push position is clear of obstacles."
+    ],
+    "effects": [
+      "Gripper is closed.",
+      "Robot pushes the surface inward, potentially closing a drawer or door."
+    ],
+    "source_task": "molmospaces:playtime:close:218:chestofdrawers_00cb676ade118a73800fe1e4c94d1444_1_0_0:c44bf3a2",
+    "learned_iteration": 6,
+    "skill_id": "learned_push_surface_inward",
+    "is_primitive": false,
+    "usage_count": 2,
+    "success_count": 2,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "execute_grasp_from_transform",
+    "description": "Executes a grasp given a 4x4 grasp pose transform, applying a Z-offset to avoid collisions, followed by a vertical lift.",
+    "code": "def execute_grasp_from_transform(grasp_pose: np.ndarray, z_offset: float = 0.03, pre_grasp_z: float = 0.10, lift_z: float = 0.10) -> dict[str, Any]:\n    pos, quat = decompose_transform(grasp_pose)\n    pos[2] += z_offset\n    pre_grasp_pos = pos + np.array([0.0, 0.0, pre_grasp_z])\n    open_gripper()\n    goto_pose(pre_grasp_pos, quat)\n    goto_pose(pos, quat)\n    close_gripper()\n    lift_pos = pos + np.array([0.0, 0.0, lift_z])\n    goto_pose(lift_pos, quat)\n    return {\"grasp_pos\": pos.tolist(), \"lift_pos\": lift_pos.tolist(), \"quat\": quat.tolist()}",
+    "api_primitives_used": [
+      "decompose_transform",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "grasp_pose is reachable",
+      "gripper is empty"
+    ],
+    "effects": [
+      "gripper moves to grasp pose, closes, and lifts the object"
+    ],
+    "source_task": "molmospaces:playtime:pull:4661:objawalkietalkie_8b08a40f337644cb8ceef52be1eb824f_1_0_6:6800011d",
+    "learned_iteration": 12,
+    "skill_id": "learned_execute_grasp_from_transform",
+    "is_primitive": false,
+    "usage_count": 13,
+    "success_count": 3,
+    "success_rate": 0.23076923076923078,
+    "tier": "deprecated",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "deprecated_at_iteration": 17,
+    "deprecated_by": "molmospaces_attempt_code",
+    "deprecated_reason": "usage_count=10, success_count=2, success_rate=0.200"
+  },
+  {
+    "name": "translate_grasped_object_and_release",
+    "description": "Translates a currently grasped object along a specified direction vector by a given distance, releases it, and retreats vertically.",
+    "code": "def translate_grasped_object_and_release(current_pos: np.ndarray, current_quat: np.ndarray, direction: np.ndarray, distance: float = 0.10, retreat_z: float = 0.10) -> dict[str, Any]:\n    target_pos = current_pos + direction * distance\n    goto_pose(target_pos, current_quat)\n    open_gripper()\n    retreat_pos = target_pos + np.array([0.0, 0.0, retreat_z])\n    goto_pose(retreat_pos, current_quat)\n    return {\"target_pos\": target_pos.tolist(), \"retreat_pos\": retreat_pos.tolist()}",
+    "api_primitives_used": [
+      "goto_pose",
+      "open_gripper"
+    ],
+    "preconditions": [
+      "object is currently grasped",
+      "target translation path is collision-free"
+    ],
+    "effects": [
+      "object is moved to the target location and released",
+      "gripper retreats upwards"
+    ],
+    "source_task": "molmospaces:playtime:pull:4661:objawalkietalkie_8b08a40f337644cb8ceef52be1eb824f_1_0_6:6800011d",
+    "learned_iteration": 12,
+    "skill_id": "learned_translate_grasped_object_and_release",
+    "is_primitive": false,
+    "usage_count": 31,
+    "success_count": 8,
+    "success_rate": 0.25806451612903225,
+    "tier": "experimental",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "push_object_closed",
+    "description": "Localizes an open object (like a drawer or door), determines its outward pull direction, and pushes it inward to close it.",
+    "code": "def push_object_closed(object_name: str, push_distance: float = 0.15, approach_distance: float = 0.15) -> bool:\n    pos = localize_object_with_molmo_sam3(object_name)\n    if pos is None:\n        return False\n    pull_dir = get_axis_aligned_pull_direction(pos)\n    if pull_dir is None:\n        return False\n    close_gripper()\n    return push_surface_inward(pos, pull_dir, push_distance=push_distance, approach_distance=approach_distance)",
+    "api_primitives_used": [
+      "close_gripper"
+    ],
+    "preconditions": [
+      "object is partially open",
+      "object is visible in the camera"
+    ],
+    "effects": [
+      "gripper is closed",
+      "object is pushed inward along its axis"
+    ],
+    "source_task": "molmospaces:playtime:close:415:chestofdrawers_665b5f9ef6118c922c09c75638260fde_1_0_0:280548b5",
+    "learned_iteration": 14,
+    "dependent_skills": [
+      "get_axis_aligned_pull_direction",
+      "localize_object_with_molmo_sam3",
+      "push_surface_inward"
+    ],
+    "skill_id": "learned_push_object_closed",
+    "is_primitive": false,
+    "usage_count": 2,
+    "success_count": 2,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "adjust_grasp_to_centroid",
+    "description": "Overrides the X and Y translation of a grasp pose with the object's centroid coordinates and adds a Z-offset to force a center grasp.",
+    "code": "def adjust_grasp_to_centroid(grasp_pose: np.ndarray, centroid: np.ndarray, z_offset: float = 0.02) -> np.ndarray:\n    \"\"\"\n    Overrides the X and Y translation of a grasp pose with the object's centroid coordinates,\n    and adds a Z-offset. This forces the robot to grasp the center of a large object,\n    avoiding unreachable edges that cause kinematic limits.\n    \"\"\"\n    adjusted_grasp = grasp_pose.copy()\n    adjusted_grasp[0, 3] = centroid[0]\n    adjusted_grasp[1, 3] = centroid[1]\n    adjusted_grasp[2, 3] += z_offset\n    return adjusted_grasp",
+    "api_primitives_used": [],
+    "preconditions": [
+      "A valid 4x4 grasp pose matrix.",
+      "A 3D centroid coordinate of the target object."
+    ],
+    "effects": [
+      "Returns a modified 4x4 grasp pose matrix centered on the object in X and Y, with a Z-offset."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses failures where grasping large objects (like a tissue box) at the edge causes kinematic limits or motion aborts, by forcing a center grasp.",
+    "learned_iteration": 15,
+    "skill_id": "learned_adjust_grasp_to_centroid",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "plan_pull_grasp",
+    "description": "Localizes an object, computes its outward pull direction, segments it from the agentview, and plans a 4x4 grasp transform optimized for pulling.",
+    "code": "def plan_pull_grasp(object_name: str, vertical_fingers: bool = True) -> tuple:\n    target_pos = localize_object_with_molmo_sam3(object_name)\n    if target_pos is None:\n        return None, None\n    pull_dir = get_axis_aligned_pull_direction(target_pos)\n    obs = get_observation()\n    rgb = obs[\"agentview\"][\"images\"][\"rgb\"]\n    depth = obs[\"agentview\"][\"images\"][\"depth\"]\n    intrinsics = obs[\"agentview\"][\"intrinsics\"]\n    pose_mat = obs[\"agentview\"][\"pose_mat\"]\n    pts = point_prompt_molmo(rgb, object_name)\n    pt = pts.get(object_name, (None, None))\n    if pt[0] is None:\n        return None, None\n    masks = segment_sam3_point_prompt(rgb, pt)\n    if not masks:\n        return None, None\n    mask = masks[0][\"mask\"]\n    pc_segment = mask_to_world_points(mask, depth, intrinsics, pose_mat)\n    if len(pc_segment) == 0:\n        return None, None\n    pc_cam = depth_to_point_cloud(depth, intrinsics).reshape(-1, 3)\n    pc_world = transform_points(pc_cam, pose_mat)\n    valid = ~np.isnan(pc_world).any(axis=1)\n    pc_full = subsample_point_cloud(pc_world[valid], 20000)\n    grasps, scores = plan_grasp_from_point_clouds(pc_full, pc_segment, label=object_name)\n    if len(grasps) == 0:\n        return None, None\n    best_grasp, best_score = select_grasp_for_pulling(grasps, scores, pull_dir, vertical_fingers=vertical_fingers)\n    if best_grasp is None:\n        return None, None\n    return best_grasp, pull_dir",
+    "api_primitives_used": [
+      "get_observation",
+      "point_prompt_molmo",
+      "segment_sam3_point_prompt",
+      "mask_to_world_points",
+      "depth_to_point_cloud",
+      "transform_points",
+      "subsample_point_cloud",
+      "plan_grasp_from_point_clouds"
+    ],
+    "preconditions": [
+      "The object is visible in the agentview camera.",
+      "The robot arm is not occluding the camera view."
+    ],
+    "effects": [
+      "Computes a valid grasp pose and pull direction for the specified object."
+    ],
+    "source_task": "molmospaces:playtime:pull:313:desk_5c8b5555912035e119af413aaad479b0_1_0_0:2c14a9b1",
+    "learned_iteration": 16,
+    "dependent_skills": [
+      "get_axis_aligned_pull_direction",
+      "localize_object_with_molmo_sam3",
+      "select_grasp_for_pulling"
+    ],
+    "skill_id": "learned_plan_pull_grasp",
+    "is_primitive": false,
+    "usage_count": 8,
+    "success_count": 2,
+    "success_rate": 0.25,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "grasp_and_slide_object",
+    "description": "Plans a pull grasp on an object, executes the grasp with a minimal lift, and translates the object along the pull direction to slide it.",
+    "code": "def grasp_and_slide_object(object_name: str, distance: float = 0.20, z_offset: float = 0.05, lift_z: float = 0.02) -> dict[str, Any]:\n    grasp_plan = plan_pull_grasp(object_name)\n    if grasp_plan is None or grasp_plan[0] is None:\n        return {\"success\": False, \"reason\": \"grasp_planning_failed\"}\n    grasp_pose, pull_direction = grasp_plan\n    execute_res = execute_grasp_from_transform(grasp_pose, z_offset=z_offset, pre_grasp_z=0.15, lift_z=lift_z)\n    if not execute_res.get(\"success\", False):\n        return execute_res\n    obs = get_observation()\n    current_pos = obs[\"robot_cartesian_pos\"][:3]\n    current_quat = obs[\"robot_cartesian_pos\"][3:7]\n    translate_res = translate_grasped_object_and_release(\n        current_pos=current_pos,\n        current_quat=current_quat,\n        direction=pull_direction,\n        distance=distance,\n        retreat_z=0.10\n    )\n    return translate_res",
+    "api_primitives_used": [
+      "plan_pull_grasp",
+      "execute_grasp_from_transform",
+      "get_observation",
+      "translate_grasped_object_and_release"
+    ],
+    "preconditions": [
+      "Object is visible and reachable",
+      "Gripper is empty"
+    ],
+    "effects": [
+      "Object is grasped, lifted slightly, translated along the pull direction, and released"
+    ],
+    "source_task": "molmospaces:playtime:pull:2133:objaflask_54407dcf73f8428e81e9ad7e9881f836_1_0_7:7b34e50b",
+    "learned_iteration": 17,
+    "dependent_skills": [
+      "execute_grasp_from_transform",
+      "plan_pull_grasp",
+      "translate_grasped_object_and_release"
+    ],
+    "skill_id": "learned_grasp_and_slide_object",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "execute_grasp_from_transform__revived_1",
+    "description": "Executes a 6-DoF grasp given a 4x4 transform matrix by approaching linearly along the grasp's Z-axis.",
+    "code": "def execute_grasp_from_transform__revived_1(grasp_pose: np.ndarray, approach_dist: float = 0.15) -> tuple[np.ndarray, np.ndarray]:\n    pos, quat = decompose_transform(grasp_pose)\n    approach_axis = grasp_pose[:3, 2]\n    open_gripper()\n    pre_grasp_pos = pos - approach_dist * approach_axis\n    goto_pose(pre_grasp_pos, quat)\n    goto_pose(pos, quat)\n    close_gripper()\n    return pos, quat",
+    "api_primitives_used": [
+      "decompose_transform",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "gripper is empty",
+      "grasp_pose is kinematically reachable"
+    ],
+    "effects": [
+      "gripper moves to a pre-grasp standoff pose",
+      "gripper moves to the grasp pose",
+      "gripper closes around the target"
+    ],
+    "source_task": "molmospaces:playtime:pull:2196:objawrench_af1e03fb8b2a4bc79e9f774a6c03f248_1_0_2:c608d60c",
+    "learned_iteration": 19,
+    "skill_id": "learned_execute_grasp_from_transform__revived_1",
+    "revived_from": "execute_grasp_from_transform",
+    "revived_reason": "same name as deprecated skill",
+    "usage_count": 21,
+    "success_count": 4,
+    "success_rate": 0.19047619047619047,
+    "tier": "deprecated",
+    "rediscovery_count": 1,
+    "is_primitive": false,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "deprecated_at_iteration": 31,
+    "deprecated_by": "molmospaces_attempt_code",
+    "deprecated_reason": "usage_count=21, success_count=4, success_rate=0.190"
+  },
+  {
+    "name": "compute_horizontal_pull_direction_towards_base",
+    "description": "Computes a normalized horizontal direction vector pointing from an object's position towards the robot base.",
+    "code": "def compute_horizontal_pull_direction_towards_base(object_pos: np.ndarray, robot_base_pos: np.ndarray) -> np.ndarray:\n    pull_direction = robot_base_pos[:3] - object_pos[:3]\n    pull_direction[2] = 0.0\n    return normalize_vector(pull_direction)",
+    "api_primitives_used": [
+      "normalize_vector"
+    ],
+    "preconditions": [
+      "object_pos and robot_base_pos are in the same coordinate frame"
+    ],
+    "effects": [],
+    "source_task": "molmospaces:playtime:pull:2196:objawrench_af1e03fb8b2a4bc79e9f774a6c03f248_1_0_2:c608d60c",
+    "learned_iteration": 19,
+    "skill_id": "learned_compute_horizontal_pull_direction_towards_base",
+    "is_primitive": false,
+    "usage_count": 15,
+    "success_count": 4,
+    "success_rate": 0.26666666666666666,
+    "tier": "deprecated",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "duplicate_of": "get_axis_aligned_pull_direction",
+    "deprecated_at_iteration": 50,
+    "deprecated_by": "skill_curator",
+    "curator_reason": "Both compute a horizontal direction from an object toward the robot base. get_axis_aligned_pull_direction is verified tier, has higher success count (6 vs 4), and is more self-contained (fetches robot base internally). compute_horizontal_pull_direction_towards_base is a simpler variant that normalizes without axis-aligning, but they serve the same planning purpose and the axis-aligned version is t"
+  },
+  {
+    "name": "plan_vlm_verified_manual_grasp",
+    "description": "Localizes an object using Molmo, SAM3, and VLM verification, computes its centroid, and constructs a manual 4x4 grasp pose using specified approach and closing axes.",
+    "code": "def plan_vlm_verified_manual_grasp(target_name: str, approach_axis: tuple[float, float, float] = (0.0, -1.0, 0.0), closing_axis: tuple[float, float, float] = (0.0, 0.0, 1.0), offset_dist: float = 0.04) -> np.ndarray:\n    obs = get_observation()\n    rgb = obs[\"agentview\"][\"images\"][\"rgb\"]\n    depth = obs[\"agentview\"][\"images\"][\"depth\"]\n    intrinsics = obs[\"agentview\"][\"intrinsics\"]\n    pose_mat = obs[\"agentview\"][\"pose_mat\"]\n    \n    pts = point_prompt_molmo(rgb, target_name)\n    pt = pts.get(target_name, (None, None))\n    if pt[0] is None:\n        return None\n        \n    masks = segment_sam3_point_prompt(rgb, pt)\n    if not masks:\n        return None\n        \n    best_mask = None\n    for cand in masks[:3]:\n        v = vlm_verify(rgb, target_name, mask=cand[\"mask\"])\n        if v.get(\"verified\"):\n            best_mask = cand[\"mask\"]\n            break\n            \n    if best_mask is None:\n        return None\n    \n    pc_segment = mask_to_world_points(best_mask, depth, intrinsics, pose_mat)\n    if len(pc_segment) == 0:\n        return None\n        \n    centroid = np.mean(pc_segment, axis=0)\n    \n    z_axis = np.array(approach_axis, dtype=float)\n    if np.linalg.norm(z_axis) < 1e-6:\n        z_axis = np.array([0.0, 0.0, 1.0])\n    z_axis = z_axis / np.linalg.norm(z_axis)\n    \n    y_axis = np.array(closing_axis, dtype=float)\n    if np.linalg.norm(y_axis) < 1e-6:\n        y_axis = np.array([0.0, 1.0, 0.0])\n    y_axis = y_axis / np.linalg.norm(y_axis)\n    \n    x_axis = np.cross(y_axis, z_axis)\n    if np.linalg.norm(x_axis) < 1e-6:\n        x_axis = np.array([1.0, 0.0, 0.0])\n    x_axis = x_axis / np.linalg.norm(x_axis)\n    \n    y_axis = np.cross(z_axis, x_axis)\n    \n    grasp_pose = np.eye(4)\n    grasp_pose[:3, 0] = x_axis\n    grasp_pose[:3, 1] = y_axis\n    grasp_pose[:3, 2] = z_axis\n    grasp_pose[:3, 3] = centroid - z_axis * offset_dist\n    \n    return grasp_pose",
+    "api_primitives_used": [
+      "get_observation",
+      "point_prompt_molmo",
+      "segment_sam3_point_prompt",
+      "vlm_verify",
+      "mask_to_world_points"
+    ],
+    "preconditions": [
+      "The target object is visible in the agentview camera."
+    ],
+    "effects": [
+      "Plans a manual grasp pose verified by a VLM."
+    ],
+    "source_task": "molmospaces:playtime:pull:224:stand_5d910c095b61a7c9e998319f1524ed79_1_0_0:3e1990b7",
+    "learned_iteration": 20,
+    "skill_id": "learned_plan_vlm_verified_manual_grasp",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "localize_and_verify_object_centroid",
+    "description": "Localizes an object using Molmo and SAM3, and uses a VLM to verify the segmentation masks, returning the 3D centroid of the verified object.",
+    "code": "def localize_and_verify_object_centroid(target_name: str) -> np.ndarray:\n    obs = get_observation()\n    rgb = obs[\"agentview\"][\"images\"][\"rgb\"]\n    depth = obs[\"agentview\"][\"images\"][\"depth\"]\n    intrinsics = obs[\"agentview\"][\"intrinsics\"]\n    pose_mat = obs[\"agentview\"][\"pose_mat\"]\n    \n    pts = point_prompt_molmo(rgb, target_name)\n    pt = pts.get(target_name, (None, None))\n    if pt[0] is None:\n        return None\n        \n    masks = segment_sam3_point_prompt(rgb, pt)\n    if not masks:\n        return None\n        \n    best_mask = None\n    for cand in masks[:3]:\n        v = vlm_verify(rgb, target_name, mask=cand[\"mask\"])\n        if v.get(\"verified\"):\n            best_mask = cand[\"mask\"]\n            break\n            \n    if best_mask is None:\n        return None\n    \n    pc_segment = mask_to_world_points(best_mask, depth, intrinsics, pose_mat)\n    if len(pc_segment) == 0:\n        return None\n        \n    centroid = np.mean(pc_segment, axis=0)\n    return centroid",
+    "api_primitives_used": [
+      "get_observation",
+      "point_prompt_molmo",
+      "segment_sam3_point_prompt",
+      "vlm_verify",
+      "mask_to_world_points"
+    ],
+    "preconditions": [
+      "The target object is visible in the agentview camera."
+    ],
+    "effects": [
+      "Computes the 3D centroid of the target object."
+    ],
+    "source_task": "molmospaces:playtime:pull:224:stand_5d910c095b61a7c9e998319f1524ed79_1_0_0:3e1990b7",
+    "learned_iteration": 20,
+    "skill_id": "learned_localize_and_verify_object_centroid",
+    "is_primitive": false,
+    "usage_count": 10,
+    "success_count": 4,
+    "success_rate": 0.4,
+    "tier": "deprecated",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "duplicate_of": "localize_and_verify_object_point_cloud",
+    "deprecated_at_iteration": 50,
+    "deprecated_by": "skill_curator",
+    "curator_reason": "localize_and_verify_object_centroid does exactly the same thing as localize_and_verify_object_point_cloud (Molmo + SAM3 + VLM verify + mask_to_world_points) but returns np.mean(pc) instead of the full point cloud. The canonical has higher usage (19 vs 10) and higher success (7 vs 4), is verified tier, and is strictly more general (returning the full point cloud from which a centroid can trivially "
+  },
+  {
+    "name": "construct_top_down_grasp_at_position",
+    "description": "Constructs a 4x4 top-down grasp transform at a specific 3D position with an optional Z offset, useful for bypassing noisy point cloud grasp planning.",
+    "code": "def construct_top_down_grasp_at_position(position: np.ndarray, z_offset: float = 0.0) -> np.ndarray:\n    \"\"\"\n    Constructs a 4x4 top-down grasp transform at the given 3D position.\n    \n    Args:\n        position: (3,) world-frame position (e.g., object centroid).\n        z_offset: Vertical offset to add to the position (meters).\n        \n    Returns:\n        (4, 4) grasp transform matrix.\n    \"\"\"\n    import numpy as np\n    grasp_pose = np.eye(4)\n    # Standard top-down rotation: approach along -Z in world frame\n    grasp_pose[:3, :3] = np.array([\n        [1.0, 0.0, 0.0],\n        [0.0, -1.0, 0.0],\n        [0.0, 0.0, -1.0]\n    ])\n    grasp_pose[:3, 3] = position + np.array([0.0, 0.0, z_offset])\n    return grasp_pose",
+    "api_primitives_used": [],
+    "preconditions": [
+      "A 3D position (e.g., object centroid) is known."
+    ],
+    "effects": [
+      "Returns a 4x4 transform matrix for a top-down grasp."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Simplifies manual grasp construction and makes it easy to apply a precise Z offset (like 0.08m for a flask neck) without risking matrix math errors in the main script. This avoids relying on noisy point cloud grasp planners for objects with tricky geometry.",
+    "learned_iteration": 24,
+    "skill_id": "learned_construct_top_down_grasp_at_position",
+    "usage_count": 4,
+    "success_count": 2,
+    "success_rate": 0.5,
+    "tier": "deprecated",
+    "rediscovery_count": 3,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "duplicate_of": "get_top_down_grasp_from_obb",
+    "deprecated_at_iteration": 50,
+    "deprecated_by": "skill_curator",
+    "curator_reason": "Both construct a 4x4 top-down grasp matrix. construct_top_down_grasp_at_position uses a fixed rotation and a position+z_offset; get_top_down_grasp_from_obb computes the same top-down rotation but aligns the closing axis across the OBB minor axis. Neither has been used successfully (both 0/0). get_top_down_grasp_from_obb is more general (uses object geometry to orient closing direction) so it's the"
+  },
+  {
+    "name": "slide_grasped_object_and_release",
+    "description": "Slightly lifts a grasped object to avoid friction, translates it along a specified direction, lowers it back to the original height, and releases it.",
+    "code": "def slide_grasped_object_and_release(direction: np.ndarray, distance: float, lift_height: float = 0.02, retreat_height: float = 0.10) -> None:\n    obs = get_observation()\n    current_pos = obs[\"robot_cartesian_pos\"][:3]\n    current_quat = obs[\"robot_cartesian_pos\"][3:7]\n    \n    # Lift slightly to avoid dragging friction\n    lift_pos = current_pos.copy()\n    lift_pos[2] += lift_height\n    goto_pose(lift_pos, current_quat)\n    \n    # Translate horizontally\n    target_pos = lift_pos.copy()\n    target_pos += direction * distance\n    goto_pose(target_pos, current_quat)\n    \n    # Lower back down\n    final_pos = target_pos.copy()\n    final_pos[2] -= lift_height\n    goto_pose(final_pos, current_quat)\n    \n    # Release\n    open_gripper()\n    \n    # Retreat\n    retreat_pos = final_pos.copy()\n    retreat_pos[2] += retreat_height\n    goto_pose(retreat_pos, current_quat)",
+    "api_primitives_used": [
+      "get_observation",
+      "goto_pose",
+      "open_gripper"
+    ],
+    "preconditions": [
+      "An object is currently grasped by the gripper.",
+      "The direction vector is normalized."
+    ],
+    "effects": [
+      "The grasped object is moved along the surface by the specified distance.",
+      "The gripper is opened and retreated above the object."
+    ],
+    "source_task": "molmospaces:playtime:pull:1216:objashoe_fb94ce07ce5b4af9acb2d54a262886ea_1_0_2:452b2aea",
+    "learned_iteration": 25,
+    "skill_id": "learned_slide_grasped_object_and_release",
+    "is_primitive": false,
+    "usage_count": 4,
+    "success_count": 2,
+    "success_rate": 0.5,
+    "tier": "deprecated",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "duplicate_of": "translate_grasped_object_and_release",
+    "deprecated_at_iteration": 50,
+    "deprecated_by": "skill_curator",
+    "curator_reason": "Both translate a grasped object along a direction and release. slide_grasped_object_and_release adds a small lift before translation, but translate_grasped_object_and_release has far higher usage (27 vs 4) and success (6 vs 2), and is already the canonical used by grasp_and_slide_object. The slight lift is a minor variant not warranting a separate skill."
+  },
+  {
+    "name": "get_highest_scoring_grasp",
+    "description": "Selects the highest-scoring grasp from a list of candidates without strict directional filtering, optionally applying the standard 90-degree grasp yaw.",
+    "code": "def get_highest_scoring_grasp(grasps: np.ndarray, scores: np.ndarray, apply_grasp_yaw: bool = True) -> np.ndarray:\n    if len(grasps) == 0:\n        return None\n    best_idx = np.argmax(scores)\n    best_grasp = grasps[best_idx].copy()\n    if apply_grasp_yaw:\n        yaw_mat = np.eye(4)\n        yaw_mat[:3, :3] = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])\n        best_grasp = best_grasp @ yaw_mat\n    return best_grasp",
+    "api_primitives_used": [],
+    "preconditions": [
+      "A list of grasp candidates and their scores is available."
+    ],
+    "effects": [
+      "Returns the highest-scoring grasp transform."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses the failure where select_top_down_grasp rejects all candidates for flat objects by providing a fallback that simply takes the best grasp and applies the necessary yaw rotation.",
+    "learned_iteration": 26,
+    "skill_id": "learned_get_highest_scoring_grasp",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "push_point_cloud_away_from_base",
+    "description": "Finds the point on an object's point cloud closest to the robot base, approaches it with a closed gripper, and pushes the object horizontally away from the robot.",
+    "code": "def push_point_cloud_away_from_base(pc_segment: np.ndarray, push_distance: float = 0.25, pre_push_offset: float = 0.08, z_offset: float = 0.02) -> dict[str, list[float]]:\n    obs = get_observation()\n    robot_base_pos = obs[\"robot_base_pose\"][:3]\n    \n    # Find the point on the object closest to the robot base in the XY plane\n    diff = pc_segment[:, :2] - robot_base_pos[:2]\n    dist = np.linalg.norm(diff, axis=1)\n    closest_idx = np.argmin(dist)\n    closest_point = pc_segment[closest_idx]\n    \n    # Compute horizontal push direction (away from robot base)\n    direction = closest_point - robot_base_pos\n    direction[2] = 0.0\n    direction = direction / np.linalg.norm(direction)\n    \n    # Close the gripper to form a \"fist\" for pushing\n    close_gripper()\n    \n    # Standard top-down orientation\n    R_top_down = np.array([\n        [1, 0, 0],\n        [0, -1, 0],\n        [0, 0, -1]\n    ])\n    quat = rotation_matrix_to_quaternion(R_top_down)\n    \n    # Pre-push pose: slightly behind the closest point\n    pre_push_pos = closest_point - pre_push_offset * direction\n    pre_push_pos[2] = closest_point[2] + z_offset\n    \n    hover_pos = pre_push_pos.copy()\n    hover_pos[2] += 0.15\n    \n    # Move to hover, then descend to pre-push pose\n    goto_pose(hover_pos, quat)\n    goto_pose(pre_push_pos, quat)\n    \n    # Push horizontally away from the robot\n    push_pos = closest_point + push_distance * direction\n    push_pos[2] = pre_push_pos[2]\n    goto_pose(push_pos, quat)\n    \n    # Retreat upwards\n    retreat_pos = push_pos.copy()\n    retreat_pos[2] += 0.15\n    goto_pose(retreat_pos, quat)\n    \n    return {\"start_push\": pre_push_pos.tolist(), \"end_push\": push_pos.tolist()}",
+    "api_primitives_used": [
+      "get_observation",
+      "close_gripper",
+      "rotation_matrix_to_quaternion",
+      "goto_pose"
+    ],
+    "preconditions": [
+      "Object point cloud is available",
+      "Path away from the robot base is clear of obstacles"
+    ],
+    "effects": [
+      "Gripper is closed",
+      "Object is pushed horizontally away from the robot base"
+    ],
+    "source_task": "molmospaces:playtime:push:3139:objametalrail_9643f982b1f84927af2ecd167a1ce232_1_0_9:5f126252",
+    "learned_iteration": 28,
+    "skill_id": "learned_push_point_cloud_away_from_base",
+    "is_primitive": false,
+    "usage_count": 19,
+    "success_count": 8,
+    "success_rate": 0.42105263157894735,
+    "tier": "verified",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "construct_surface_penetrating_manual_grasp",
+    "description": "Constructs a manual 4x4 grasp pose at a surface centroid, automatically pushing the TCP forward along the approach axis to penetrate the surface.",
+    "code": "def construct_surface_penetrating_manual_grasp(centroid: np.ndarray, approach_axis: np.ndarray, closing_axis: np.ndarray, penetration_depth: float = 0.02) -> np.ndarray:\n    import numpy as np\n    approach = approach_axis / np.linalg.norm(approach_axis)\n    closing = closing_axis / np.linalg.norm(closing_axis)\n    closing = closing - np.dot(closing, approach) * approach\n    closing = closing / np.linalg.norm(closing)\n    x_axis = np.cross(closing, approach)\n    grasp_pose = np.eye(4)\n    grasp_pose[:3, 0] = x_axis\n    grasp_pose[:3, 1] = closing\n    grasp_pose[:3, 2] = approach\n    grasp_pose[:3, 3] = centroid + penetration_depth * approach\n    return grasp_pose",
+    "api_primitives_used": [],
+    "preconditions": [
+      "A 3D centroid of the object's visible surface is available.",
+      "Desired approach and closing axes are known."
+    ],
+    "effects": [
+      "Returns a 4x4 grasp transform with the TCP shifted into the object to ensure fingers fully enclose it."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses Failure 1 where the agent manually shifted the grasp outward (+Y) instead of inward (-Y) because it didn't realize the point cloud centroid is on the front surface. This helper automatically applies the correct penetration shift along the approach axis.",
+    "learned_iteration": 31,
+    "skill_id": "learned_construct_surface_penetrating_manual_grasp",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "deprecated",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "duplicate_of": "plan_vlm_verified_manual_grasp",
+    "deprecated_at_iteration": 50,
+    "deprecated_by": "skill_curator",
+    "curator_reason": "construct_surface_penetrating_manual_grasp constructs a 4x4 grasp from approach_axis + closing_axis + centroid with a penetration offset \u2014 this is a strict subset of what plan_vlm_verified_manual_grasp does (which localizes the object AND constructs the same rotation matrix from approach + closing axes with an offset). The canonical has usage=1, success=1 while the duplicate has usage=0, success=0"
+  },
+  {
+    "name": "localize_and_verify_object_point_cloud",
+    "description": "Localizes an object using Molmo and SAM3, verifies the segmentation with a VLM, and returns its 3D point cloud in the world frame.",
+    "code": "def localize_and_verify_object_point_cloud(object_name: str, camera_name: str = \"agentview\") -> np.ndarray:\n    obs = get_observation()\n    rgb = obs[camera_name][\"images\"][\"rgb\"]\n    depth = obs[camera_name][\"images\"][\"depth\"]\n    intrinsics = obs[camera_name][\"intrinsics\"]\n    pose_mat = obs[camera_name][\"pose_mat\"]\n    \n    pts = point_prompt_molmo(rgb, object_name)\n    pt = pts.get(object_name, (None, None))\n    \n    if pt[0] is not None:\n        masks = segment_sam3_point_prompt(rgb, pt)\n        for cand in masks[:3]:\n            v = vlm_verify(rgb, object_name, mask=cand[\"mask\"])\n            if v.get(\"verified\"):\n                pc_segment = mask_to_world_points(cand[\"mask\"], depth, intrinsics, pose_mat)\n                if len(pc_segment) > 0:\n                    return pc_segment\n    raise ValueError(f\"Failed to localize and verify point cloud for {object_name}\")",
+    "api_primitives_used": [
+      "get_observation",
+      "point_prompt_molmo",
+      "segment_sam3_point_prompt",
+      "vlm_verify",
+      "mask_to_world_points"
+    ],
+    "preconditions": [
+      "The object is visible in the specified camera view."
+    ],
+    "effects": [
+      "None (purely observational)."
+    ],
+    "source_task": "molmospaces:playtime:push:2727:objahandheldtool_73568d0c5842467b973426acd033a47d_1_0_2:5baeafaf",
+    "learned_iteration": 35,
+    "skill_id": "learned_localize_and_verify_object_point_cloud",
+    "is_primitive": false,
+    "usage_count": 29,
+    "success_count": 11,
+    "success_rate": 0.3793103448275862,
+    "tier": "verified",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "get_top_down_grasp_from_obb",
+    "description": "Constructs a strictly top-down grasp pose from an object's oriented bounding box (OBB), aligning the gripper's closing axis across the object's minor axis.",
+    "code": "def get_top_down_grasp_from_obb(obb: dict) -> np.ndarray:\n    import numpy as np\n    \n    center = obb[\"center\"].copy()\n    major_axis = obb[\"R\"][:, 0].copy()\n    \n    # Project major axis to XY plane to ensure strictly top-down approach\n    major_axis[2] = 0.0\n    norm = np.linalg.norm(major_axis)\n    if norm < 1e-5:\n        major_axis = np.array([1.0, 0.0, 0.0])\n    else:\n        major_axis /= norm\n        \n    # Z-axis points straight down\n    z_axis = np.array([0.0, 0.0, -1.0])\n    \n    # Y-axis (closing direction) is orthogonal to Z and X\n    y_axis = np.cross(z_axis, major_axis)\n    y_axis /= np.linalg.norm(y_axis)\n    \n    # Recompute X to ensure perfect orthogonality\n    x_axis = np.cross(y_axis, z_axis)\n    \n    grasp = np.eye(4)\n    grasp[:3, 0] = x_axis\n    grasp[:3, 1] = y_axis\n    grasp[:3, 2] = z_axis\n    grasp[:3, 3] = center\n    \n    return grasp",
+    "api_primitives_used": [],
+    "preconditions": [
+      "An OBB dictionary has been computed using get_oriented_bounding_box_from_3d_points."
+    ],
+    "effects": [
+      "Returns a 4x4 transformation matrix representing a top-down grasp pose aligned with the object's geometry."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses failures where PCA-based OBBs produce tilted Z-axes for flat objects like knives, causing the gripper to approach at an angle and miss. By projecting the major axis to the XY plane and forcing Z straight down, it guarantees a safe vertical approach while correctly aligning the fingers.",
+    "learned_iteration": 40,
+    "skill_id": "learned_get_top_down_grasp_from_obb",
+    "usage_count": 2,
+    "success_count": 1,
+    "success_rate": 0.5,
+    "tier": "deprecated",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "duplicate_of": "construct_top_down_grasp_at_position",
+    "deprecated_at_iteration": 50,
+    "deprecated_by": "skill_curator",
+    "curator_reason": "Both construct top-down 4x4 grasp matrices. construct_top_down_grasp_at_position has usage=2, success=1 while get_top_down_grasp_from_obb has 0/0. The canonical has demonstrated success and a simpler interface. They perform the same fundamental operation (top-down grasp pose construction)."
+  },
+  {
+    "name": "execute_manual_grasp_and_pull",
+    "description": "Constructs a manual grasp orientation using approach and finger axes, executes the grasp at a target position, and pulls the object along a specified axis.",
+    "code": "def execute_manual_grasp_and_pull(target_pos: np.ndarray, approach_axis: np.ndarray, pull_axis: np.ndarray, finger_axis: np.ndarray = np.array([0.0, 0.0, -1.0]), pull_distance: float = 0.15, grasp_offset: float = 0.02) -> None:\n    z_axis = approach_axis / np.linalg.norm(approach_axis)\n    x_axis = finger_axis / np.linalg.norm(finger_axis)\n    y_axis = np.cross(z_axis, x_axis)\n    y_axis = y_axis / np.linalg.norm(y_axis)\n    x_axis = np.cross(y_axis, z_axis)\n    \n    R = np.column_stack((x_axis, y_axis, z_axis))\n    quat = rotation_matrix_to_quaternion(R)\n    \n    grasp_pos = target_pos - grasp_offset * z_axis\n    pre_grasp_pos = grasp_pos - 0.15 * z_axis\n    \n    open_gripper()\n    goto_pose(pre_grasp_pos, quat)\n    goto_pose(grasp_pos, quat)\n    close_gripper()\n    \n    pull_pos = grasp_pos + pull_distance * pull_axis\n    goto_pose(pull_pos, quat)\n    \n    open_gripper()\n    post_pull_pos = pull_pos - 0.10 * z_axis\n    goto_pose(post_pull_pos, quat)",
+    "api_primitives_used": [
+      "open_gripper",
+      "goto_pose",
+      "close_gripper",
+      "rotation_matrix_to_quaternion"
+    ],
+    "preconditions": [
+      "Target position is reachable",
+      "Gripper is empty"
+    ],
+    "effects": [
+      "Object is grasped, pulled along the specified axis, and released"
+    ],
+    "source_task": "molmospaces:playtime:pull:413:door_441e33a349829c8ce6124b78e6ae00ab_1_0_0:b47c472f",
+    "learned_iteration": 41,
+    "skill_id": "learned_execute_manual_grasp_and_pull",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "deprecated",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    },
+    "duplicate_of": "grasp_and_pull_horizontal_handle",
+    "deprecated_at_iteration": 50,
+    "deprecated_by": "skill_curator",
+    "curator_reason": "Both execute the same procedure: construct a gripper orientation from approach/finger axes, open gripper, move to pre-grasp, move to grasp position, close gripper, pull along a direction, open gripper, retreat. grasp_and_pull_horizontal_handle has more success (2 vs 1) and handles edge cases (zero pull_dir fallback). They are functionally identical pull-grasp-execute skills with different paramete"
+  },
+  {
+    "name": "grasp_and_pull_horizontal_handle",
+    "description": "Executes a horizontal grasp at a target position and pulls along a specified direction. Automatically computes a horizontal approach opposite to the pull direction and orients the gripper to close its fingers vertically (ideal for grabbing the top and bottom of drawer handles).",
+    "code": "def grasp_and_pull_horizontal_handle(target_pos: np.ndarray, pull_direction: np.ndarray, pull_distance: float = 0.15) -> None:\n    pull_dir = np.array(pull_direction, dtype=float)\n    pull_dir[2] = 0.0\n    \n    if np.linalg.norm(pull_dir) < 1e-3:\n        obs = get_observation()\n        base_pos = obs[\"robot_base_pose\"][:3]\n        vec = base_pos - target_pos\n        vec[2] = 0.0\n        if np.linalg.norm(vec) < 1e-3:\n            pull_dir = np.array([1.0, 0.0, 0.0])\n        else:\n            axis = np.argmax(np.abs(vec))\n            pull_dir = np.zeros(3)\n            pull_dir[axis] = np.sign(vec[axis])\n    else:\n        pull_dir = pull_dir / np.linalg.norm(pull_dir)\n        \n    approach_axis = -pull_dir\n    \n    z = approach_axis\n    y = np.array([0.0, 0.0, -1.0])\n    x = np.cross(y, z)\n    \n    if np.linalg.norm(x) < 1e-3:\n        x = np.array([1.0, 0.0, 0.0])\n    x = x / np.linalg.norm(x)\n    y = np.cross(z, x)\n    \n    R = np.column_stack((x, y, z))\n    quat = rotation_matrix_to_quaternion(R)\n    \n    open_gripper()\n    \n    pre_grasp = target_pos - 0.15 * z\n    goto_pose(pre_grasp, quat)\n    \n    goto_pose(target_pos, quat)\n    close_gripper()\n    \n    pull_target = target_pos + pull_distance * pull_dir\n    goto_pose(pull_target, quat)\n    \n    open_gripper()\n    goto_pose(pull_target - 0.15 * z, quat)",
+    "api_primitives_used": [
+      "get_observation",
+      "rotation_matrix_to_quaternion",
+      "open_gripper",
+      "goto_pose",
+      "close_gripper"
+    ],
+    "preconditions": [
+      "Target position is reachable.",
+      "Handle is oriented horizontally so vertical finger closing works."
+    ],
+    "effects": [
+      "Gripper approaches horizontally, grasps the handle vertically, pulls it, and releases."
+    ],
+    "source_task": "molmospaces:playtime:pull:323:chestofdrawers_9914e3ee808f971815a2b3c7d5b7d308_1_0_0:c33be826",
+    "learned_iteration": 43,
+    "skill_id": "learned_grasp_and_pull_horizontal_handle",
+    "is_primitive": false,
+    "usage_count": 3,
+    "success_count": 3,
+    "success_rate": 1.0,
+    "tier": "verified",
+    "rediscovery_count": 2,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "filter_grasps_by_approach_axis",
+    "description": "Filters a list of grasps to only include those whose approach axis (local +Z) aligns with a desired world-frame direction.",
+    "code": "def filter_grasps_by_approach_axis(grasps: np.ndarray, scores: np.ndarray, desired_approach_axis: np.ndarray, angle_threshold_deg: float = 45.0) -> tuple[np.ndarray, np.ndarray]:\n    import numpy as np\n    desired_axis = np.array(desired_approach_axis, dtype=float)\n    norm = np.linalg.norm(desired_axis)\n    if norm == 0:\n        return np.array([]), np.array([])\n    desired_axis /= norm\n    cos_threshold = np.cos(np.radians(angle_threshold_deg))\n    valid_indices = []\n    for i, g in enumerate(grasps):\n        approach_axis = g[:3, 2]\n        app_norm = np.linalg.norm(approach_axis)\n        if app_norm > 0:\n            approach_axis = approach_axis / app_norm\n            if np.dot(approach_axis, desired_axis) >= cos_threshold:\n                valid_indices.append(i)\n    if not valid_indices:\n        return np.array([]), np.array([])\n    return grasps[valid_indices], scores[valid_indices]",
+    "api_primitives_used": [],
+    "preconditions": [
+      "A list of grasps and scores from plan_grasp_from_point_clouds."
+    ],
+    "effects": [
+      "Returns filtered grasps and scores."
+    ],
+    "source_task": "proposed_from_failures",
+    "is_primitive": false,
+    "proposed": true,
+    "rationale": "Addresses Failure 2 (approaching from inside the drawer) by allowing the user to easily filter grasps for a specific approach vector (e.g., -X) before selecting the best one, without forcing a specific yaw rotation.",
+    "learned_iteration": 47,
+    "skill_id": "learned_filter_grasps_by_approach_axis",
+    "usage_count": 0,
+    "success_count": 0,
+    "success_rate": 0.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "dependent_skills": [],
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "localize_and_push_object_away",
+    "description": "Localizes an object via VLM-verified point cloud segmentation, closes the gripper to form a pushing fist, and pushes the object away from the robot base. Handles localization failure gracefully.",
+    "code": "def localize_and_push_object_away(object_name: str, push_distance: float = 0.10, pre_push_offset: float = 0.08, z_offset: float = 0.06) -> dict:\n    \"\"\"Localize an object and push it away from the robot base.\"\"\"\n    pc_segment = localize_and_verify_object_point_cloud(object_name)\n    if pc_segment is None or len(pc_segment) == 0:\n        return {\"success\": False, \"reason\": \"localization_failed\"}\n    close_gripper()\n    push_res = push_point_cloud_away_from_base(pc_segment, push_distance=push_distance, pre_push_offset=pre_push_offset, z_offset=z_offset)\n    return {\"success\": True, \"push_result\": push_res, \"num_points\": len(pc_segment)}",
+    "api_primitives_used": [
+      "close_gripper",
+      "localize_and_verify_object_point_cloud",
+      "push_point_cloud_away_from_base"
+    ],
+    "preconditions": [
+      "object visible in agentview camera",
+      "gripper is empty or can be closed for pushing",
+      "object is within reachable workspace"
+    ],
+    "effects": [
+      "object is pushed away from robot base by approximately push_distance meters"
+    ],
+    "source_task": "molmospaces:playtime:push:2392:objaheadphones_7fcd331ea7a641d78bbe83bcb750be96_1_0_4:86496d24",
+    "learned_iteration": 49,
+    "dependent_skills": [
+      "localize_and_verify_object_point_cloud",
+      "push_point_cloud_away_from_base"
+    ],
+    "skill_id": "learned_localize_and_push_object_away",
+    "is_primitive": false,
+    "usage_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "tier": "experimental",
+    "rediscovery_count": 1,
+    "example_code": "",
+    "extraction_rationale": "",
+    "usage_example": "",
+    "params": [],
+    "returns": {
+      "type": "",
+      "shape": "",
+      "description": ""
+    }
+  }
+]

@@ -1,0 +1,37 @@
+{
+  "description": "40-episode held-out EVAL subset of capx_rats_all_combined_core_200_benchmark: 10 each of close / open / pick / pick_and_place. Sampled with random.Random(42).shuffle() over the core_200 benchmark.json, then [:10] per task_type. 5 trials each (--total-trials 5) => 200 rollouts. data_split = test.",
+  "created_at": "2026-05-23T00:00:00+00:00",
+  "corrected_at": "2026-05-24T00:00:00+00:00",
+  "num_episodes": 40,
+  "task_type_counts": {
+    "close": 10,
+    "open": 10,
+    "pick": 10,
+    "pick_and_place": 10
+  },
+  "per_task_trials": 5,
+  "total_rollouts": 200,
+  "selection": {
+    "method": "random.Random(42).shuffle() of core_200 benchmark.json, then [:10] per task_type",
+    "source_benchmark": "rats/benchmarks/molmospaces/capx_rats_all_combined_core_200_benchmark",
+    "source_indices_zero_based": {
+      "close": [54, 59, 61, 66, 69, 73, 75, 76, 79, 95],
+      "open": [0, 1, 3, 9, 13, 15, 19, 29, 41, 42],
+      "pick": [100, 106, 110, 114, 117, 118, 119, 122, 123, 130],
+      "pick_and_place": [155, 163, 167, 172, 174, 177, 178, 187, 191, 198]
+    }
+  },
+  "leaderboard_alignment": {
+    "represented_components": ["Open-v1", "Close-v1", "Pick-v2-classic", "PnP-v2"],
+    "note": "Compact 40-task core eval subset (test split), not the full 9-component All Combined leaderboard evaluation. Deeper upstream provenance (HuggingFace source bundles, per-component source paths) is recorded in the core_200 benchmark's own metadata."
+  },
+  "configs": {
+    "rats_benchmark": "env_configs/molmospaces/rats_molmospaces_eval_core_40.yaml",
+    "capx_baseline": "run_molmospaces_batch --benchmark-dir rats/benchmarks/molmospaces/capx_rats_eval_core_40 --total-trials 5 --models google/gemini-3.1-pro-preview"
+  },
+  "determinism_contract": {
+    "episode_state": "Each selected episode preserves the source benchmark JSON replay spec: scene, robot pose/qpos, object poses, cameras, language, and task state.",
+    "camera_replay": "JsonEvalTaskSampler replays recorded cameras in benchmark mode; avoid injecting a separate eval camera system when exact camera replay is desired."
+  },
+  "history": "Replaces a previously copied-in core_200 (200-episode) metadata that described the wrong benchmark. Authoritative description: README.md in this directory."
+}

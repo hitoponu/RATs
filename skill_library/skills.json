@@ -1,0 +1,470 @@
+[
+  {
+    "skill_id": "primitive_segment_sam3_text_prompt",
+    "name": "segment_sam3_text_prompt",
+    "description": "Run SAM3 segmentation on an RGB image conditioned on a text prompt. Returns list of masks with confidence scores.",
+    "code": "# Built-in CaP-Gym primitive: segment_sam3_text_prompt(rgb: ndarray, text_prompt: str) -> list[dict]",
+    "api_primitives_used": [
+      "segment_sam3_text_prompt"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_segment_sam3_point_prompt",
+    "name": "segment_sam3_point_prompt",
+    "description": "Run SAM3 segmentation with point prompt conditioning. Returns list of segmentation masks.",
+    "code": "# Built-in CaP-Gym primitive: segment_sam3_point_prompt(rgb: ndarray, point_coords: tuple) -> list[dict]",
+    "api_primitives_used": [
+      "segment_sam3_point_prompt"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_point_prompt_molmo",
+    "name": "point_prompt_molmo",
+    "description": "Use Molmo VLM to point to object locations in image given text description. Returns dict of pixel coordinates.",
+    "code": "# Built-in CaP-Gym primitive: point_prompt_molmo(image: ndarray, text_prompt: str) -> dict[str, tuple]",
+    "api_primitives_used": [
+      "point_prompt_molmo"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_object_pose",
+    "name": "get_object_pose",
+    "description": "Get 3D pose of named object via perception pipeline. Returns (position_xyz, quaternion_wxyz, optional bbox_extent).",
+    "code": "# Built-in CaP-Gym primitive: get_object_pose(object_name: str, return_bbox_extent: bool = False) -> tuple[ndarray, ndarray, ndarray | None]",
+    "api_primitives_used": [
+      "get_object_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_sam3_mask",
+    "name": "get_sam3_mask",
+    "description": "Get SAM3 segmentation mask for named object. Returns mask pixel count (sum).",
+    "code": "# Built-in CaP-Gym primitive: get_sam3_mask(object_name: str) -> int",
+    "api_primitives_used": [
+      "get_sam3_mask"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_env_observation",
+    "name": "get_env_observation",
+    "description": "Get current RGB and depth observation from environment camera. Returns (rgb: (H,W,3), depth: (H,W)).",
+    "code": "# Built-in CaP-Gym primitive: get_env_observation() -> tuple[ndarray, ndarray]",
+    "api_primitives_used": [
+      "get_env_observation"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_save_current_observation",
+    "name": "save_current_observation",
+    "description": "Save current observation frame to disk with given name.",
+    "code": "# Built-in CaP-Gym primitive: save_current_observation(name: str) -> None",
+    "api_primitives_used": [
+      "save_current_observation"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_navigate_to_pose",
+    "name": "navigate_to_pose",
+    "description": "Navigate robot base to 2D pose (x, y, yaw).",
+    "code": "# Built-in CaP-Gym primitive: navigate_to_pose(pose_2d: ndarray) -> None",
+    "api_primitives_used": [
+      "navigate_to_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_navigation_pose",
+    "name": "get_navigation_pose",
+    "description": "Compute navigation pose for reaching a table-top object. Returns 2D pose.",
+    "code": "# Built-in CaP-Gym primitive: get_navigation_pose(P_table: ndarray, P_object: ndarray) -> ndarray",
+    "api_primitives_used": [
+      "get_navigation_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_find_object_base_rotate",
+    "name": "find_object_base_rotate",
+    "description": "Rotate base to search for and find named object in the scene.",
+    "code": "# Built-in CaP-Gym primitive: find_object_base_rotate(object_name: str) -> None",
+    "api_primitives_used": [
+      "find_object_base_rotate"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_find_object_torso_rotate",
+    "name": "find_object_torso_rotate",
+    "description": "Rotate torso to search for named object (used if base rotation search fails).",
+    "code": "# Built-in CaP-Gym primitive: find_object_torso_rotate(object_name: str) -> None",
+    "api_primitives_used": [
+      "find_object_torso_rotate"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_move_hand",
+    "name": "move_hand",
+    "description": "Move end-effector hand to target pose. target_pose = (position, quaternion_xyzw). arm: 0=left, 1=right.",
+    "code": "# Built-in CaP-Gym primitive: move_hand(target_pose: tuple, arm: int = 0) -> None",
+    "api_primitives_used": [
+      "move_hand"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_move_to_joint_positions",
+    "name": "move_to_joint_positions",
+    "description": "Move robot to target joint configuration. 28 joints total: base(6) + torso(4) + arms(14) + grippers(4).",
+    "code": "# Built-in CaP-Gym primitive: move_to_joint_positions(target_joint_positions: ndarray, max_steps: int = 20, settle_steps: int = 10) -> None",
+    "api_primitives_used": [
+      "move_to_joint_positions"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_solve_ik",
+    "name": "solve_ik",
+    "description": "Solve inverse kinematics for target end-effector pose. Returns 28-dim joint angles.",
+    "code": "# Built-in CaP-Gym primitive: solve_ik(position: ndarray, quaternion_wxyz: ndarray, arm: int = 0, offset_translation: list = [0.02, 0.0, -0.05]) -> ndarray",
+    "api_primitives_used": [
+      "solve_ik"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_current_eef_pose",
+    "name": "get_current_eef_pose",
+    "description": "Get current end-effector pose. Returns (position_xyz, quaternion_xyzw).",
+    "code": "# Built-in CaP-Gym primitive: get_current_eef_pose(arm: int = 0) -> tuple[ndarray, ndarray]",
+    "api_primitives_used": [
+      "get_current_eef_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_current_joint_positions",
+    "name": "get_current_joint_positions",
+    "description": "Get current joint positions as numpy array.",
+    "code": "# Built-in CaP-Gym primitive: get_current_joint_positions() -> ndarray",
+    "api_primitives_used": [
+      "get_current_joint_positions"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_robot_position",
+    "name": "get_robot_position",
+    "description": "Get robot base position and orientation. Returns (position, quaternion, yaw).",
+    "code": "# Built-in CaP-Gym primitive: get_robot_position() -> tuple[ndarray, ndarray, ndarray]",
+    "api_primitives_used": [
+      "get_robot_position"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_robot_relative_eef_pose",
+    "name": "get_robot_relative_eef_pose",
+    "description": "Get end-effector pose relative to robot base frame.",
+    "code": "# Built-in CaP-Gym primitive: get_robot_relative_eef_pose(arm: int = 0) -> tuple",
+    "api_primitives_used": [
+      "get_robot_relative_eef_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_lift_arm",
+    "name": "lift_arm",
+    "description": "Lift specified arm up in the environment.",
+    "code": "# Built-in CaP-Gym primitive: lift_arm(arm: int = 0) -> None",
+    "api_primitives_used": [
+      "lift_arm"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_reset_torso",
+    "name": "reset_torso",
+    "description": "Reset torso to initial/home position.",
+    "code": "# Built-in CaP-Gym primitive: reset_torso() -> None",
+    "api_primitives_used": [
+      "reset_torso"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_sample_grasp_pose",
+    "name": "sample_grasp_pose",
+    "description": "Plan grasp for named object using GraspNet. Returns (pregrasp_poses, grasp_poses).",
+    "code": "# Built-in CaP-Gym primitive: sample_grasp_pose(object_name: str) -> tuple[list, list]",
+    "api_primitives_used": [
+      "sample_grasp_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_grasp_object",
+    "name": "grasp_object",
+    "description": "Execute grasp sequence: approach pre-grasp pose, move to grasp pose, close gripper.",
+    "code": "# Built-in CaP-Gym primitive: grasp_object(pregrasp_pose: ndarray, grasp_pose: ndarray, object_name: str, arm: int = 0) -> None",
+    "api_primitives_used": [
+      "grasp_object"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_open_gripper",
+    "name": "open_gripper",
+    "description": "Open gripper fully. arm: 0=left, 1=right.",
+    "code": "# Built-in CaP-Gym primitive: open_gripper(arm: int = 0) -> None",
+    "api_primitives_used": [
+      "open_gripper"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_close_gripper",
+    "name": "close_gripper",
+    "description": "Close gripper fully. arm: 0=left, 1=right.",
+    "code": "# Built-in CaP-Gym primitive: close_gripper(arm: int = 0) -> None",
+    "api_primitives_used": [
+      "close_gripper"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_check_object_in_hand",
+    "name": "check_object_in_hand",
+    "description": "Check if an object is currently grasped in the specified gripper. Returns bool.",
+    "code": "# Built-in CaP-Gym primitive: check_object_in_hand(arm: int = 0) -> bool",
+    "api_primitives_used": [
+      "check_object_in_hand"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_write_video",
+    "name": "write_video",
+    "description": "Write video of execution trajectory to disk.",
+    "code": "# Built-in CaP-Gym primitive: write_video(name: str) -> None",
+    "api_primitives_used": [
+      "write_video"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "capgym_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  }
+]

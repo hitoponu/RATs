@@ -1,0 +1,226 @@
+[
+  {
+    "skill_id": "primitive_get_observation",
+    "name": "get_observation",
+    "description": "Get current observation: RGB/depth images from agentview and wrist cameras, robot joint positions, and end-effector cartesian pose.",
+    "code": "# Built-in Franka LIBERO primitive: get_observation() -> dict\n# Keys: ['agentview']['images']['rgb'|'depth'], ['robot0_eye_in_hand']['images']['rgb'|'depth'],\n#        ['robot_joint_pos'] (8,), ['robot_cartesian_pos'] (8,: xyz + wxyz + gripper)",
+    "api_primitives_used": [
+      "get_observation"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_object_pose",
+    "name": "get_object_pose",
+    "description": "Get the 3D pose of a named object in the robot base frame. Returns (position (3,) XYZ meters, quaternion_wxyz (4,)).",
+    "code": "# Built-in Franka LIBERO primitive: get_object_pose(object_name: str) -> tuple[ndarray, ndarray]",
+    "api_primitives_used": [
+      "get_object_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_goto_pose",
+    "name": "goto_pose",
+    "description": "Move end-effector to target pose using IK. Optional z_approach for pre-grasp approach motion (higher z, then descend).",
+    "code": "# Built-in Franka LIBERO primitive: goto_pose(position: ndarray(3,), quaternion_wxyz: ndarray(4,), z_approach: float = 0.0) -> None",
+    "api_primitives_used": [
+      "goto_pose"
+    ],
+    "preconditions": [],
+    "effects": [
+      "robot_moved"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_open_gripper",
+    "name": "open_gripper",
+    "description": "Open the Franka gripper fully.",
+    "code": "# Built-in Franka LIBERO primitive: open_gripper() -> None",
+    "api_primitives_used": [
+      "open_gripper"
+    ],
+    "preconditions": [],
+    "effects": [
+      "gripper_open"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_close_gripper",
+    "name": "close_gripper",
+    "description": "Close the Franka gripper fully.",
+    "code": "# Built-in Franka LIBERO primitive: close_gripper() -> None",
+    "api_primitives_used": [
+      "close_gripper"
+    ],
+    "preconditions": [],
+    "effects": [
+      "gripper_closed"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_goto_home_joint_position",
+    "name": "goto_home_joint_position",
+    "description": "Move the Franka arm to its home (rest) joint configuration. Useful before perception to get a clear agentview.",
+    "code": "# Built-in Franka LIBERO primitive: goto_home_joint_position() -> None",
+    "api_primitives_used": [
+      "goto_home_joint_position"
+    ],
+    "preconditions": [],
+    "effects": [
+      "robot_at_home"
+    ],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_sample_grasp_pose",
+    "name": "sample_grasp_pose",
+    "description": "Plan grasp poses for a named object using ContactGraspNet. Returns (positions, quaternions_wxyz, scores) arrays.",
+    "code": "# Built-in Franka LIBERO primitive: sample_grasp_pose(object_name: str, top_k: int = 5, use_multiview: bool = True) -> tuple[ndarray, ndarray, ndarray]",
+    "api_primitives_used": [
+      "sample_grasp_pose"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_object_3d_points_and_masks_from_language",
+    "name": "get_object_3d_points_and_masks_from_language",
+    "description": "Get 3D point cloud and 2D masks for an object specified by name. Uses SAM3 + depth deprojection. Returns dict with 'points_3d', 'agentview_mask', 'wrist_mask'.",
+    "code": "# Built-in Franka LIBERO primitive: get_object_3d_points_and_masks_from_language(object_name: str, use_multiview: bool = True) -> dict",
+    "api_primitives_used": [
+      "get_object_3d_points_and_masks_from_language"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_get_oriented_bounding_box_from_3d_points",
+    "name": "get_oriented_bounding_box_from_3d_points",
+    "description": "Compute oriented bounding box (OBB) from 3D points. Returns dict with 'center', 'extent', 'R' (rotation matrix).",
+    "code": "# Built-in Franka LIBERO primitive: get_oriented_bounding_box_from_3d_points(points: ndarray) -> dict",
+    "api_primitives_used": [
+      "get_oriented_bounding_box_from_3d_points"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_segment_sam3_text_prompt",
+    "name": "segment_sam3_text_prompt",
+    "description": "Run SAM3 segmentation on an RGB image conditioned on a text prompt. Returns list of masks with bounding boxes and confidence scores.",
+    "code": "# Built-in Franka LIBERO primitive: segment_sam3_text_prompt(rgb: ndarray, text_prompt: str) -> list[dict]",
+    "api_primitives_used": [
+      "segment_sam3_text_prompt"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_segment_sam3_point_prompt",
+    "name": "segment_sam3_point_prompt",
+    "description": "Run SAM3 segmentation with point prompt conditioning. Returns list of segmentation masks with scores.",
+    "code": "# Built-in Franka LIBERO primitive: segment_sam3_point_prompt(rgb: ndarray, point_coords: tuple) -> list[dict]",
+    "api_primitives_used": [
+      "segment_sam3_point_prompt"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  },
+  {
+    "skill_id": "primitive_point_prompt_molmo",
+    "name": "point_prompt_molmo",
+    "description": "Use Molmo VLM to locate objects in an image given a text description. Returns dict mapping object name to (x, y) pixel coordinates.",
+    "code": "# Built-in Franka LIBERO primitive: point_prompt_molmo(image: ndarray, text_prompt: str) -> dict[str, tuple]",
+    "api_primitives_used": [
+      "point_prompt_molmo"
+    ],
+    "preconditions": [],
+    "effects": [],
+    "dependent_skills": [],
+    "success_rate": 1.0,
+    "source_task": "franka_libero_builtin",
+    "is_primitive": true,
+    "usage_count": 0,
+    "success_count": 0,
+    "tier": "verified"
+  }
+]
