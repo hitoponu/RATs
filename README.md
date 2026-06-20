@@ -1,6 +1,6 @@
 # RATs: Playful Agentic Robot Learning
 
-[Project Page](https://Playful-RATs.github.io) &ensp;|&ensp; [Paper](https://playful-rats.github.io/docs/assets/papers/rats-paper.pdf) &ensp;|&ensp; [arXiv](https://arxiv.org/abs/2606.19419)
+[Project Page](https://Playful-RATs.github.io) &ensp;|&ensp; [Paper](https://playful-rats.github.io/assets/papers/rats-paper.pdf) &ensp;|&ensp; [arXiv](https://arxiv.org/abs/2606.19419)
 
 <p align="center">
   <video src="https://github.com/user-attachments/assets/9c2edc29-e4cd-421c-ba82-2b0b8df17d7d" controls="controls" muted="muted" playsinline="playsinline" width="100%"></video>
