@@ -1,0 +1,26 @@
+# RATS + LIBERO play over the REMOTE bridge.
+#
+# The env runs in a SEPARATE cap-x-geniac process
+# (capx.serving.libero_executor_server) reachable at `remote_env_url`.
+# Code-as-policy executes SERVER-SIDE via env.step(code), so cap-x-geniac's
+# env / API / perception edits reflect live in what this agent runs.
+# Perception (SAM3 / GraspNet / PyRoKi) runs on the SERVER, not here, so there
+# is no `api_servers` block. The API surface the policy-writer sees is fetched
+# from the server (get_api_metadata) — it is decided by the server's config, so
+# match it to the API family you want (reduced vs full FrankaLiberoApi).
+#
+# Server (cap-x-geniac venv, same node):
+#   python -m capx.serving.libero_executor_server \
+#     --config-path env_configs/libero/franka_libero_reduced_api.yaml \
+#     --host 127.0.0.1 --port 9200
+# Client (this config, rats venv, same node):
+#   python scripts/run_rats.py \
+#     --config env_configs/libero/rats_libero_play_remote.yaml \
+#     --iterations 2 --model Qwen/Qwen3.6-27B
+
+env:
+  _target_: rats.envs.simulators.libero_remote.FrankaLiberoRemoteEnv
+  remote_env_url: 127.0.0.1:9200
+
+record_video: true
+output_dir: ./outputs/rats_libero_play_remote
