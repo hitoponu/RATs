@@ -22,5 +22,12 @@ env:
   _target_: rats.envs.simulators.libero_remote.FrankaLiberoRemoteEnv
   remote_env_url: 127.0.0.1:9200
 
+# LLM: local Qwen vLLM on the same node. rats routes non-openai/google/openrouter
+# models to server_url; rats' default is 127.0.0.1:8110/chat/completions (no /v1),
+# but vLLM serves /v1/chat/completions — so pin it here (writer + diagnoser).
+server_url: http://127.0.0.1:8110/v1/chat/completions
+rats:
+  writer_server_url: http://127.0.0.1:8110/v1/chat/completions
+
 record_video: true
 output_dir: ./outputs/rats_libero_play_remote
