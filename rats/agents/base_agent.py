@@ -286,6 +286,9 @@ DEFAULT_MODEL = _CONFIG.get("llm_model", "openai/gpt-5.5")
 DEFAULT_MAX_TOKENS = int(_CONFIG.get("llm_max_tokens", 8192))
 DEFAULT_TEMPERATURE = float(_CONFIG.get("llm_temperature", 0.2))
 DEFAULT_REASONING_EFFORT = _CONFIG.get("llm_reasoning_effort", "medium")
+# HTTP read timeout for LLM calls. Default 200 preserves paper behavior; raise via
+# RATS_REQUEST_TIMEOUT for slow local (e.g. vLLM) backends that need more wall-clock.
+_REQUEST_TIMEOUT = int(os.environ.get("RATS_REQUEST_TIMEOUT", "200"))
 
 
 def canonicalize_model_name(model: str) -> str:
@@ -815,7 +818,7 @@ def query_llm(
     # proxy-side change to verify the round-trip.
 
     start = time.time()
-    response = requests.post(api_url, headers=headers, json=payload, timeout=200)
+    response = requests.post(api_url, headers=headers, json=payload, timeout=_REQUEST_TIMEOUT)
 
     # Retry on transient errors
     retry_count = 0
@@ -838,7 +841,7 @@ def query_llm(
             f"waiting {wait}s..."
         )
         time.sleep(wait)
-        response = requests.post(api_url, headers=headers, json=payload, timeout=200)
+        response = requests.post(api_url, headers=headers, json=payload, timeout=_REQUEST_TIMEOUT)
 
     elapsed = time.time() - start
 
