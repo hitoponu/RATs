@@ -133,6 +133,10 @@ def _set_unified_run_model(model: str) -> None:
     """Make --model mean every RATS LLM agent, including per-agent defaults."""
     os.environ["RATS_LLM_MODEL"] = model
     for key in _RUN_MODEL_ENV_KEYS:
+        # A pre-set diagnoser (VDM) model survives the unified pin so a
+        # vision-capable VDM (e.g. Molmo) can differ from the text writer LLM.
+        if key == "RATS_DIAGNOSER_MODEL" and os.environ.get(key, "").strip():
+            continue
         os.environ[key] = model
 
 

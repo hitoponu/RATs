@@ -400,6 +400,15 @@ def _get_api_config(model: str | None = None) -> tuple[str, dict[str, str]]:
     if model and "/" in model:
         provider = model.split("/", 1)[0].strip().lower()
 
+    # Local open VLM (Molmo) for the VDM/diagnoser: route by model name to a
+    # dedicated Molmo vLLM endpoint (no auth — local server). Lets the
+    # vision-capable diagnoser hit Molmo (8122) while text agents stay on the
+    # writer LLM (8110). Must precede the generic provider-prefix routing below.
+    if model and ("molmo" in model.lower() or provider == "allenai"):
+        return os.environ.get(
+            "RATS_MOLMO_URL", "http://127.0.0.1:8122/v1/chat/completions"
+        ), {"Content-Type": "application/json"}
+
     # Explicit non-OpenAI provider prefixes (e.g. google/..., anthropic/...)
     # route through OpenRouter. Prefer the official API when an API key is
     # available; otherwise preserve the local proxy fallback used by older runs.
