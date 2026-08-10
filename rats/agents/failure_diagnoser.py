@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from rats.agents.base_agent import image_to_data_url, query_llm_text
+from rats.agents.base_agent import image_to_data_url, query_llm_text, video_llm_disabled
 
 logger = logging.getLogger("rats.failure_diagnoser")
 
@@ -1611,7 +1611,7 @@ class FailureDiagnoser:
             "images",
             "still",
             "stills",
-        }
+        } or video_llm_disabled()
         trajectory_video_url = execution_result.get("trajectory_video_data_url")
         trajectory_video_frame_count = (
             execution_result.get("trajectory_video_frame_count")

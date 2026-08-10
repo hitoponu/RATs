@@ -19,7 +19,12 @@ import re
 from pathlib import Path
 from typing import Any
 
-from rats.agents.base_agent import image_to_data_url, query_llm_json, video_file_to_data_url
+from rats.agents.base_agent import (
+    image_to_data_url,
+    query_llm_json,
+    video_file_to_data_url,
+    video_llm_disabled,
+)
 
 
 _STEP_INDEX_RE = re.compile(r"\d+")
@@ -942,10 +947,12 @@ class FeedbackGenerator:
             or []
         )
         if frames:
-            video_url, video_meta = self._frames_to_video_data_url(
-                list(frames),
-                label="trajectory_video",
-            )
+            video_url, video_meta = None, {}
+            if not video_llm_disabled():
+                video_url, video_meta = self._frames_to_video_data_url(
+                    list(frames),
+                    label="trajectory_video",
+                )
             if video_url:
                 videos.append(video_url)
                 manifest.append(

@@ -821,7 +821,7 @@ class Verifier:
             saved_image_path = self._save_frame_image(terminal, Path(artifact_image_path))
 
         try:
-            from rats.agents.base_agent import image_to_data_url
+            from rats.agents.base_agent import image_to_data_url, video_llm_disabled
 
             goal = (
                 task_proposal.get("language")
@@ -839,7 +839,11 @@ class Verifier:
             # a sampled frame sequence > the single terminal frame.
             images: list[str] | None = None
             videos: list[str] | None = None
-            video_url = self._frames_to_video_url(frames) if len(frames) >= 2 else None
+            video_url = (
+                None
+                if video_llm_disabled()
+                else (self._frames_to_video_url(frames) if len(frames) >= 2 else None)
+            )
             if video_url:
                 videos = [video_url]
                 media_desc = (

@@ -20,7 +20,7 @@ from typing import Any
 
 import numpy as np
 
-from rats.agents.base_agent import query_llm_json, video_file_to_data_url
+from rats.agents.base_agent import query_llm_json, video_file_to_data_url, video_llm_disabled
 
 
 def extract_exec_history_api_events(
@@ -1448,6 +1448,8 @@ class PerStepVerifier:
         manifest: list[dict[str, Any]] = []
         seen: set[str] = set()
         media_index = 0
+        if video_llm_disabled():
+            video_paths = []
         for video in video_paths:
             path = str(video.get("path") or "")
             if path in seen:

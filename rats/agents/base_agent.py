@@ -388,6 +388,20 @@ def _get_gemini_key() -> str:
     return ""
 
 
+def video_llm_disabled() -> bool:
+    """When ``RATS_LLM_NO_VIDEO=1``, vision agents send sampled image frames to
+    the LLM instead of an mp4 video block. Required for local vLLMs (e.g. Qwen)
+    that reject a video data URL carried in an ``image_url`` content part
+    (server-side PIL ``cannot identify image file``). Default off preserves the
+    video path for video-capable models (Gemini/OpenRouter)."""
+    return os.environ.get("RATS_LLM_NO_VIDEO", "0").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
 def _get_api_config(model: str | None = None) -> tuple[str, dict[str, str]]:
     """Determine API URL and headers based on available credentials.
 
