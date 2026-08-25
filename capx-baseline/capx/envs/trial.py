@@ -243,7 +243,9 @@ def _capture_initial_visual_feedback(
     visual_feedback_imgs.append(initial_img)
     visual_feedback_base64_history.append(initial_base64)
     task_description_with_skills = copy.deepcopy(obs["full_prompt"][-1]["content"][0]["text"])
-    task_description = strip_external_skills_from_prompt(task_description_with_skills)
+    task_description = _vdm_task_context(
+        strip_external_skills_from_prompt(task_description_with_skills)
+    )
 
     # Also capture wrist camera image for multiview initial description
     initial_wrist_base64 = None
@@ -281,7 +283,7 @@ def _capture_initial_visual_feedback(
     # Image differencing: ask a VLM to describe the initial scene
     if config["use_img_differencing"] or config.get("use_video_differencing", False):
         description = _describe_initial_scene(
-            visual_differencing_args, task_description_with_skills, initial_base64,
+            visual_differencing_args, _vdm_task_context(task_description_with_skills), initial_base64,
             wrist_image_base64=initial_wrist_base64,
         )
         feedback = f"The initial state of the environment is described as follows:\n{description}"
@@ -331,6 +333,23 @@ def _describe_initial_scene(
     ]
     return _query_model(visual_differencing_args, prompt)["content"]
 
+
+
+def _vdm_task_context(prompt_text: str) -> str:
+    """Reduce the policy writer's prompt to just the task goal, for the VDM.
+
+    The VDM describes what changed; it must not inherit the writer's output-format
+    instructions ("ONLY write the executable Python code"), which otherwise
+    override its own "Do *NOT* write any code." and make it emit Python.
+
+    Keep the Goal line; fall back to everything above the API dump, then to the
+    original text.
+    """
+    for line in prompt_text.splitlines():
+        if line.strip().startswith("Goal:"):
+            return line.strip()
+    head = prompt_text.split("\nAPIs:")[0].strip()
+    return head or prompt_text
 
 def _get_visual_differencing_feedback(
     visual_differencing_args: ModelQueryArgs,

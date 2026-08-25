@@ -109,6 +109,12 @@ class LaunchArgs:
     use_oracle_code: bool | None = None
     """If True, uses pre-defined oracle code instead of querying the model."""
 
+    no_api_servers: bool = False
+    """Skip launching the config's api_servers (SAM3/GraspNet/PyRoKi). Use when a shared
+    perception service already runs on this node; the env's API clients reach it on their
+    default 127.0.0.1 ports. launch.py otherwise cold-starts perception once per
+    invocation, which was 58% of wall clock on the eval6 M3 arms."""
+
     use_parallel_ensemble: bool | None = None
     """Whether to use parallel ensemble for the coding agent."""
 
@@ -206,7 +212,11 @@ def main(args: LaunchArgs) -> None:
 
     start_time = time.time()
     env_factory, config, api_servers = _load_config(args)
-    server_procs = _start_api_servers(api_servers)
+    if args.no_api_servers:
+        print("[launch] --no-api-servers: skipping local api_servers; using shared perception on 127.0.0.1")
+        server_procs = []
+    else:
+        server_procs = _start_api_servers(api_servers)
 
     try:
         if config.get("web_ui", False):

@@ -6,6 +6,7 @@ import numpy as np
 import open3d as o3d
 import viser.transforms as vtf
 from PIL import Image, ImageDraw
+from scipy.spatial import cKDTree
 from scipy.spatial.transform import Rotation as SciRotation
 
 from capx.envs.base import (
@@ -575,18 +576,26 @@ class FrankaLiberoApi(ApiBase):
             wrist_mask = wrist_data["mask"]
             wrist_score = wrist_data["score"]
             
-            # Find intersection using numpy broadcasting
+            # Do the two views see the same object? All this needs is the single
+            # closest agent-wrist pair, so query a KD-tree instead of building
+            # the N x M distance matrix.
+            #
+            # The broadcast this replaces --
+            #     np.linalg.norm(agent[:, None, :] - wrist[None, :, :], axis=2)
+            # -- materialises an N x M x 3 float64 temporary, i.e. N*M*24 bytes.
+            # A mask is N pixels of an 800x512 view, so a loose segmentation
+            # (~65k points per view) asks for ~100 GB in one expression. That is
+            # what was OOM-killing the M3 eval: a probe on libero_goal task_04
+            # watched one worker climb 3 GB -> 141 GB in 80 s inside this line,
+            # with an empty Python heap, and raising --mem only moved the
+            # deadline. Peak here is now O(N + M).
             if len(wrist_pts_3d) > 0 and len(agent_pts_3d) > 0:
-                # Compute pairwise distances between all agent and wrist points
-                distances = np.linalg.norm(
-                    agent_pts_3d[:, np.newaxis, :] - wrist_pts_3d[np.newaxis, :, :], 
-                    axis=2
+                nn_distances, _ = cKDTree(wrist_pts_3d).query(
+                    agent_pts_3d, k=1, workers=-1,
                 )
-                # Find minimum distance for each agent point
-                min_distances = np.min(distances, axis=1)
                 # Keep agent points within threshold
                 threshold = 0.01  # 1cm
-                if min_distances.min() < threshold:
+                if nn_distances.min() < threshold:
                     points_3d = np.concatenate([agent_pts_3d, wrist_pts_3d])
                 else:
                     if wrist_score > agent_data["score"]:

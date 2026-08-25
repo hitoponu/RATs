@@ -44,6 +44,7 @@ VLM_MODELS = [
     "deepseek/deepseek-r1-0528",
     "deepseek/deepseek-r1",
     "qwen/qwen3.5-122b-a10b",
+    "Qwen/Qwen3.6-27B",
     "moonshotai/kimi-k2",
 ]
 CLAUDE_MODELS = ["anthropic/claude-opus-4-5", "anthropic/claude-haiku-4-5"]
@@ -94,6 +95,36 @@ ENSEMBLE_CONFIGS = [
 def is_openrouter_model(model: str) -> bool:
     """Return True if the model should be routed through the OpenRouter proxy."""
     return model.startswith("openrouter/") or model in OPENROUTER_MODELS
+
+def local_thinking_extras() -> dict[str, Any]:
+    """Thinking-control payload fields for a locally served vLLM model.
+
+    Qwen3.5/3.6 run with thinking ON by default and the hidden reasoning is
+    billed against ``max_tokens``, so a long trace returns an empty ``content``
+    with ``finish_reason='length'``. The generic payload below carries no
+    reasoning controls at all (``reasoning_effort`` is only sent on the GPT
+    path, and it is not a graded control for Qwen anyway).
+
+    Driven by env vars so one config can run under several thinking regimes:
+      CAPX_ENABLE_THINKING=0|1        unset -> leave the server default alone
+      CAPX_THINKING_TOKEN_BUDGET=N    unset -> no per-request reasoning limit
+
+    ``thinking_token_budget`` needs ``--reasoning-parser`` on the serving side,
+    which run-qwen-server.sh sets.
+    """
+    extras: dict[str, Any] = {}
+
+    enable = os.getenv("CAPX_ENABLE_THINKING")
+    if enable is not None:
+        extras["chat_template_kwargs"] = {
+            "enable_thinking": enable.strip().lower() not in ("0", "false", "no")
+        }
+
+    budget = os.getenv("CAPX_THINKING_TOKEN_BUDGET")
+    if budget:
+        extras["thinking_token_budget"] = int(budget)
+
+    return extras
 
 
 def is_gemini_model(model: str) -> bool:
@@ -494,6 +525,7 @@ def query_model(args: "LaunchArgs | ModelQueryArgs", prompt: list[dict]) -> str:
             "temperature": args.temperature,
             "max_tokens": args.max_tokens,
             "messages": prompt,
+            **local_thinking_extras(),
         }
     headers = {"Content-Type": "application/json"}
     if args.api_key:
@@ -587,6 +619,7 @@ def query_model_streaming(
             "temperature": args.temperature,
             "max_tokens": args.max_tokens,
             "messages": prompt,
+            **local_thinking_extras(),
             "stream": True,
         }
 
