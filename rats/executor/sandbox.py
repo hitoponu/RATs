@@ -217,6 +217,11 @@ class Executor:
             ("inventory", "describe_scene_inventory"),
             ("task_info", "get_task_info"),
             ("task_descriptor", "get_task_descriptor"),
+            # Oracle object state for LIBERO: poses, on/in relations evaluated
+            # with the benchmark's own predicate, what was lifted, and the goal.
+            # Recorded for offline scoring ONLY -- `grounded_state` is written to
+            # artifacts, never formatted into an agent prompt.
+            ("object_state", "describe_object_state"),
         ):
             fn = getattr(low, method_name, None)
             if callable(fn):

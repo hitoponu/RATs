@@ -187,8 +187,17 @@ class FrankaLiberoEnv(BaseEnv):
 
         # Post-reset settling: let physics stabilize (objects drop, joints settle).
         # 10 steps suffice — joints converge by step ~5.
+        # Baselines must be taken AFTER settling: objects drop a few millimetres
+        # onto their supports during these steps, and a baseline captured
+        # mid-drop makes the settle itself look like a lift.
+        self._pick_bodies = {}
+        self._pick_baseline_z = {}
+        self._pick_events = []
+
         for _ in range(10):
             self._step_once()
+
+        self._init_pick_tracker()
 
         obs = self.get_observation()
         self.gripper_link_wxyz_xyz = np.concatenate(
@@ -313,6 +322,8 @@ class FrankaLiberoEnv(BaseEnv):
 
         if self._record_frames and self._sim_step_count % self._subsample_rate == 0:
             self._record_frame()
+
+        self._track_lift()
 
     def _get_object_pose(self, obj_name: str) -> tuple[np.ndarray, np.ndarray]:
         """Get the pose of an object in the environment as a position (3,) and WXYZ quaternion (4,).
@@ -544,6 +555,253 @@ class FrankaLiberoEnv(BaseEnv):
     def task_completed(self) -> bool:
         """Compute if the task is completed."""
         return self.handle.env.check_success()
+
+    # --------------------- Ground-truth state record ---------------------
+
+    # A pick is only visible while it is happening. Snapshots at code-block
+    # boundaries miss it entirely: a successful pick-and-place is already
+    # released by the time the block ends, and a pick whose place failed puts
+    # the object back down, so "picked the wrong bowl and dropped it" and
+    # "never grasped anything" produce identical before/after states. Hence a
+    # tracker that runs inside the control loop.
+    _PICK_LIFT_M = 0.03  # bowls are ~5 cm tall; 3 cm clears the table
+
+    def _fingerpad_contact(self, name: str) -> bool:
+        """robosuite `_check_grasp`: BOTH fingerpad geoms touching this object.
+
+        Note what this is not. There is no force, friction, or closure test —
+        it is two contact queries. An open gripper straddling a wide bowl rim
+        satisfies it while holding nothing, and so does the instant of a failed
+        squeeze. It is evidence, not a verdict; pair it with a lift.
+        """
+        env = getattr(self.handle, "env", None)
+        check_grasp = getattr(env, "_check_grasp", None)
+        get_object = getattr(env, "get_object", None)
+        if not (callable(check_grasp) and callable(get_object)):
+            return False
+        try:
+            return bool(check_grasp(gripper=env.robots[0].gripper,
+                                    object_geoms=get_object(name)))
+        except Exception:
+            return False
+
+    def _init_pick_tracker(self) -> None:
+        self._pick_bodies: dict[str, int] = {}
+        self._pick_baseline_z: dict[str, float] = {}
+        self._pick_events: list[dict[str, Any]] = []
+        env = getattr(self.handle, "env", None)
+        body_ids = getattr(env, "obj_body_id", None)
+        if not isinstance(body_ids, dict):
+            return
+        for name, bid in body_ids.items():
+            try:
+                self._pick_bodies[name] = int(bid)
+                self._pick_baseline_z[name] = float(env.sim.data.body_xpos[bid][2])
+            except Exception:
+                self._pick_bodies.pop(name, None)
+
+    def _track_lift(self) -> None:
+        """Cheap per-step check: did any object rise while being pinched?
+
+        Height comes straight out of ``body_xpos`` and costs nothing, so the
+        expensive contact query only runs for objects that actually moved up.
+        One event per object per episode — the first lift is the pick.
+        """
+        if not getattr(self, "_pick_bodies", None):
+            return
+        try:
+            xpos = self.handle.env.sim.data.body_xpos
+        except Exception:
+            return
+        seen = {e["object"] for e in self._pick_events}
+        for name, bid in self._pick_bodies.items():
+            if name in seen:
+                continue
+            try:
+                z = float(xpos[bid][2])
+            except Exception:
+                continue
+            z0 = self._pick_baseline_z.get(name, z)
+            if z - z0 <= self._PICK_LIFT_M:
+                continue
+            if self._fingerpad_contact(name):
+                self._pick_events.append({
+                    "object": name, "sim_step": int(self._sim_step_count),
+                    "z0": round(z0, 4), "z": round(z, 4), "dz": round(z - z0, 4),
+                })
+
+    def _predicate_env(self) -> Any:
+        """Walk down to the LIBERO problem object that owns the predicate API.
+
+        ``self.handle.env`` is an ``OffScreenRenderEnv`` wrapper, which does NOT
+        expose ``parsed_problem`` / ``_eval_predicate``; the object that does is
+        its ``.env`` (e.g. ``Libero_Tabletop_Manipulation``). Stopping at the
+        wrapper silently yields an empty result, so unwrap until the API appears.
+        """
+        cur = getattr(self.handle, "env", None)
+        visited: set[int] = set()
+        for _ in range(8):  # LIBERO has at most 1-2 wrappers
+            if cur is None or id(cur) in visited:
+                return None
+            visited.add(id(cur))
+            if getattr(cur, "parsed_problem", None) is not None and callable(
+                getattr(cur, "_eval_predicate", None)
+            ):
+                return cur
+            cur = getattr(cur, "env", None) or getattr(cur, "unwrapped", None)
+        return None
+
+    def describe_object_state(
+        self, *, relations: tuple[str, ...] = ("on", "in"),
+    ) -> dict[str, Any]:
+        """Ground-truth object-level state: poses, support relations, what is held.
+
+        Answers "which object was actually picked, and what was it placed on"
+        without going through perception, the policy's own ``RESULT`` dict, or a
+        VLM. Compare two snapshots and the relation diff *is* the answer.
+
+        Relations are evaluated with LIBERO's own ``_eval_predicate`` over every
+        ordered object pair, so ``on(a, b)`` here means exactly what it means in
+        the BDDL goal that scores the task — the goal predicate is simply one
+        entry of the same table. Falls back to ``ObjectState.check_ontop`` /
+        ``check_contain`` when the predicate API cannot be reached.
+
+        Cost is quadratic in object count (~10 objects -> ~90 evaluations), so
+        call it at code-block boundaries, not inside the control loop.
+
+        Returns a JSON-safe dict:
+            objects   {name: {pos: [3], quat_wxyz: [4]}}
+            relations [{rel, a, b}, ...]   only the pairs that hold
+            grasped   [names in the gripper]
+            goal      [{predicate, satisfied}, ...]
+            success   bool
+        """
+        out: dict[str, Any] = {
+            "objects": {}, "relations": [], "fingerpad_contact": [],
+            "goal": [], "success": False,
+            "pick_events": list(getattr(self, "_pick_events", [])),
+            "picked": [], "picked_wrong": [],
+            "goal_target": None, "goal_destination": None,
+            "pick_only": False,
+        }
+        env = getattr(self.handle, "env", None)
+        if env is None:
+            return out
+        try:
+            out["success"] = bool(env.check_success())
+        except Exception:
+            pass
+
+        osd = getattr(env, "object_states_dict", None)
+        if not isinstance(osd, dict) or not osd:
+            # Some wrappers hold the problem object one level down.
+            pred_env = self._predicate_env()
+            osd = getattr(pred_env, "object_states_dict", None) if pred_env else None
+        if not isinstance(osd, dict):
+            return out
+        names = sorted(osd)
+
+        for name in names:
+            try:
+                gs = osd[name].get_geom_state()
+                out["objects"][name] = {
+                    "pos": [float(x) for x in gs["pos"]],
+                    "quat_wxyz": [float(x) for x in gs["quat"]],
+                    # "site" entries are the named regions the BDDL defines
+                    # (main_table_between_plate_ramekin_region, ...). They are
+                    # not physical objects, and they are how the scene encodes
+                    # the spatial qualifier that picks the target out of its
+                    # look-alikes — worth keeping, worth distinguishing.
+                    # Classify by class, not by `object_state_type`: that
+                    # attribute reads "object" on SiteObjectState too, so it
+                    # cannot separate the two.
+                    "type": ("site" if "Site" in type(osd[name]).__name__
+                             else "fixture" if getattr(osd[name], "is_fixture", False)
+                             else "object"),
+                }
+                # Several LIBERO goals are articulation, not support —
+                # `[open wooden_cabinet_1_middle_region]` cannot be explained by
+                # any on/in edge, so record the joint state where it exists.
+                is_open = getattr(osd[name], "is_open", None)
+                if callable(is_open):
+                    try:
+                        out["objects"][name]["open"] = bool(is_open())
+                    except Exception:
+                        pass
+            except Exception:
+                continue
+
+        pred_env = self._predicate_env()
+        eval_pred = getattr(pred_env, "_eval_predicate", None) if pred_env else None
+        # `on` comes back symmetric whenever one side is a region site — both
+        # on(bowl, region) and on(region, bowl) evaluate true, because the site
+        # test is containment within the region's bounds and does not care which
+        # argument is the support. Keep one direction per unordered pair so the
+        # relation list stays a graph rather than a doubled edge set.
+        seen: set[tuple[str, str, str]] = set()
+        for rel in relations:
+            for a in names:
+                for b in names:
+                    if a == b or (rel, b, a) in seen:
+                        continue
+                    ok = None
+                    if callable(eval_pred):
+                        try:
+                            ok = bool(eval_pred((rel, a, b)))
+                        except Exception:
+                            ok = None
+                    if ok is None:  # predicate API unreachable -> ObjectState
+                        meth = {"on": "check_ontop", "in": "check_contain"}.get(rel)
+                        try:
+                            ok = bool(getattr(osd[a], meth)(osd[b])) if meth else False
+                        except Exception:
+                            ok = False
+                    if ok:
+                        seen.add((rel, a, b))
+                        a_site = out["objects"].get(a, {}).get("type") == "site"
+                        b_site = out["objects"].get(b, {}).get("type") == "site"
+                        # Point the edge the way a reader expects: the supported
+                        # thing first, the region it rests in second. Which
+                        # direction survived dedup is arbitrary for the
+                        # symmetric site case, so normalise it here.
+                        if a_site and not b_site:
+                            a, b, a_site, b_site = b, a, b_site, a_site
+                        out["relations"].append({
+                            "rel": rel, "a": a, "b": b, "b_is_site": b_site,
+                        })
+
+        # Instantaneous pad contact — only meaningful for a snapshot taken
+        # mid-carry. The episode-level answer is `picked`, below.
+        for name in getattr(self, "_pick_bodies", {}) or names:
+            if self._fingerpad_contact(name):
+                out["fingerpad_contact"].append(name)
+
+        parsed = getattr(pred_env, "parsed_problem", None) if pred_env else None
+        if isinstance(parsed, dict) and callable(eval_pred):
+            for state in parsed.get("goal_state", []) or []:
+                desc = "[" + " ".join(str(s) for s in state) + "]"
+                try:
+                    sat = bool(eval_pred(state))
+                except Exception:
+                    sat = False
+                out["goal"].append({"predicate": desc, "satisfied": sat})
+                # The goal names its own target and destination, so wrong-object
+                # detection needs no region-name guesswork: anything lifted that
+                # is not this target was the wrong thing to lift.
+                if out["goal_target"] is None and len(state) >= 3:
+                    out["goal_target"] = str(state[1])
+                    out["goal_destination"] = str(state[2])
+
+        out["picked"] = sorted({e["object"] for e in out["pick_events"]})
+        tgt = out["goal_target"]
+        if tgt is not None:
+            out["picked_wrong"] = [n for n in out["picked"] if n != tgt]
+            # Lifted the right object but it is not on the destination: the pick
+            # worked and the place did not. Invisible to a before/after diff
+            # whenever the object was set back down near where it started.
+            goal_sat = all(g["satisfied"] for g in out["goal"]) if out["goal"] else False
+            out["pick_only"] = bool(tgt in out["picked"] and not goal_sat)
+        return out
 
     # ------------------------- Video Capture -------------------------
 
