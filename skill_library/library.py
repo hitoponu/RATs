@@ -1112,7 +1112,7 @@ class SkillLibrary:
                 f"different parameter shapes around the SAME primitive sequence ARE "
                 f"duplicates.\n\n"
                 f"Respond with: {{\"is_duplicate\": true/false, \"duplicate_of\": \"skill_name\" or null}}",
-                max_tokens=65536,
+                max_tokens=8192,
             )
             if result.get("is_duplicate") and result.get("duplicate_of"):
                 dup_name = result["duplicate_of"]

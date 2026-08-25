@@ -1858,13 +1858,42 @@ class FrankaPerceptionMixin:
         points_3d: np.ndarray
         fused_source = "agentview"
         if wrist_data is not None and wrist_pts_3d is not None and len(wrist_pts_3d) > 0 and len(agent_pts_3d) > 0:
-            distances = np.linalg.norm(
-                agent_pts_3d[:, np.newaxis, :] - wrist_pts_3d[np.newaxis, :, :],
-                axis=2,
-            )
-            min_distances = np.min(distances, axis=1)
+            # Same fusion test, and the same memory bomb, as
+            # rats/integrations/franka/libero.py -- this copy was left
+            # unconverted. Only "is ANY pair within 1 cm?" is consumed, but
+            # ``agent_pts_3d[:, None, :] - wrist_pts_3d[None, :, :]`` first
+            # materialises an N x M x 3 float64 tensor, i.e. N*M*24 B. capx's
+            # unfixed copy of this line OOM-killed a LIBERO-goal eval arm: a
+            # probe watched one worker go 3 GB -> 141 GB in 80 s inside it, and
+            # raising --mem only moved the deadline. KDTree answers the same
+            # question in O((N+M) log M).
             threshold = 0.01
-            if min_distances.min() < threshold:
+            matched = False
+            try:
+                from scipy.spatial import cKDTree
+
+                # distance_upper_bound caps the search radius;
+                # unmatched entries come back as np.inf.
+                dists, _ = cKDTree(wrist_pts_3d).query(
+                    agent_pts_3d, k=1,
+                    distance_upper_bound=threshold + 1e-6,
+                )
+                matched = bool(np.any(np.isfinite(dists) & (dists < threshold)))
+            except Exception:
+                # Chunked numpy fallback. Memory ~ chunk * M * 24 B
+                # (3 floats x 8 B). chunk=64 keeps it under ~1 GB even when
+                # M is hundreds of thousands.
+                chunk = 64
+                for start in range(0, len(agent_pts_3d), chunk):
+                    ch = agent_pts_3d[start:start + chunk]
+                    d = np.linalg.norm(
+                        ch[:, np.newaxis, :] - wrist_pts_3d[np.newaxis, :, :],
+                        axis=2,
+                    )
+                    if d.size and d.min() < threshold:
+                        matched = True
+                        break
+            if matched:
                 points_3d = np.concatenate([agent_pts_3d, wrist_pts_3d])
                 fused_source = "agentview+wrist"
             elif float(wrist_score) > float(agent_data["score"]):

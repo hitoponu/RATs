@@ -22,6 +22,21 @@ from typing import Any
 
 logger = logging.getLogger("rats.failure_memory")
 
+# Ceiling for a stored diagnosis. Measured over 147 episodes of play run
+# 5190838: median 718 chars, p99 1132, second-largest 1132 -- and one runaway
+# at 205,184 (the diagnoser talking to itself: "Maybe the robot went to the
+# cabinet... But the logs show... Maybe the frames are from..."). That single
+# episode was ~52k tokens, and since _distill_one_group feeds `episodes[:5]`
+# to the LLM it pushed the distill prompt past the 131k context window: from
+# iteration 29 on, EVERY iteration died with `400 ... maximum context length`
+# while the job still exited rc=0.
+#
+# 8000 is ~7x the largest legitimate diagnosis, so this only ever fires on
+# pathological output -- which is the bar the storage-truncation comment in
+# record_failure() sets. code_snippet is deliberately NOT capped here: its
+# distribution is smooth (p99 10805, max 11213), i.e. no runaway to clip.
+_MAX_DIAGNOSIS_CHARS = 8000
+
 
 class FailureMemory:
     """Persistent failure memory for the RATS lifelong loop."""
@@ -107,7 +122,7 @@ class FailureMemory:
             # storage either"); accept the untrimmed version and keep
             # their new `failed_step` field.
             "failed_step": failed_step,
-            "diagnosis_summary": diagnosis_summary,
+            "diagnosis_summary": _clip_diagnosis(diagnosis_summary),
             "code_snippet": code_snippet,
             "approaches_tried": approaches_tried or [],
             "retry_count": retry_count,
@@ -604,13 +619,18 @@ class FailureMemory:
 
         try:
             from rats.agents.base_agent import query_llm_json
-            # 512 tokens was too tight — even gpt-5.5 with reasoning_effort=low
-            # routinely consumed all 512 on reasoning, leaving 0 for the JSON
-            # response (12/15 distill calls in the LIBERO smoke run truncated
-            # to empty content). Pinned to 65536 — the cross-provider ceiling
-            # (Gemini-3 Pro = 65536, Claude 4.x = 64k, gpt-5 = 128k) — so
-            # reasoning + the small JSON schema always fit.
-            result = query_llm_json(system_prompt, user_prompt, max_tokens=65536)
+            # 512 tokens was too tight — reasoning ate the whole budget and
+            # left 0 for the JSON (12/15 distill calls truncated to empty in
+            # the LIBERO smoke run). The fix for THAT is bounding reasoning,
+            # which base_agent._local_thinking_extras now does; 65536 was
+            # treating the symptom, and it had its own cost: on a local Qwen
+            # with --max-model-len 131072 it reserved half the window for
+            # output, capping the prompt at 65536 input tokens. Play 5190838
+            # crossed that at iteration 29 and lost its remaining 22
+            # iterations to `400 ... maximum context length`.
+            # 8192 -> 2048 thinking (max_tokens//4) + 6144 for the JSON,
+            # against a measured need of 1144-1916 tokens.
+            result = query_llm_json(system_prompt, user_prompt, max_tokens=8192)
             condition = (result.get("condition") or "").strip()
             antipattern = (result.get("antipattern") or "").strip()
             remedy = (result.get("remedy") or "").strip()
@@ -623,7 +643,7 @@ class FailureMemory:
             # context shows trigger / wrong / right at a glance.
             # FIX: was [:600] which clipped the DO clause for any lesson
             # with a multi-step fix. The distill LLM is now budgeted to
-            # produce ~2-3k char lessons (max_tokens=65536, schema is
+            # produce ~2-3k char lessons (max_tokens=8192, schema is
             # small), so emit the full WHEN/WRONG/DO triple.
             description = (
                 f"WHEN {condition} | WRONG: {antipattern} | "
@@ -754,6 +774,24 @@ class FailureMemory:
     @property
     def episode_count(self) -> int:
         return len(self._episodes)
+
+
+def _clip_diagnosis(text: str, max_chars: int = _MAX_DIAGNOSIS_CHARS) -> str:
+    """Clip a pathological diagnosis, leaving a visible marker.
+
+    Keeps the head: a diagnosis leads with the failure mode, and a runaway
+    degrades as it goes. The marker records what was dropped so a reader is
+    never silently shown a partial diagnosis as if it were whole.
+    """
+    if not text or len(text) <= max_chars:
+        return text
+    logger.warning(
+        f"diagnosis_summary clipped: {len(text)} -> {max_chars} chars "
+        "(runaway diagnoser output)"
+    )
+    return text[:max_chars] + (
+        f"\n... [clipped {len(text) - max_chars} chars of runaway diagnosis]"
+    )
 
 
 def _truncate_code(code: str, max_chars: int = 500) -> str:
