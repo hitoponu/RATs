@@ -1888,7 +1888,7 @@ class FailureDiagnoser:
             # on hidden reasoning. Pinned to 65536 — the cross-provider
             # ceiling (Gemini-3 Pro = 65536, Claude 4.x = 64k, gpt-5 = 128k)
             # — so reasoning + response always have room regardless of mode.
-            max_tokens = 65536
+            max_tokens = 8192
             response = self._query_llm_text(
                 system_prompt,
                 user_prompt,

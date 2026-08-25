@@ -164,8 +164,22 @@ class Verifier:
             visual_custom_success = self._truthy_bool(visual_custom_result.get("success"))
             logger.info(f"  Visual custom verifier result: {visual_custom_result}")
 
+        # EVAL ONLY: drop the benchmark's own goal predicate from the stop rule.
+        #
+        # `native_success` is LIBERO's check_success() -- the very thing that
+        # scores the run. Leaving it in the OR lets the agent retry until the
+        # oracle says it is done, which is not something it could do outside the
+        # simulator. Off by default, so `play` (which never sets the variable)
+        # keeps the published behaviour; only the eval launcher opts in.
+        #
+        # `verifier_votes.native` is still recorded either way, so scoring is
+        # unaffected -- this changes when the loop stops, not what is measured.
+        _drop_oracle = os.environ.get(
+            "RATS_EVAL_NO_ORACLE_STOP", "0"
+        ).strip().lower() in {"1", "true", "yes"}
+        _native_for_stop = native_success and not _drop_oracle
         verified = exec_success and (
-            native_success or structured_custom_success or visual_custom_success
+            _native_for_stop or structured_custom_success or visual_custom_success
         )
         custom_override = bool(
             exec_success
@@ -498,7 +512,7 @@ class Verifier:
             # (always cut off after `"root_cause_predicate": "['On', 'milk_`).
             # Pinned to 65536 — the cross-provider ceiling (Gemini-3 Pro = 65536,
             # Claude 4.x = 64k, gpt-5 = 128k) — so reasoning + JSON always fit.
-            result = self._query_llm_json(system_prompt, user_prompt, max_tokens=65536)
+            result = self._query_llm_json(system_prompt, user_prompt, max_tokens=8192)
         except Exception as e:
             logger.warning(f"  verifier LLM analysis failed (non-fatal): {e}")
             return None

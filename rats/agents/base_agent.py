@@ -231,6 +231,12 @@ def _write_io_record(
             "max_tokens": payload.get("max_tokens") or payload.get("max_completion_tokens"),
             "reasoning_effort": payload.get("reasoning_effort"),
             "response_format": payload.get("response_format"),
+            # These two decide whether reasoning is bounded at all, and their
+            # absence from this whitelist is not evidence of their absence from
+            # the payload -- a reading of "0 of 2827 requests carried a thinking
+            # budget" was wrong for exactly that reason.
+            "thinking_token_budget": payload.get("thinking_token_budget"),
+            "chat_template_kwargs": payload.get("chat_template_kwargs"),
         },
         "response": {
             "content": response_content,
@@ -283,7 +289,13 @@ if _config_path.exists():
         _CONFIG = yaml.safe_load(_f) or {}
 
 DEFAULT_MODEL = _CONFIG.get("llm_model", "openai/gpt-5.5")
-DEFAULT_MAX_TOKENS = int(_CONFIG.get("llm_max_tokens", 8192))
+# Env override so a measurement run can lift the ceiling without editing the
+# shipped config: with the cap at 8192 every xhigh call returns
+# finish_reason="length" and the observed length is the cap, not the
+# model's natural reasoning length -- censored data cannot size a budget.
+DEFAULT_MAX_TOKENS = int(
+    os.getenv("RATS_LLM_MAX_TOKENS") or _CONFIG.get("llm_max_tokens", 8192)
+)
 DEFAULT_TEMPERATURE = float(_CONFIG.get("llm_temperature", 0.2))
 DEFAULT_REASONING_EFFORT = _CONFIG.get("llm_reasoning_effort", "medium")
 # HTTP read timeout for LLM calls. Default 200 preserves paper behavior; raise via
@@ -400,6 +412,63 @@ def video_llm_disabled() -> bool:
         "yes",
         "on",
     }
+
+
+def _local_thinking_extras(model: str, api_url: str, max_tokens: int) -> dict[str, Any]:
+    """Bound the hidden reasoning of a locally served Qwen3.5/3.6 (vLLM).
+
+    The generic payload below carries no reasoning controls at all -- reasoning_effort
+    is only sent on the OpenAI path -- so a local Qwen runs with thinking ON and
+    unbounded. Its trace is billed against max_tokens, and once the trace fills the
+    window the reply comes back with content="" and finish_reason="length": the agent
+    receives nothing and the call is retried from scratch. In play run 5190002 that was
+    81 wasted calls / ~2.1M generated-then-discarded tokens -- 47 of them on
+    per_step_verifier's 1600-token budget, 31 on the 65536-token diagnosis.
+
+    vLLM's thinking_token_budget forces </think> after N reasoning tokens, so the rest
+    of the window is guaranteed to the answer. Budget defaults to max_tokens//4 (capped
+    at 1024), leaving >=75% for content -- measured diagnosis JSON needs ~1.1-1.9k.
+
+    Gated to local Qwen on purpose: the parameter needs --reasoning-parser on the
+    serving side (run-qwen-server.sh sets it), and Molmo's endpoint -- also localhost --
+    is started without one, so sending it there would 400 every VLM call.
+    """
+    if os.getenv("RATS_ENABLE_THINKING_BUDGET", "1") == "0":
+        return {}
+    if not re.search(r"127\.0\.0\.1|localhost", api_url or ""):
+        return {}
+    # Match the family, not a version list. This used to read `qwen3\.[56]`,
+    # which silently returned {} for Qwen3.8: nothing was sent, reasoning ran
+    # unbounded, and every policy_writer call came back with content="" and
+    # finish_reason="length" -- 100 iterations of empty code that still exited
+    # rc=0. Molmo shares localhost but is served without --reasoning-parser, so
+    # it must stay excluded or every VLM call 400s.
+    name = (model or "").lower()
+    if "molmo" in name or not re.search(r"qwen", name):
+        return {}
+
+    # One budget for every local Qwen, computed the same way it is for 3.5/3.6
+    # -- those settings are in service and work, so 3.8 gets them too rather
+    # than a version-specific path.
+    divisor = int(os.getenv("RATS_THINKING_BUDGET_DIVISOR", "4"))
+    cap = int(os.getenv("RATS_THINKING_BUDGET_MAX", "1024"))
+    extras: dict[str, Any] = {
+        "thinking_token_budget": max(64, min(cap, max_tokens // divisor)),
+    }
+
+    # Qwen3.8 additionally documents `reasoning_effort` (xhigh|medium|low), and
+    # its default of xhigh is what produced 100k-character traces: measured over
+    # one task, xhigh truncated 14 of 19 policy_writer calls and emptied 3 of 12
+    # generated programs, while low truncated none and ran 3.5x faster. The
+    # budget is the hard stop; this keeps the model from needing it.
+    # `preserve_thinking` defaults to True and replays every earlier trace into
+    # the next turn, which a 6-attempt retry loop cannot afford.
+    if re.search(r"qwen(\d+)\.(\d+)", name) and \
+            tuple(int(x) for x in re.search(r"qwen(\d+)\.(\d+)", name).groups()) >= (3, 8):
+        extras["reasoning_effort"] = os.getenv("RATS_REASONING_EFFORT", "low")
+        if os.getenv("RATS_PRESERVE_THINKING", "0") not in {"1", "true", "yes"}:
+            extras["chat_template_kwargs"] = {"preserve_thinking": False}
+    return extras
 
 
 def _get_api_config(model: str | None = None) -> tuple[str, dict[str, str]]:
@@ -813,6 +882,7 @@ def query_llm(
             "temperature": temperature,
             "max_tokens": max_tokens,
             "messages": messages,
+            **_local_thinking_extras(model, api_url, max_tokens),
         }
 
     if json_mode and (
@@ -1048,12 +1118,31 @@ def query_llm_text(
     """Convenience wrapper: system + user text (+ optional image/video media) -> response text."""
     user_content: list[dict[str, Any]] = [{"type": "text", "text": user_prompt}]
     if videos:
+        # The two destinations want opposite things, so pick by destination
+        # rather than standardising on one and losing the other.
+        #
+        # OpenRouter and the hosted models behind it take a video data URL
+        # inside an `image_url` block and reject an explicit `video_url` one,
+        # which is why everything used to be sent that way. A local vLLM does
+        # the reverse: an mp4 arriving as `image_url` is handed to the image
+        # loader, PIL cannot parse it, and the call dies with
+        #   400 "Failed to load image: cannot identify image file <BytesIO>"
+        # -- 82 times in one 12-iteration probe. That 400 is what
+        # RATS_LLM_NO_VIDEO was invented to dodge; it was never a model
+        # limitation. Qwen3.8 ships a video preprocessor and vLLM 0.26 parses
+        # `video_url` (chat_utils.parse_video), with the per-prompt limit for
+        # an unspecified modality defaulting to 999, so nothing else is needed.
+        _api_url, _ = _get_api_config(model)
+        _local = bool(re.search(r"127\.0\.0\.1|localhost", _api_url or ""))
         for video_url in videos:
-            # Match origin/main's OpenAI/OpenRouter-compatible chat schema:
-            # carry video data URLs in an image_url content block. The local
-            # OpenRouter proxy / upstream models that accept video via this
-            # path reject explicit {"type": "video_url"} blocks.
-            user_content.append({"type": "image_url", "image_url": {"url": video_url}})
+            if _local:
+                user_content.append(
+                    {"type": "video_url", "video_url": {"url": video_url}}
+                )
+            else:
+                user_content.append(
+                    {"type": "image_url", "image_url": {"url": video_url}}
+                )
     if images:
         for img_url in images:
             user_content.append({"type": "image_url", "image_url": {"url": img_url}})
