@@ -24,17 +24,40 @@ from rats.agents.base_agent import query_llm_json
 from skill_library.initial_primitives import get_all_primitive_names
 
 
+# Runs that shift the perception port block (e.g. one lane per OFFSET on a
+# shared node) publish the real endpoints via these env vars; the yaml ports
+# are only defaults. Probing the yaml port on such a run marks every grasp
+# primitive "server offline" and silently blocks them for the whole run.
+_SERVER_ENV_URLS = {
+    "sam3": "SAM3_SERVICE_URL",
+    "graspgen": "GRASPNET_SERVICE_URL",
+    "molmo": "MOLMO_BASE_URL",
+    "pyroki": "PYROKI_SERVICE_URL",
+}
+
+
 def _load_server_deps() -> dict[str, tuple[str, int]]:
-    """Load primitive->server mappings from rats/config/default.yaml."""
+    """Load primitive->server mappings from rats/config/default.yaml,
+    letting the service-URL env vars override host/port per server."""
+    import os
+    from urllib.parse import urlparse
+
     config_path = Path(__file__).resolve().parent.parent.parent / "rats" / "config" / "default.yaml"
     deps: dict[str, tuple[str, int]] = {}
     if config_path.exists():
         import yaml
         with config_path.open() as f:
             cfg = yaml.safe_load(f) or {}
-        for _name, srv in (cfg.get("servers") or {}).items():
+        for name, srv in (cfg.get("servers") or {}).items():
             host = srv.get("host", "127.0.0.1")
             port = int(srv.get("port", 0))
+            env_url = os.environ.get(_SERVER_ENV_URLS.get(name, ""), "").strip()
+            if env_url:
+                parsed = urlparse(env_url)
+                if parsed.hostname:
+                    host = parsed.hostname
+                if parsed.port:
+                    port = parsed.port
             for prim in srv.get("primitives", []):
                 deps[prim] = (host, port)
     return deps
