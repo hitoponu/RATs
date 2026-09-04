@@ -1309,12 +1309,20 @@ class PerStepVerifier:
             arrs = [np.asarray(frame) for frame in frames if frame is not None]
             if not arrs:
                 return
+            # Gemini's OpenAI-compatible endpoint rejects sub-second videos with
+            # INVALID_ARGUMENT (its ~1 fps sampling yields zero frames), so short
+            # step clips must be padded to >=2s by repeating the last frame.
+            real_count = len(arrs)
+            min_frames = 2 * fps
+            if len(arrs) < min_frames:
+                arrs = arrs + [arrs[-1]] * (min_frames - len(arrs))
             imageio.mimsave(str(path), arrs, fps=fps)
             saved.setdefault("videos", []).append(
                 {
                     "label": label,
                     "path": str(path),
-                    "frame_count": len(arrs),
+                    "frame_count": real_count,
+                    "padded_frame_count": len(arrs),
                     "fps": fps,
                 }
             )
