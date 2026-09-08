@@ -1,0 +1,70 @@
+You are extracting ONE reusable robot skill from a policy that PARTIALLY succeeded.
+
+The code below ran in a simulator. State-based verification confirmed that it
+achieved exactly the sub-goals listed under ACHIEVED SUB-GOALS before the task as
+a whole failed. Only the plan steps that passed are included; the failed part is
+NOT shown and must NOT be reconstructed.
+
+Your job: extract ONE self-contained helper function that reproduces the achieved
+sub-behavior on other objects and other scenes.
+
+REQUIREMENTS (a static checker rejects violations):
+1. Signature: the FIRST parameter is `object_name: str` (the natural-language
+   name / text prompt of the target object). Optional extra parameters: a target
+   or destination name (str) and numeric tuning values (approach height, lift
+   height, offsets) with defaults. Every parameter and the return carry a Python
+   type hint.
+2. The function must do the WHOLE chain itself: (a) localize the object with a
+   perception primitive, (b) plan the pose (grasp planner / oriented bounding
+   box / point cloud), (c) execute it. Do NOT accept precomputed geometry as a
+   parameter: no `pos`, `quat`, `pose`, `grasp`, `position`, `orientation`,
+   `point` arrays. A wrapper that only executes a pose computed by the caller is
+   worthless because the caller's pose computation is where failures happen.
+3. Use ONLY functions from AVAILABLE FUNCTIONS, plus learned helpers listed under
+   EXISTING LEARNED SKILLS (call by name, never redefine them). Do not call
+   `env.` or `low_level_env.` methods.
+4. Bounded `for` loops only, never `while True`. No imports inside the function
+   (numpy is available as `np`).
+5. Keep the numeric values that actually worked as parameter DEFAULTS.
+   Parameterize instance names: never hard-code a scene-specific object name.
+6. Return a dict with at least {"success": bool} plus the evidence you actually
+   observed (e.g. the verified pose, lift height reached).
+7. At most {max_lines} lines. Exactly one function. snake_case name that names the
+   BEHAVIOR (e.g. `grasp_and_lift_with_planned_pose`), not the task or the scene.
+8. If an EXISTING LEARNED SKILL already does the same thing with the same
+   primitives, return null instead of a duplicate.
+
+Respond ONLY with valid JSON of this exact shape:
+{
+  "skill": {
+    "name": "<snake_case>",
+    "description": "<one sentence, generic manipulation vocabulary>",
+    "code": "def <name>(object_name: str, ...) -> dict:\n    ...",
+    "params": [{"name": "...", "type": "...", "shape": "", "default": null, "description": "..."}],
+    "returns": {"type": "dict", "shape": "", "description": "..."},
+    "api_primitives_used": ["..."],
+    "preconditions": ["..."],
+    "effects": ["..."],
+    "strategy_tag": "<graspnet_6dof|topdown_obb_yaw|side_pinch|wrist_refine|handle_pull|push_surface|other>",
+    "usage_example": "<the concrete call with the argument values that worked in THIS run>",
+    "extraction_rationale": "<one sentence: why this is reusable>"
+  },
+  "reason": "<one sentence>"
+}
+or {"skill": null, "reason": "<why nothing worth extracting>"}.
+
+# === TASK-SPECIFIC INPUTS BELOW (everything above is stable for cache reuse) ===
+
+TASK (natural language): {task_description}
+
+ACHIEVED SUB-GOALS (state-verified, in order): {achieved_effects}
+
+AVAILABLE FUNCTIONS: {available_functions}
+
+EXISTING LEARNED SKILLS (skip if duplicate; callable by name):
+{existing_skills}
+
+CODE THAT ACHIEVED THE SUB-GOALS (only the plan steps that passed):
+```python
+{code}
+```

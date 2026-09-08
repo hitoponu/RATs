@@ -31,6 +31,7 @@ import base64
 import io
 import json
 import logging
+import sys
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -209,6 +210,39 @@ _frame_count_provider: Callable[[], int | None] | None = None
 _frame_fps: float | None = None
 _policy_step_stack: list[dict[str, Any]] = []
 _policy_step_counter: int = 0
+# Additive observer hook for plan-step markers (step-growth recorder etc.).
+# Unlike ``_emit_callback`` (a single slot owned by the web debugger and reset
+# by init/finalize), listeners persist across execution contexts so a
+# long-lived recorder registers once. Listener errors never propagate into
+# user code.
+_policy_step_listeners: list[Callable[[dict[str, Any]], None]] = []
+
+
+def register_policy_step_listener(fn: Callable[[dict[str, Any]], None]) -> None:
+    """Register ``fn(event)`` to be called at every plan-step begin/end.
+
+    ``event`` keys: ``phase`` ("begin"|"end"), ``step_id``, ``step_index``,
+    ``step_goal``, ``marker_index``, ``frame`` and ``exc_in_flight`` (True
+    when the step is being closed by an exception unwinding through the
+    ``with step_context`` block).
+    """
+    if fn not in _policy_step_listeners:
+        _policy_step_listeners.append(fn)
+
+
+def unregister_policy_step_listener(fn: Callable[[dict[str, Any]], None]) -> None:
+    try:
+        _policy_step_listeners.remove(fn)
+    except ValueError:
+        pass
+
+
+def _notify_step_listeners(event: dict[str, Any]) -> None:
+    for fn in list(_policy_step_listeners):
+        try:
+            fn(event)
+        except Exception as e:  # never break generated policy code
+            logger.debug(f"policy step listener failed: {e}")
 
 
 def _current_frame() -> int | None:
@@ -409,6 +443,16 @@ def begin_policy_step(
             _emit_callback(step)
         except Exception as e:
             logger.warning(f"Failed to emit policy step marker: {e}")
+    if _policy_step_listeners:
+        _notify_step_listeners({
+            "phase": "begin",
+            "step_id": str(step_id),
+            "step_index": int(step_index) if step_index is not None else None,
+            "step_goal": str(step_goal or step_id),
+            "marker_index": marker_index,
+            "frame": frame_start,
+            "exc_in_flight": False,
+        })
     return get_current_step_context() or {}
 
 
@@ -439,6 +483,16 @@ def end_policy_step(step_id: str | None = None) -> dict[str, Any] | None:
                 logger.warning(f"Failed to emit updated policy step marker: {e}")
     out = dict(ctx)
     out.pop("_execution_step", None)
+    if _policy_step_listeners:
+        _notify_step_listeners({
+            "phase": "end",
+            "step_id": str(out.get("policy_step_id")),
+            "step_index": out.get("policy_step_index"),
+            "step_goal": str(out.get("policy_step_goal", "")),
+            "marker_index": out.get("policy_step_marker_index"),
+            "frame": frame_end,
+            "exc_in_flight": sys.exc_info()[0] is not None,
+        })
     return out
 
 

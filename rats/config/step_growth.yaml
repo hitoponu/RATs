@@ -1,0 +1,28 @@
+# Step-growth arm (RATS play): oracle step judgement + step-level skill credit
+# + step-level skill extraction. Inert unless RATS_STEP_GROWTH=1.
+# Override this file with RATS_STEP_GROWTH_CONFIG=<path>.
+oracle:
+  lift_dz_m: 0.03                 # matches FrankaLiberoEnv._PICK_LIFT_M
+  grasp_end_dz_m: 0.005           # boundary grasp check: contact + closed gripper + 5 mm
+  gripper_closed_max_fraction: 0.6
+  persist_sidecar: true           # iteration_NNN/attempt_NN/step_oracle.json
+  oracle_to_diagnoser: false      # C2 extension; NOT wired in v1, keep false
+milestones:
+  near_radius_m: 0.10             # transport milestone near(a, b): xy radius
+  near_z_tolerance_m: 0.02
+  multi_chain: max_time           # multi-predicate goals: t* = max over chains
+credit:
+  tier_policy: step               # step | task
+  promote_min_step_uses: 3
+  promote_min_step_sr: 0.6
+  deprecate_min_step_uses: 8
+  deprecate_max_step_sr: 0.2
+extraction:
+  enabled: true
+  max_per_iteration: 1
+  max_per_run: 200
+  only_on_failed_iteration: true
+  model: null                     # null -> RATS_STEP_SKILL_EXTRACTOR_MODEL or the loop default
+  min_prefix_lines: 3
+  max_prefix_lines: 200
+  max_skill_lines: 80

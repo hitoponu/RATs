@@ -422,6 +422,8 @@ from rats.loop.task_queue import TaskQueue  # deprecated; retained for resume co
 from rats.memory.failure_memory import FailureMemory
 from rats.memory.playtime_memory import PlaytimeMemory
 from skill_library.library import SkillLibrary
+from skill_library.step_credit_library import make_skill_library as _make_skill_library
+from rats.step_growth.controller import StepGrowthController
 
 logger = logging.getLogger("rats.lifelong_loop")
 
@@ -856,7 +858,7 @@ class LifelongLoop:
                     import shutil
                     shutil.copy2(src, run_skill_path)
                 # else SkillLibrary will initialize from primitives
-        self.skill_library = SkillLibrary(storage_path=str(run_skill_path))
+        self.skill_library = _make_skill_library(str(run_skill_path))
 
         # Failure memory: persistent record of past failures
         if no_failure_memory:
@@ -1278,6 +1280,14 @@ class LifelongLoop:
         )
         self.skill_proposer = SkillProposer()
         self.memory_curator = MemoryCurator()
+        # Step-growth arm (RATS_STEP_GROWTH=1): oracle step judge + step-level
+        # skill credit + step-level extraction. None when disabled; every call
+        # site below is guarded so the default path is unchanged.
+        self._step_growth = StepGrowthController.maybe_create(
+            output_dir=self.output_dir,
+            env_type=self.env_type,
+            library_getter=lambda: self.skill_library,
+        )
         # PlaytimeMemory was an extra archive of (object, interaction,
         # outcome) tuples that the molmospaces playtime proposer used to
         # feed back into its prompt as "prior sensorimotor observations".
@@ -1997,7 +2007,7 @@ class LifelongLoop:
             if prev_skills.resolve() != run_skills.resolve():
                 import shutil
                 shutil.copy2(prev_skills, run_skills)
-            self.skill_library = SkillLibrary(storage_path=str(run_skills))
+            self.skill_library = _make_skill_library(str(run_skills))
             logger.info(f"Loaded skill library: {len(self.skill_library.get_all_skill_names())} skills")
 
         # Merge failure memory from previous run
@@ -3087,6 +3097,11 @@ class LifelongLoop:
         # Persist the (potentially refined) plan after the gate.
         iteration_data["plan"] = plan
         logger.info(f"  Plan: {len(plan.get('steps', []))} steps")
+        if self._step_growth is not None:
+            self._step_growth.on_plan_ready(
+                plan=plan, task_proposal=task_proposal,
+                scene_context=scene_context, iteration_data=iteration_data,
+            )
         if self.web_debugger is not None:
             self.web_debugger.plan_ready(self._iteration, plan)
 
@@ -3346,6 +3361,12 @@ class LifelongLoop:
             # explicit _reset_env() for later attempts), so it's False
             # there even in nested mode.
             task_in_progress = not is_first_turn_of_attempt
+            if self._step_growth is not None:
+                self._step_growth.on_attempt_start(
+                    low_level, iteration=self._iteration, attempt=attempt,
+                    attempt_in_iter=attempt_in_iter, turn_in_attempt=turn_in_attempt,
+                    env_reset=is_first_turn_of_attempt,
+                )
 
             # 5a. Policy Writer
             if self._turn_mode or self._attempts_per_iteration > 1:
@@ -3714,6 +3735,12 @@ class LifelongLoop:
                         timeline_kind="execution",
                         timeline_label="policy",
                     )
+                if self._step_growth is not None:
+                    self._step_growth.on_execution_start(
+                        iteration=self._iteration, attempt=attempt,
+                        attempt_in_iter=attempt_in_iter, turn_in_attempt=turn_in_attempt,
+                        env_reset=is_first_turn_of_attempt,
+                    )
                 try:
                     if self.web_debugger is not None:
                         with self.web_debugger.execution_interrupt_scope():
@@ -4009,6 +4036,14 @@ class LifelongLoop:
                         "enabled": False,
                         "error": str(exc),
                     }
+
+            if self._step_growth is not None:
+                self._step_growth.on_attempt_executed(
+                    execution_result=execution_result, plan=plan, code=code,
+                    attempt=attempt, attempt_in_iter=attempt_in_iter,
+                    turn_in_attempt=turn_in_attempt, scene_context=scene_context,
+                    task_proposal=task_proposal, iteration_data=iteration_data,
+                )
 
             # Save before/after frames only if explicitly enabled
             if self._save_debug_frames:
@@ -5149,6 +5184,11 @@ class LifelongLoop:
 
         # Record outcome with rich failure context
         success = final_result["action"] == "success"
+        if self._step_growth is not None:
+            self._step_growth.on_iteration_end(
+                success=success, iteration_data=iteration_data,
+                scene_context=scene_context, task_proposal=task_proposal,
+            )
         # Record the per-iteration lesson-application outcome. We already
         # call this on the success path (with full success=True) at the
         # success branch above; on the failure path it lets the
