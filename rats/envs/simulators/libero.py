@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import sys
 from typing import Any, Literal
@@ -15,6 +16,8 @@ from rats.envs.base import BaseEnv
 from rats.integrations.libero import load_libero_task
 from rats.utils.camera_utils import obs_get_rgb
 from rats.utils.depth_utils import depth_color_to_pointcloud
+
+logger = logging.getLogger("rats.envs.libero")
 
 here = os.path.dirname(os.path.abspath(__file__))
 vendor_root = os.path.normpath(os.path.join(here, "..", "third_party", "LIBERO"))
@@ -566,6 +569,34 @@ class FrankaLiberoEnv(BaseEnv):
     # tracker that runs inside the control loop.
     _PICK_LIFT_M = 0.03  # bowls are ~5 cm tall; 3 cm clears the table
 
+    def _inner_env(self, *required: str) -> Any:
+        """Walk down to the env that actually owns ``required`` attributes.
+
+        ``self.handle.env`` is an ``OffScreenRenderEnv``/``ControlEnv``
+        wrapper. It forwards only a fixed list (``sim``, ``robots``,
+        ``check_success``, ...) and defines no ``__getattr__``, so
+        ``obj_body_id``, ``get_object`` and ``_check_grasp`` — all owned by
+        the inner ``Libero_*_Manipulation`` problem env — are simply absent
+        on it. Reading them off the wrapper silently yields None, which is
+        how the lift tracker and the grasp check ended up permanently
+        inert (empty ``pick_events`` / ``fingerpad_contact`` on every run).
+        """
+        cache_key = "_inner_env_cache_" + "_".join(required)
+        cached = getattr(self, cache_key, None)
+        if cached is not None:
+            return cached
+        cur = getattr(self.handle, "env", None)
+        visited: set[int] = set()
+        for _ in range(8):
+            if cur is None or id(cur) in visited:
+                return None
+            visited.add(id(cur))
+            if all(getattr(cur, attr, None) is not None for attr in required):
+                setattr(self, cache_key, cur)
+                return cur
+            cur = getattr(cur, "env", None) or getattr(cur, "unwrapped", None)
+        return None
+
     def _fingerpad_contact(self, name: str) -> bool:
         """robosuite `_check_grasp`: BOTH fingerpad geoms touching this object.
 
@@ -574,7 +605,9 @@ class FrankaLiberoEnv(BaseEnv):
         satisfies it while holding nothing, and so does the instant of a failed
         squeeze. It is evidence, not a verdict; pair it with a lift.
         """
-        env = getattr(self.handle, "env", None)
+        env = self._inner_env("_check_grasp", "get_object")
+        if env is None:
+            return False
         check_grasp = getattr(env, "_check_grasp", None)
         get_object = getattr(env, "get_object", None)
         if not (callable(check_grasp) and callable(get_object)):
@@ -589,9 +622,13 @@ class FrankaLiberoEnv(BaseEnv):
         self._pick_bodies: dict[str, int] = {}
         self._pick_baseline_z: dict[str, float] = {}
         self._pick_events: list[dict[str, Any]] = []
-        env = getattr(self.handle, "env", None)
-        body_ids = getattr(env, "obj_body_id", None)
+        env = self._inner_env("obj_body_id")
+        body_ids = getattr(env, "obj_body_id", None) if env is not None else None
         if not isinstance(body_ids, dict):
+            logger.warning(
+                "Pick tracker inert: no obj_body_id found under handle.env "
+                "(pick_events / picked / picked_wrong will stay empty)."
+            )
             return
         for name, bid in body_ids.items():
             try:
@@ -638,18 +675,7 @@ class FrankaLiberoEnv(BaseEnv):
         its ``.env`` (e.g. ``Libero_Tabletop_Manipulation``). Stopping at the
         wrapper silently yields an empty result, so unwrap until the API appears.
         """
-        cur = getattr(self.handle, "env", None)
-        visited: set[int] = set()
-        for _ in range(8):  # LIBERO has at most 1-2 wrappers
-            if cur is None or id(cur) in visited:
-                return None
-            visited.add(id(cur))
-            if getattr(cur, "parsed_problem", None) is not None and callable(
-                getattr(cur, "_eval_predicate", None)
-            ):
-                return cur
-            cur = getattr(cur, "env", None) or getattr(cur, "unwrapped", None)
-        return None
+        return self._inner_env("parsed_problem", "_eval_predicate")
 
     def describe_object_state(
         self, *, relations: tuple[str, ...] = ("on", "in"),
