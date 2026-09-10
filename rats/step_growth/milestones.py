@@ -6,7 +6,10 @@ No plan text and no policy code is interpreted here. Inputs are:
     tuples such as ``("on", "akita_black_bowl_1", "plate_1")``) or the
     ``[on a b]`` strings in a ``describe_object_state()`` snapshot;
   * the recorder's boundaries (``sim_step``, ``snapshot``, ``gripper_fraction``,
-    ``eef_pos``) and ``pick_events`` (``{"object", "sim_step", "z0", "z", "dz"}``).
+    ``eef_pos``) and ``pick_events`` (``{"object", "sim_step", "z0", "z", "dz",
+    "evidence"}``). ``evidence`` says which test fired -- ``"fingerpad"`` for
+    robosuite's two-pad ``_check_grasp``, ``"proximity"`` for a rise under a
+    closed gripper -- and is audit metadata only: both ground the chain.
 """
 
 from __future__ import annotations

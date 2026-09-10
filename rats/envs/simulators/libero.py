@@ -569,6 +569,14 @@ class FrankaLiberoEnv(BaseEnv):
     # "never grasped anything" produce identical before/after states. Hence a
     # tracker that runs inside the control loop.
     _PICK_LIFT_M = 0.03  # bowls are ~5 cm tall; 3 cm clears the table
+    # A carried object that both fingerpads never touch. `_check_grasp` wants
+    # contact in the left AND right fingerpad geom groups, which a mug hooked by
+    # its handle or an object pinched off-axis never satisfies -- run1 raised
+    # objects 4.0, 4.3 and 7.9 cm with the predicate false throughout. Treat a
+    # rise under a closed gripper, with the object below the hand and within
+    # reach of the fingers, as a pick too, and say which test fired.
+    _PICK_CLOSED_FRAC = 0.6   # gripper_fraction: 1.0 open, 0.0 closed
+    _PICK_HOLD_R_M = 0.15     # hand link to a held object (fingers are ~10 cm)
 
     def _inner_env(self, *required: str) -> Any:
         """Walk down to the env that actually owns ``required`` attributes.
@@ -670,11 +678,34 @@ class FrankaLiberoEnv(BaseEnv):
                 self._pick_max_dz[name] = dz
             if dz <= self._PICK_LIFT_M:
                 continue
-            if self._fingerpad_contact(name):
+            evidence = "fingerpad" if self._fingerpad_contact(name) else self._held_nearby(bid)
+            if evidence:
                 self._pick_events.append({
                     "object": name, "sim_step": int(self._sim_step_count),
                     "z0": round(z0, 4), "z": round(z, 4), "dz": round(dz, 4),
+                    "evidence": evidence,
                 })
+
+    def _held_nearby(self, body_id: int) -> str | None:
+        """Is this body riding with the gripper? Returns "proximity" or None.
+
+        Weaker than `_check_grasp` on purpose, and only ever consulted for a
+        body that has already risen past the lift threshold: a thing sitting on
+        the table does not go up, so the radius is guarding against a knock that
+        sent something flying, not against a false pinch.
+        """
+        if self._gripper_fraction > self._PICK_CLOSED_FRAC:
+            return None
+        try:
+            obj = np.asarray(self.handle.env.sim.data.body_xpos[body_id], dtype=float)
+            eef = np.asarray(self.handle.env.sim.data.xpos[self.gripper_link_idx], dtype=float)
+        except Exception:
+            return None
+        if obj[2] >= eef[2]:          # a held object hangs below the hand
+            return None
+        if float(np.linalg.norm(obj - eef)) > self._PICK_HOLD_R_M:
+            return None
+        return "proximity"
 
     def _predicate_env(self) -> Any:
         """Walk down to the LIBERO problem object that owns the predicate API.

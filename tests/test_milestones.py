@@ -137,3 +137,20 @@ def test_open_goal_uses_goal_bit():
 def test_goal_state_from_record_fallback():
     b = [boundary(0, "begin", 0, 0, snap({BOWL: (0, 0, 0.9)}, goal={ON: False}))]
     assert ms.goal_state_from_record(make_record(b)) == [("on", BOWL, PLATE)]
+
+
+def test_proximity_evidence_pick_event_still_grounds_the_chain():
+    """A carried object whose fingerpads never register must still count.
+
+    run1 raised objects 4.0-7.9 cm with `_check_grasp` false throughout, so the
+    adapter now emits those as pick events tagged `evidence="proximity"`. The
+    judge must not treat that tag as a lesser event -- it is the whole reason
+    the chain gets off the ground on a failed attempt.
+    """
+    rec = _pick_place_record(place_ok=False)
+    rec["pick_events"] = [{"object": BOWL, "sim_step": 350, "z0": 0.90, "z": 0.94,
+                           "dz": 0.04, "evidence": "proximity"}]
+    res = ms.evaluate([("on", BOWL, PLATE)], rec, StepGrowthConfig())
+    times = {m.kind: res.times[m.key] for m in res.milestones}
+    assert times["grasped"] == 350 and times["lifted"] == 350
+    assert res.progress > 0
