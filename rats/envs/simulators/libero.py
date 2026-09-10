@@ -196,6 +196,7 @@ class FrankaLiberoEnv(BaseEnv):
         self._pick_bodies = {}
         self._pick_baseline_z = {}
         self._pick_events = []
+        self._pick_max_dz = {}
 
         for _ in range(10):
             self._step_once()
@@ -622,6 +623,7 @@ class FrankaLiberoEnv(BaseEnv):
         self._pick_bodies: dict[str, int] = {}
         self._pick_baseline_z: dict[str, float] = {}
         self._pick_events: list[dict[str, Any]] = []
+        self._pick_max_dz: dict[str, float] = {}
         env = self._inner_env("obj_body_id")
         body_ids = getattr(env, "obj_body_id", None) if env is not None else None
         if not isinstance(body_ids, dict):
@@ -659,12 +661,19 @@ class FrankaLiberoEnv(BaseEnv):
             except Exception:
                 continue
             z0 = self._pick_baseline_z.get(name, z)
-            if z - z0 <= self._PICK_LIFT_M:
+            dz = z - z0
+            # Highest rise seen this episode, lift or not. Without it a failed
+            # grasp and a grasp that missed the object by a metre look the same
+            # (both leave `pick_events` empty); with it, dz=0.028 reads as "it
+            # nearly lifted" and dz=0.000 as "it never moved the object".
+            if dz > self._pick_max_dz.get(name, float("-inf")):
+                self._pick_max_dz[name] = dz
+            if dz <= self._PICK_LIFT_M:
                 continue
             if self._fingerpad_contact(name):
                 self._pick_events.append({
                     "object": name, "sim_step": int(self._sim_step_count),
-                    "z0": round(z0, 4), "z": round(z, 4), "dz": round(z - z0, 4),
+                    "z0": round(z0, 4), "z": round(z, 4), "dz": round(dz, 4),
                 })
 
     def _predicate_env(self) -> Any:
@@ -706,6 +715,8 @@ class FrankaLiberoEnv(BaseEnv):
             "objects": {}, "relations": [], "fingerpad_contact": [],
             "goal": [], "success": False,
             "pick_events": list(getattr(self, "_pick_events", [])),
+            "max_lift_dz": {k: round(v, 4) for k, v in
+                            (getattr(self, "_pick_max_dz", None) or {}).items() if v > 0.001},
             "picked": [], "picked_wrong": [],
             "goal_target": None, "goal_destination": None,
             "pick_only": False,

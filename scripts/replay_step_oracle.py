@@ -187,6 +187,14 @@ def replay_one(
             row["agree"] = same
         rows.append(row)
     stored_verif = data.get(f"verification_attempt_{attempt}") or {}
+    # Motion diagnostics. Without these an attempt that never moved the robot
+    # and an attempt that manipulated the scene and failed both print
+    # progress=0.00, and the run cannot tell an inert replay from a real one.
+    bnds = record.get("boundaries") or []
+    sims = [b.get("sim_step") for b in bnds if isinstance(b.get("sim_step"), int)]
+    contact_bnds = sum(1 for b in bnds
+                       if ((b.get("snapshot") or {}).get("fingerpad_contact") or []))
+    max_dz = {k: round(float(v), 4) for k, v in (record.get("max_lift_dz") or {}).items()}
     out = {
         "run_dir": str(run_dir), "iteration": iteration, "attempt": attempt, "bddl": str(bddl_path),
         "exec_success": bool(result.get("success")), "replay_task_completed": result.get("task_completed"),
@@ -194,7 +202,13 @@ def replay_one(
         "goal_state": [list(g) for g in goal_state],
         "milestones": mres.as_dict(), "progress": verdicts.progress, "s_star": verdicts.s_star,
         "fail_step": verdicts.fail_step, "fail_reason": verdicts.fail_reason,
-        "markers_seen": verdicts.markers_seen, "boundaries": len(record.get("boundaries") or []),
+        "markers_seen": verdicts.markers_seen, "boundaries": len(bnds),
+        "sim_step_first": min(sims) if sims else None, "sim_step_last": max(sims) if sims else None,
+        "pick_bodies": len(record.get("baseline_z") or {}),
+        "pick_events": record.get("pick_events") or [],
+        "max_lift_dz": max_dz,
+        "best_lift_dz": max(max_dz.values()) if max_dz else 0.0,
+        "contact_boundaries": contact_bnds,
         "learned_skills_in_scope": sorted(learned),
         "rows": rows, "compared": compared, "agree": agree, "disagree": disagree,
     }
@@ -210,6 +224,9 @@ def _print(out: dict[str, Any]) -> None:
           f"S*={out['s_star']} fail={out['fail_step']}({out['fail_reason']}) markers={out['markers_seen']} "
           f"exec={out['exec_success']} task_completed replay={out['replay_task_completed']} stored={out['stored_task_completed']}")
     print(f"  goal={out['goal_state']}  achieved={out['milestones']['achieved']}  events={[e['event'] for e in out['milestones']['failure_events']]}")
+    print(f"  sim={out['sim_step_first']}..{out['sim_step_last']} tracked_bodies={out['pick_bodies']} "
+          f"contact_boundaries={out['contact_boundaries']} best_lift_dz={out['best_lift_dz']:.3f}m "
+          f"picks={[e['object'] for e in out['pick_events']]}")
     print(f"  {'idx':>3} {'step_id':<10} {'oracle':<12} {'reason':<24} {'vlm':<6} {'conf':<5} agree")
     for r in out["rows"]:
         conf = r.get("vlm_confidence")
@@ -224,6 +241,8 @@ def main() -> int:
     ap.add_argument("--iteration", type=int)
     ap.add_argument("--iterations", help="range like 1-10 or list 1,4,7")
     ap.add_argument("--attempt", type=int, default=None, help="default: last attempt with code")
+    ap.add_argument("--attempts", default=None,
+                    help="'all' replays every attempt that has code (overrides --attempt)")
     ap.add_argument("--config", default="env_configs/libero/rats_libero_play_reduced.yaml")
     ap.add_argument("--bddl", default=None)
     ap.add_argument("--timeout", type=int, default=600)
@@ -247,23 +266,44 @@ def main() -> int:
     else:
         ap.error("--iteration or --iterations required")
 
+    def _attempts_for(it: int) -> list[int | None]:
+        if a.attempts != "all":
+            return [a.attempt]
+        try:
+            data = json.loads((run_dir / f"iteration_{it:03d}.json").read_text())
+        except Exception:
+            return [a.attempt]
+        return sorted(int(k.split("_")[-1]) for k in data
+                      if k.startswith("code_attempt_") and k.count("_") == 2) or [None]
+
     results = []
     for it in iters:
-        try:
-            out = replay_one(run_dir, it, a.attempt, config=a.config, bddl=a.bddl, timeout=a.timeout, cfg_step_growth=cfg)
-        except SystemExit as e:
-            print(f"[skip] iteration {it}: {e}", file=sys.stderr)
-            continue
-        except Exception as e:  # keep the batch going
-            print(f"[error] iteration {it}: {e!r}", file=sys.stderr)
-            continue
-        _print(out)
-        results.append(out)
+        for att in _attempts_for(it):
+            try:
+                out = replay_one(run_dir, it, att, config=a.config, bddl=a.bddl, timeout=a.timeout, cfg_step_growth=cfg)
+            except SystemExit as e:
+                print(f"[skip] iteration {it} attempt {att}: {e}", file=sys.stderr)
+                continue
+            except Exception as e:  # keep the batch going
+                print(f"[error] iteration {it} attempt {att}: {e!r}", file=sys.stderr)
+                continue
+            _print(out)
+            results.append(out)
+            if a.out:  # checkpoint after every attempt: a long batch must survive a kill
+                Path(a.out).write_text(json.dumps(results, indent=1, default=str))
     if results:
         compared = sum(r["compared"] for r in results)
         agree = sum(r["agree"] for r in results)
-        print(f"\nTOTAL iterations={len(results)} compared_steps={compared} agree={agree} "
-              f"rate={(agree / compared):.2f}" if compared else "\nTOTAL: no comparable steps")
+        n = len(results)
+        lifted = sum(1 for r in results if r["pick_events"])
+        touched = sum(1 for r in results if r["contact_boundaries"])
+        moved = sum(1 for r in results if r["best_lift_dz"] > 0.005)
+        inert = sum(1 for r in results if not r["sim_step_last"])
+        prog = sum(1 for r in results if r["progress"] > 0)
+        print(f"\nTOTAL attempts={n} inert(no sim)={inert} "
+              f"moved>5mm={moved} pad_contact={touched} lifted>3cm={lifted} progress>0={prog}")
+        print(f"      compared_steps={compared} agree={agree} "
+              + (f"rate={(agree / compared):.2f}" if compared else "rate=n/a"))
         if a.out:
             Path(a.out).write_text(json.dumps(results, indent=1, default=str))
             print(f"wrote {a.out}")

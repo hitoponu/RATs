@@ -110,6 +110,7 @@ class FakeLowLevelEnv:
         self._gripper_fraction = 1.0
         self._pick_events: list[dict[str, Any]] = []
         self._pick_baseline_z: dict[str, float] = {}
+        self._pick_max_dz: dict[str, float] = {}
         self.gripper_link_idx = 1
         self.handle = _Handle()
         self._goal_state = goal_state or []

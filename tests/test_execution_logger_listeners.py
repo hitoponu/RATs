@@ -59,3 +59,17 @@ def test_listener_errors_do_not_propagate():
         el.finalize_execution_context()
     finally:
         el.unregister_policy_step_listener(bad)
+
+
+def test_end_attempt_carries_max_lift_dz(fake_env_factory):
+    """`max_lift_dz` distinguishes "never touched it" from "nearly lifted it"."""
+    from rats.step_growth.config import StepGrowthConfig
+    from rats.step_growth.oracle_recorder import StepOracleRecorder
+
+    low = fake_env_factory([{"objects": {}, "relations": [], "fingerpad_contact": []}])
+    low._pick_max_dz = {"milk_1": 0.028}
+    rec = StepOracleRecorder(StepGrowthConfig())
+    rec.bind(low)
+    rec.begin_attempt(iteration=1, attempt=0, attempt_in_iter=0, turn_in_attempt=0, env_reset=True)
+    out = rec.end_attempt(None)
+    assert out["max_lift_dz"] == {"milk_1": 0.028}

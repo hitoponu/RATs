@@ -98,6 +98,7 @@ class StepOracleRecorder:
                 "boundaries": [],
                 "pick_events": [],
                 "baseline_z": {},
+                "max_lift_dz": {},
                 "attempt_before": None,
                 "attempt_after": None,
                 "started_at": time.time(),
@@ -182,6 +183,10 @@ class StepOracleRecorder:
             rec["baseline_z"] = _json_safe(dict(getattr(low, "_pick_baseline_z", {}) or {}))
         except Exception:
             rec["baseline_z"] = {}
+        try:
+            rec["max_lift_dz"] = _json_safe(dict(getattr(low, "_pick_max_dz", {}) or {}))
+        except Exception:
+            rec["max_lift_dz"] = {}
         try:
             rec["final_sim_step"] = int(getattr(low, "_sim_step_count", 0) or 0)
         except Exception:
