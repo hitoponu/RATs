@@ -226,7 +226,7 @@ def _print(out: dict[str, Any]) -> None:
     print(f"  goal={out['goal_state']}  achieved={out['milestones']['achieved']}  events={[e['event'] for e in out['milestones']['failure_events']]}")
     print(f"  sim={out['sim_step_first']}..{out['sim_step_last']} tracked_bodies={out['pick_bodies']} "
           f"contact_boundaries={out['contact_boundaries']} best_lift_dz={out['best_lift_dz']:.3f}m "
-          f"picks={[e['object'] for e in out['pick_events']]}")
+          f"picks={[(e['object'], e.get('evidence', 'fingerpad')) for e in out['pick_events']]}")
     print(f"  {'idx':>3} {'step_id':<10} {'oracle':<12} {'reason':<24} {'vlm':<6} {'conf':<5} agree")
     for r in out["rows"]:
         conf = r.get("vlm_confidence")
@@ -296,12 +296,17 @@ def main() -> int:
         agree = sum(r["agree"] for r in results)
         n = len(results)
         lifted = sum(1 for r in results if r["pick_events"])
+        by_pad = sum(1 for r in results if any(e.get("evidence", "fingerpad") == "fingerpad"
+                                               for e in r["pick_events"]))
+        by_prox = sum(1 for r in results if any(e.get("evidence") == "proximity"
+                                                for e in r["pick_events"]))
         touched = sum(1 for r in results if r["contact_boundaries"])
         moved = sum(1 for r in results if r["best_lift_dz"] > 0.005)
         inert = sum(1 for r in results if not r["sim_step_last"])
         prog = sum(1 for r in results if r["progress"] > 0)
         print(f"\nTOTAL attempts={n} inert(no sim)={inert} "
-              f"moved>5mm={moved} pad_contact={touched} lifted>3cm={lifted} progress>0={prog}")
+              f"moved>5mm={moved} pad_contact={touched} lifted>3cm={lifted} "
+              f"(fingerpad={by_pad} proximity={by_prox}) progress>0={prog}")
         print(f"      compared_steps={compared} agree={agree} "
               + (f"rate={(agree / compared):.2f}" if compared else "rate=n/a"))
         if a.out:
