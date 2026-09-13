@@ -57,6 +57,7 @@ class StepGrowthController:
         output_dir: str | Path,
         env_type: str,
         library_getter: Callable[[], Any],
+        curator: Any | None = None,
     ) -> "StepGrowthController | None":
         if not step_growth_enabled():
             return None
@@ -65,6 +66,8 @@ class StepGrowthController:
             return None
         cfg = load_config()
         ctrl = cls(cfg, output_dir=output_dir, library_getter=library_getter)
+        if curator is not None:
+            ctrl.retarget_curator_prompt(curator)
         logger.info(
             "Step-growth arm ENABLED (tier_policy=%s, extraction=%s, config=%s)",
             cfg.tier_policy, cfg.extraction_enabled, cfg.source_path or "<defaults>",
@@ -103,6 +106,37 @@ class StepGrowthController:
         self._run_extractions = 0
         self._load_state()
         self._iter: dict[str, Any] = {}
+
+    # -------------------------------------------------------------- curator
+    def retarget_curator_prompt(self, curator: Any) -> None:
+        """Point the MemoryCurator at the step-growth copy of its prompt.
+
+        The curator decides which learned skills survive. Its default prompt
+        describes only the task-level counters, so a skill whose entire record
+        is step credit reads as "never used, never succeeded" -- and in run1
+        (job 5252020) it duly deprecated 3 of the 4 skills this arm had just
+        extracted. Swapping the prompt file is how the arm tells it that the
+        step record exists and what it means; the payload itself gains the
+        step fields via StepCreditSkillLibrary.get_learned_skills_for_curator.
+
+        Mutates only this run's curator instance. The prompt file the default
+        arm reads is untouched, and a missing step-growth prompt leaves the
+        curator exactly as it was rather than breaking curation.
+        """
+        path = Path(self.cfg.curator_prompt_path or "")
+        if not path.is_absolute():
+            path = Path(__file__).resolve().parents[2] / path
+        if not path.exists():
+            logger.warning(
+                "step-growth curator prompt missing (%s) — curator keeps its default prompt "
+                "and will judge step-credited skills on task counters alone", path,
+            )
+            return
+        try:
+            curator.skill_prompt_path = path
+            logger.info("Step-growth: curator prompt -> %s", path.name)
+        except Exception as exc:  # never take the loop down over curation wiring
+            logger.warning("step-growth: could not retarget curator prompt: %s", exc)
 
     # -------------------------------------------------------------- state
     def _load_state(self) -> None:

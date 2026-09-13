@@ -50,6 +50,12 @@ class StepGrowthConfig:
     extraction_min_prefix_lines: int = 3
     extraction_max_prefix_lines: int = 200
     extraction_max_skill_lines: int = 80
+    # --- curation ---
+    # Prompt the MemoryCurator reads while this arm is on. The default file
+    # describes only the task-level counters, so a skill living purely on step
+    # credit reads to it as dead weight. Empty string = keep the curator's own
+    # default (i.e. opt out of the fix).
+    curator_prompt_path: str = "rats/prompts/skill_curator_step_growth.txt"
     # informational
     source_path: str = ""
     raw: dict[str, Any] = field(default_factory=dict)
@@ -79,6 +85,9 @@ _SECTION_KEYS: dict[str, dict[str, str]] = {
         "promote_min_step_sr": "promote_min_step_sr",
         "deprecate_min_step_uses": "deprecate_min_step_uses",
         "deprecate_max_step_sr": "deprecate_max_step_sr",
+    },
+    "curation": {
+        "curator_prompt_path": "curator_prompt_path",
     },
     "extraction": {
         "enabled": "extraction_enabled",

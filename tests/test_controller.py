@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 from conftest import FakeLowLevelEnv, snap
@@ -188,3 +189,31 @@ def test_maybe_create_gates_on_env_and_flag(tmp_path, monkeypatch):
     c = StepGrowthController.maybe_create(output_dir=tmp_path, env_type="libero", library_getter=lambda: None)
     assert c is not None
     el.unregister_policy_step_listener(c.recorder.on_step_event)
+
+
+def test_retarget_curator_prompt_points_at_the_arm_copy(tmp_path):
+    """The arm swaps the curator's prompt file; the default file is untouched."""
+    class FakeCurator:
+        skill_prompt_path = Path("rats/prompts/skill_curator.txt")
+
+    cur = FakeCurator()
+    ctrl = StepGrowthController(
+        StepGrowthConfig(), output_dir=tmp_path, library_getter=lambda: None,
+        register_listener=False,
+    )
+    ctrl.retarget_curator_prompt(cur)
+    assert Path(cur.skill_prompt_path).name == "skill_curator_step_growth.txt"
+    assert Path(cur.skill_prompt_path).exists()
+
+
+def test_retarget_curator_prompt_leaves_curator_alone_when_missing(tmp_path):
+    class FakeCurator:
+        skill_prompt_path = Path("rats/prompts/skill_curator.txt")
+
+    cur = FakeCurator()
+    cfg = StepGrowthConfig(curator_prompt_path="rats/prompts/does_not_exist.txt")
+    ctrl = StepGrowthController(
+        cfg, output_dir=tmp_path, library_getter=lambda: None, register_listener=False,
+    )
+    ctrl.retarget_curator_prompt(cur)
+    assert Path(cur.skill_prompt_path).name == "skill_curator.txt"

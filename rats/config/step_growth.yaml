@@ -17,6 +17,13 @@ credit:
   promote_min_step_sr: 0.6
   deprecate_min_step_uses: 8
   deprecate_max_step_sr: 0.2
+curation:
+  # The MemoryCurator decides which learned skills survive. Its default prompt
+  # only knows the task-level counters, so in run1 (job 5252020) it deprecated
+  # 3 of the 4 skills this arm extracted -- one of them at step 1/1 -- because
+  # they all read as usage_count=0, success_count=0. This copy tells it the
+  # step record exists. Set to "" to go back to the curator's own prompt.
+  curator_prompt_path: rats/prompts/skill_curator_step_growth.txt
 extraction:
   enabled: true
   max_per_iteration: 1

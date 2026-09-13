@@ -168,6 +168,40 @@ class StepCreditSkillLibrary(SkillLibrary):
                 entry["strategy_tag"] = s.get("strategy_tag")
         return out
 
+    def get_learned_skills_for_curator(  # type: ignore[override]
+        self, *, include_full_code: bool = False, include_deprecated: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Same payload as the base class, plus the step-credit counters.
+
+        The base method builds an explicit field whitelist, so a skill that
+        only ever earned step credit reaches the curator as
+        ``usage_count: 0, success_count: 0`` -- indistinguishable from a skill
+        nothing has ever touched. In run1 of this arm (job 5252020) the
+        curator deprecated 3 of the 4 step-extracted skills on exactly that
+        reading, including one sitting at step 1/1; the fourth survived only
+        because it was born at iteration 48 with no curation pass left. The
+        evidence that justified a skill's existence has to be visible to the
+        agent that decides whether it lives.
+
+        Additive: existing keys are untouched, and the base library is
+        unchanged, so the default arm still sends the original payload.
+        """
+        out = super().get_learned_skills_for_curator(
+            include_full_code=include_full_code, include_deprecated=include_deprecated,
+        )
+        by_name = {s.get("name"): s for s in self._skills}
+        for entry in out:
+            s = by_name.get(entry.get("name")) or {}
+            sc, n = self._step_counts(s)
+            entry["step_usage_count"] = n
+            entry["step_success_count"] = sc
+            entry["step_success_rate"] = round(sc / n, 3) if n else None
+            if s.get("credit_source"):
+                entry["credit_source"] = s.get("credit_source")
+            if s.get("strategy_tag"):
+                entry["strategy_tag"] = s.get("strategy_tag")
+        return out
+
     def step_stats(self) -> dict[str, dict[str, Any]]:
         stats: dict[str, dict[str, Any]] = {}
         for s in self._skills:

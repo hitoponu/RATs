@@ -1287,6 +1287,10 @@ class LifelongLoop:
             output_dir=self.output_dir,
             env_type=self.env_type,
             library_getter=lambda: self.skill_library,
+            # The arm repoints this curator's skill prompt at its own copy; the
+            # curator is otherwise blind to step credit and retires the skills
+            # the arm just extracted. No-op when the arm is off.
+            curator=self.memory_curator,
         )
         # PlaytimeMemory was an extra archive of (object, interaction,
         # outcome) tuples that the molmospaces playtime proposer used to
