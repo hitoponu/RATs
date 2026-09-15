@@ -394,7 +394,7 @@ from rats.agents.feedback_generator import FeedbackGenerator
 from rats.agents.planner import Planner
 from rats.agents.policy_primitive_cache import scope as policy_primitive_cache_scope
 from rats.agents.policy_quality_checker import PolicyQualityChecker
-from rats.agents.policy_writer import PolicyWriter
+from rats.agents.directive_policy_writer import make_policy_writer as _make_policy_writer
 from rats.agents.environment_creator import EnvironmentCreator
 from rats.agents.memory_curator import MemoryCurator
 from rats.agents.multi_turn_decider import MultiTurnDecider
@@ -1096,7 +1096,12 @@ class LifelongLoop:
         ).strip().lower() not in ("1", "true", "yes", "on")
         if not self._subagent_enabled:
             logger.info("SubAgent DISABLED via RATS_SUBAGENT_DISABLED env var")
-        self.policy_writer = PolicyWriter(max_retries=max_retries_per_task, ensemble_n=ensemble_n)
+        # Plain PolicyWriter unless the step-growth diversity half is on, in
+        # which case the writer can carry a sticky strategy directive in its
+        # existing priority-0 slot (see agents/directive_policy_writer.py).
+        self.policy_writer = _make_policy_writer(
+            max_retries=max_retries_per_task, ensemble_n=ensemble_n,
+        )
         self.quality_checker = PolicyQualityChecker()
         self.executor = Executor(timeout_seconds=execution_timeout)
         # Opt-in CaP-X-style intra-attempt decider. When enabled AND
@@ -1291,7 +1296,22 @@ class LifelongLoop:
             # curator is otherwise blind to step credit and retires the skills
             # the arm just extracted. No-op when the arm is off.
             curator=self.memory_curator,
+            # Diversity half only: how the controller arms the writer's
+            # priority-0 directive slot. Ignored by a plain PolicyWriter.
+            writer_getter=lambda: self.policy_writer,
         )
+        if (
+            getattr(self._step_growth, "portfolio", None) is not None
+            and self._multiturn_reset_enabled
+        ):
+            # write_step() builds each step's body from its own prompt and has
+            # no directive slot, so the strategy block would silently never be
+            # shown. Say so rather than produce a run that looks like the arm.
+            logger.warning(
+                "Step-growth diversity is ON but so is multiturn-reset mode: "
+                "per-step writing has no directive slot, so the strategy "
+                "directive will NOT reach the policy writer in this run."
+            )
         # PlaytimeMemory was an extra archive of (object, interaction,
         # outcome) tuples that the molmospaces playtime proposer used to
         # feed back into its prompt as "prior sensorimotor observations".
@@ -3470,6 +3490,12 @@ class LifelongLoop:
                     task_in_progress=task_in_progress,
                 )
             iteration_data[f"code_attempt_{attempt}"] = code
+            if self._step_growth is not None:
+                self._step_growth.note_code(
+                    iteration=self._iteration, attempt=attempt,
+                    attempt_in_iter=attempt_in_iter, code=code,
+                    scene_context=scene_context, iteration_data=iteration_data,
+                )
             # Track up to POLICY_HISTORY_DEPTH generated codes so the
             # NEXT retry's retry_package can include not just the most
             # recent attempt but the one before it. The writer sees
@@ -5099,6 +5125,21 @@ class LifelongLoop:
                             )
                     except Exception as e:
                         logger.warning(f"  refine_plan failed: {e}; keeping old plan")
+
+                # Strategy families for the NEXT attempt (diversity half only).
+                # Placed after refine_plan so the directive is computed against
+                # the plan that will actually be written; the step types
+                # themselves come from the BDDL goal, which a refine does not
+                # change.
+                if self._step_growth is not None:
+                    self._step_growth.on_retry(
+                        iteration=self._iteration, attempt=attempt,
+                        attempt_in_iter=attempt_in_iter,
+                        attempt_boundary=is_last_turn_of_attempt,
+                        plan=plan, retry_feedback=retry_feedback,
+                        diagnosis=iteration_data.get(f"diagnosis_attempt_{attempt - 1}"),
+                        iteration_data=iteration_data,
+                    )
 
                 if is_last_turn_of_attempt:
                     # End of an attempt: save the attempt's accumulated

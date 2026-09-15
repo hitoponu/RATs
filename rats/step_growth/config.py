@@ -19,9 +19,36 @@ DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "rats" / "config" / "step_growth.yaml"
 _TRUTHY = {"1", "true", "yes", "on"}
 
 
+_FALSY = {"0", "false", "no", "off"}
+
+
 def step_growth_enabled() -> bool:
     """``RATS_STEP_GROWTH=1`` turns the whole arm on. Anything else: off."""
     return os.getenv("RATS_STEP_GROWTH", "").strip().lower() in _TRUTHY
+
+
+def diversity_enabled(cfg: "StepGrowthConfig | None" = None) -> bool:
+    """Is the DIVERSITY half (section B: strategy bank + bandit + fingerprints) on?
+
+    Three-state on purpose. ``RATS_STEP_GROWTH_DIVERSITY`` wins in BOTH
+    directions so a launcher can turn the half on (or force it off) without
+    editing the YAML; unset falls back to ``diversity.enabled`` in the config
+    file, which ships **false**. That default is what keeps the original
+    step-growth arm reproducible: re-running
+    ``run-rats-play-qwen-stepgrowth.sh`` gets the same loop it always had, and
+    diversity is a separate arm with its own launcher and output tree.
+
+    Always false when the arm itself is off — the bandit's reward is the
+    oracle milestone, so there is no diversity-without-step-growth mode.
+    """
+    if not step_growth_enabled():
+        return False
+    raw = os.getenv("RATS_STEP_GROWTH_DIVERSITY", "").strip().lower()
+    if raw in _TRUTHY:
+        return True
+    if raw in _FALSY:
+        return False
+    return bool((cfg if cfg is not None else load_config()).diversity_enabled)
 
 
 @dataclass
@@ -56,6 +83,20 @@ class StepGrowthConfig:
     # credit reads to it as dead weight. Empty string = keep the curator's own
     # default (i.e. opt out of the fix).
     curator_prompt_path: str = "rats/prompts/skill_curator_step_growth.txt"
+    # --- diversity (section B: strategy bank + bandit + fingerprints) ---
+    # OFF by default: turning it on changes what the policy writer is told, so
+    # it is its own arm (RATS_STEP_GROWTH_DIVERSITY=1 + its own output tree).
+    diversity_enabled: bool = False
+    diversity_bank_path: str = "rats/config/strategy_bank.yaml"
+    diversity_seed: int | None = None
+    diversity_min_pulls: int = 2          # forced exploration inside the window
+    diversity_window_iters: int = 10
+    diversity_collapse_k: int = 5         # identical attempt-0 fingerprints -> override
+    diversity_show_evidence: bool = False # bandit stats in the prompt (oracle-derived: keep off)
+    diversity_retry_switch_after: int = 2 # consecutive milestone misses before switching family
+    diversity_per_type_families: dict[str, int] = field(
+        default_factory=lambda: {"grasp": 1, "place": 1, "open_close": 1, "turn": 1, "localize": 0}
+    )
     # informational
     source_path: str = ""
     raw: dict[str, Any] = field(default_factory=dict)
@@ -88,6 +129,17 @@ _SECTION_KEYS: dict[str, dict[str, str]] = {
     },
     "curation": {
         "curator_prompt_path": "curator_prompt_path",
+    },
+    "diversity": {
+        "enabled": "diversity_enabled",
+        "bank_path": "diversity_bank_path",
+        "seed": "diversity_seed",
+        "min_pulls": "diversity_min_pulls",
+        "window_iters": "diversity_window_iters",
+        "collapse_k": "diversity_collapse_k",
+        "show_evidence": "diversity_show_evidence",
+        "retry_switch_after": "diversity_retry_switch_after",
+        "per_type_families": "diversity_per_type_families",
     },
     "extraction": {
         "enabled": "extraction_enabled",
@@ -146,6 +198,26 @@ def load_config(path: str | os.PathLike[str] | None = None) -> StepGrowthConfig:
                 except (TypeError, ValueError):
                     continue
                 setattr(cfg, attr, value)
+    # per_type_families is the one non-scalar key: keep only str -> int pairs,
+    # and keep the defaults for any type the file does not mention.
+    if not isinstance(cfg.diversity_per_type_families, dict):
+        cfg.diversity_per_type_families = StepGrowthConfig().diversity_per_type_families
+    else:
+        merged = StepGrowthConfig().diversity_per_type_families
+        for k, v in cfg.diversity_per_type_families.items():
+            try:
+                merged[str(k)] = int(v)
+            except (TypeError, ValueError):
+                continue
+        cfg.diversity_per_type_families = merged
+    env_seed = os.getenv("RATS_STEP_GROWTH_DIVERSITY_SEED", "").strip()
+    if env_seed:
+        cfg.diversity_seed = env_seed
+    if cfg.diversity_seed is not None:
+        try:
+            cfg.diversity_seed = int(cfg.diversity_seed)
+        except (TypeError, ValueError):
+            cfg.diversity_seed = None
     # Model override via env, same convention as the other agents.
     env_model = os.getenv("RATS_STEP_SKILL_EXTRACTOR_MODEL")
     if env_model:

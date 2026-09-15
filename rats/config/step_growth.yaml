@@ -24,6 +24,29 @@ curation:
   # they all read as usage_count=0, success_count=0. This copy tells it the
   # step record exists. Set to "" to go back to the curator's own prompt.
   curator_prompt_path: rats/prompts/skill_curator_step_growth.txt
+diversity:
+  # Section B of the plan: strategy bank + Thompson bandit + code fingerprints,
+  # rendered into the policy writer's priority-0 slot.
+  #
+  # FALSE here on purpose. It changes what the writer is told, so it is a
+  # SEPARATE arm: run-rats-play-qwen-stepgrowth.sh (step credit only) stays
+  # byte-for-byte the loop it was, and run-rats-play-qwen-stepgrowth-div.sh
+  # exports RATS_STEP_GROWTH_DIVERSITY=1 and writes to its own output tree.
+  # The env var overrides this in both directions.
+  enabled: false
+  bank_path: rats/config/strategy_bank.yaml
+  seed: null                      # null -> nondeterministic family sampling
+  min_pulls: 2                    # forced exploration: pulls needed inside the window
+  window_iters: 10
+  collapse_k: 5                   # identical attempt-0 fingerprints before the override
+  show_evidence: false            # bandit stats in the prompt; oracle-derived, keep false
+  retry_switch_after: 2           # consecutive milestone misses before switching family
+  per_type_families:              # 0 = do not assign a family for this step type
+    grasp: 1
+    place: 1
+    open_close: 1
+    turn: 1
+    localize: 0
 extraction:
   enabled: true
   max_per_iteration: 1
