@@ -18,6 +18,10 @@
 #               deliberate: countering "do NOT use plan_grasp" is the point.
 #   requires    every name must be in the env's available_functions, else the
 #               family is skipped for this run (reduced API has no wrist tools)
+#   predicates  which goal predicates this family is for (default: all). QUOTE
+#               them: YAML 1.1 reads bare on/off/yes/no as booleans. Smoke
+#               5258924 handed `(on milk plate)` a put-it-inside-the-rim recipe
+#               and handed `(open drawer)` a push-it-shut one; this stops that.
 #   forbids     extra MUST-NOT lines rendered under this family
 #   tags        free-form; code_fingerprint votes a family from these
 version: 1
@@ -91,6 +95,7 @@ families:
       then retreat straight up before any other motion.
     requires: [get_observation, goto_pose, open_gripper]
     forbids: []
+    predicates: ["on"]            # a flat surface; `in` wants the container recipe
     tags: [hover, place]
 
   - id: resegment_after_carry
@@ -112,6 +117,7 @@ families:
       open_gripper, then retreat upward.
     requires: [get_observation, get_oriented_bounding_box_from_3d_points, goto_pose, open_gripper]
     forbids: []
+    predicates: ["in"]            # rim clearance only matters for a container
     tags: [obb, container, place]
 
   # ------------------------------------------------------ open_close (3)
@@ -119,8 +125,8 @@ families:
     step_types: [open_close]
     directive: >-
       Grasp the handle itself: segment the handle, run plan_grasp on that mask, close on the
-      top-scoring pose, then translate along the opening direction (the handle OBB's long horizontal
-      axis) in several short goto_pose moves.
+      top-scoring pose, then translate along the door's travel axis (the handle OBB's long horizontal
+      axis) the way the goal needs, in several short goto_pose moves.
     requires: [get_observation, plan_grasp, goto_pose, close_gripper]
     forbids: []
     tags: [graspnet, handle, plan_grasp]
@@ -128,12 +134,13 @@ families:
   - id: push_surface_closed_gripper
     step_types: [open_close]
     directive: >-
-      Do not grasp anything: close_gripper first and push the panel with the closed fingertips,
+      Do not grasp anything: close_gripper first and push the panel shut with the closed fingertips,
       keeping contact and moving in 2-4 cm increments along the surface normal measured from the
       panel's point cloud.
     requires: [get_observation, goto_pose, close_gripper]
     forbids:
       - "Do NOT open the gripper during this step."
+    predicates: ["close"]         # pushing is how you shut a door, not open one
     tags: [push, closed_gripper]
 
   - id: hook_edge_pull
@@ -143,6 +150,7 @@ families:
       then pull back along the opening axis in 2-4 cm increments with the wrist orientation fixed.
     requires: [get_observation, goto_pose, close_gripper]
     forbids: []
+    predicates: ["open"]          # you cannot hook a lip to push something shut
     tags: [hook, closed_gripper]
 
   # ------------------------------------------------------------ turn (2)

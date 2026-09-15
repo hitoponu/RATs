@@ -75,10 +75,20 @@ class Family:
     requires: tuple[str, ...] = ()
     forbids: tuple[str, ...] = ()
     tags: tuple[str, ...] = ()
+    # Goal predicates this family is meant for; empty = any. A place recipe
+    # that aims "inside the rim" is wrong for `(on milk plate)`, and pushing a
+    # panel shut is wrong for `(open drawer)` -- smoke 5258924 assigned both.
+    predicates: tuple[str, ...] = ()
 
     def available(self, available_functions: Iterable[str]) -> bool:
         have = set(available_functions or [])
         return all(r in have for r in self.requires)
+
+    def applies_to(self, predicates: Iterable[str] | None) -> bool:
+        if not self.predicates:
+            return True
+        wanted = {str(p).lower() for p in (predicates or ())}
+        return not wanted or bool(wanted & set(self.predicates))
 
 
 class StrategyBank:
@@ -118,6 +128,12 @@ class StrategyBank:
                 requires=tuple(str(r) for r in (item.get("requires") or ())),
                 forbids=tuple(str(r) for r in (item.get("forbids") or ())),
                 tags=tuple(str(t) for t in (item.get("tags") or ())),
+                # YAML 1.1 turns a bare `on`/`off` into a bool; map them back
+                # rather than silently losing the scoping.
+                predicates=tuple(
+                    {"true": "on", "false": "off"}.get(str(x).lower(), str(x).lower())
+                    for x in (item.get("predicates") or ())
+                ),
             ))
         common = [str(x) for x in (raw.get("common_forbids") or [])]
         return cls(families, common, source=str(p))
@@ -126,10 +142,20 @@ class StrategyBank:
     def get(self, family_id: str) -> Family | None:
         return self._by_id.get(family_id)
 
-    def for_type(self, step_type: str, available_functions: Iterable[str] | None = None) -> list[Family]:
+    def for_type(
+        self,
+        step_type: str,
+        available_functions: Iterable[str] | None = None,
+        predicates: Iterable[str] | None = None,
+    ) -> list[Family]:
         out = [f for f in self.families if step_type in f.step_types]
         if available_functions is not None:
             out = [f for f in out if f.available(available_functions)]
+        if predicates is not None:
+            narrowed = [f for f in out if f.applies_to(predicates)]
+            # Never let the predicate filter empty a phase; a mismatched
+            # recipe still beats no directive at all.
+            out = narrowed or out
         return out
 
     def step_types(self) -> list[str]:
@@ -158,6 +184,22 @@ def step_types_for_goal(goal_state: Any) -> list[str]:
     return out
 
 
+def type_predicates_for_goal(goal_state: Any) -> dict[str, set[str]]:
+    """``step type -> the goal predicates that asked for it``.
+
+    Lets a family declare which predicate it is for: ``(on milk plate)`` and
+    ``(in juice microwave)`` both need a place strategy, but "aim inside the
+    rim" is only a recipe for the second one.
+    """
+    from rats.step_growth.milestones import parse_goal_state
+
+    out: dict[str, set[str]] = {}
+    for pred in parse_goal_state(goal_state):
+        for t in PREDICATE_STEP_TYPES.get(pred[0], ()):
+            out.setdefault(t, set()).add(pred[0])
+    return out
+
+
 # ---------------------------------------------------------------------------
 # selection
 # ---------------------------------------------------------------------------
@@ -170,13 +212,14 @@ class Selection:
     reasons: dict[str, str] = field(default_factory=dict)           # step_type -> why
     notes: list[str] = field(default_factory=list)                  # SWITCH / COLLAPSE lines
     step_types: list[str] = field(default_factory=list)
+    predicates: dict[str, list[str]] = field(default_factory=dict)  # step_type -> goal predicates
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "iteration": self.iteration, "attempt": self.attempt,
             "families": dict(self.families), "banned": {k: list(v) for k, v in self.banned.items()},
             "reasons": dict(self.reasons), "notes": list(self.notes),
-            "step_types": list(self.step_types),
+            "step_types": list(self.step_types), "predicates": dict(self.predicates),
         }
 
     @property
@@ -276,7 +319,11 @@ class StrategyPortfolio:
         return [t for t in types if int(self.per_type_families.get(t, 1)) > 0]
 
     def _candidates(
-        self, step_type: str, available_functions: Iterable[str], banned: list[str] | None,
+        self,
+        step_type: str,
+        available_functions: Iterable[str],
+        banned: list[str] | None,
+        predicates: Iterable[str] | None = None,
     ) -> tuple[list[Family], bool, bool]:
         """Candidates for this type; whether the collapse override narrowed them,
         and whether the ban list had to be recycled.
@@ -291,7 +338,7 @@ class StrategyPortfolio:
         banned last.
         """
         banned = list(banned or ())
-        pool = self.bank.for_type(step_type, available_functions)
+        pool = self.bank.for_type(step_type, available_functions, predicates)
         cands = [f for f in pool if f.id not in set(banned)]
         recycled = False
         if not cands and pool:
@@ -335,18 +382,21 @@ class StrategyPortfolio:
         sel = Selection(iteration=iteration, attempt=attempt, notes=list(notes or []))
         sel.banned = {k: list(v) for k, v in (banned or {}).items()}
         sel.step_types = self._wanted_types(goal_state)
+        preds = type_predicates_for_goal(goal_state)
+        sel.predicates = {t: sorted(preds.get(t, set())) for t in sel.step_types}
         collapse = self._collapse or {}
         collapse_fired = False
         for t in sel.step_types:
+            want = preds.get(t)
             pinned = (keep or {}).get(t)
             if pinned and pinned not in sel.banned.get(t, []):
                 fam = self.bank.get(pinned)
-                if fam is not None and fam.available(available_functions):
+                if fam is not None and fam.available(available_functions) and fam.applies_to(want):
                     sel.families[t] = pinned
                     sel.reasons[t] = "kept"
                     continue
             cands, narrowed, recycled = self._candidates(
-                t, available_functions, sel.banned.get(t, []),
+                t, available_functions, sel.banned.get(t, []), want,
             )
             if not cands:
                 sel.reasons[t] = "no_candidate"
@@ -511,12 +561,17 @@ class StrategyPortfolio:
         if selection.is_empty:
             return ""
         lines = [
-            "## STRATEGY DIRECTIVE (HARD — priority 0, overrides all other guidance below)",
+            "## STRATEGY DIRECTIVE (HARD — binds WHICH strategy, not its details)",
             "",
-            "Use the physical strategy assigned to each phase below. Other iterations are "
-            "exploring different strategies; duplicating them wastes the search. If the plan "
-            "notes, a distilled lesson or the diagnoser tells you to avoid a primitive this "
-            "block names, THIS BLOCK WINS.",
+            "Each phase below names the physical strategy to use in THIS attempt. That "
+            "choice is binding: if the plan notes or a distilled lesson tell you to avoid a "
+            "primitive this block names, this block wins, and other iterations are exploring "
+            "the other strategies so duplicating them wastes the search.",
+            "",
+            "Everything else is NOT fixed by this block. Poses, offsets, heights, "
+            "thresholds, ordering, which object, and how to recover all follow the RETRY "
+            "CONTEXT and the diagnosis for this attempt — they saw what actually happened. "
+            "Keep the strategy, fix the details.",
             "",
         ]
         forbids: list[str] = list(self.bank.common_forbids)

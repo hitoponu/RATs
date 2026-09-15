@@ -255,3 +255,64 @@ def test_single_family_type_is_never_dropped(tmp_path):
                              diagnosis=None, goal_state=[("turnon", "stove_1")],
                              available_functions=AVAIL, iteration=1, attempt=1)
     assert sel.families["turn"] == "ONLY" and "recycled" in sel.reasons["turn"]
+
+
+REDUCED_API = [
+    "get_observation", "segment_sam3_text_prompt", "segment_sam3_point_prompt",
+    "point_prompt_molmo", "plan_grasp", "plan_grasp_from_point_clouds",
+    "get_oriented_bounding_box_from_3d_points", "solve_ik", "move_to_joints",
+    "open_gripper", "close_gripper", "goto_pose", "goto_home_joint_position",
+    "subsample_point_cloud", "filter_noise",
+]
+
+
+def test_shipped_bank_scopes_families_by_goal_predicate():
+    """Regression (smoke 5258924): `(on milk plate)` was handed the
+    put-it-inside-the-rim recipe, and `(open drawer)` the push-it-shut one."""
+    bank = StrategyBank.load()
+    place_on = {f.id for f in bank.for_type("place", REDUCED_API, {"on"})}
+    place_in = {f.id for f in bank.for_type("place", REDUCED_API, {"in"})}
+    assert "obb_inside_container" not in place_on and "hover_descend_release" in place_on
+    assert "obb_inside_container" in place_in and "hover_descend_release" not in place_in
+
+    open_fams = {f.id for f in bank.for_type("open_close", REDUCED_API, {"open"})}
+    close_fams = {f.id for f in bank.for_type("open_close", REDUCED_API, {"close"})}
+    assert "push_surface_closed_gripper" not in open_fams
+    assert "push_surface_closed_gripper" in close_fams and "hook_edge_pull" not in close_fams
+    # every type still has at least two families to choose between
+    for fams in (place_on, place_in, open_fams, close_fams):
+        assert len(fams) >= 2, fams
+
+
+def test_yaml_boolean_predicates_are_read_back_as_predicates():
+    """`predicates: [on]` is a BOOLEAN in YAML 1.1 — the loader maps it back."""
+    bank = StrategyBank.load()
+    hover = bank.get("hover_descend_release")
+    assert hover is not None and hover.predicates == ("on",)
+    assert hover.applies_to({"on"}) and not hover.applies_to({"in"})
+
+
+def test_predicate_filter_never_empties_a_phase(tmp_path):
+    bank = StrategyBank([Family("ONLY", ("place",), "put it down", (), (), (), ("in",))], [], source="t")
+    p = StrategyPortfolio(bank, tmp_path / "s.json", rng_seed=0)
+    sel = p.select(goal_state=[("on", "milk_1", "plate_1")], available_functions=AVAIL, iteration=0)
+    assert sel.families["place"] == "ONLY"          # mismatched beats silent
+
+
+def test_selection_records_the_predicates_it_used(tmp_path):
+    p = _portfolio(tmp_path)
+    sel = p.select(goal_state=[("in", "cookies_1", "cabinet_1")], available_functions=AVAIL, iteration=0)
+    assert sel.as_dict()["predicates"] == {"grasp": ["in"], "place": ["in"]}
+
+
+def test_directive_binds_the_strategy_but_defers_the_details(tmp_path):
+    """The block used to claim it outranked the diagnoser too; that is the
+    signal for repairing THIS attempt and it now wins on everything but the
+    choice of strategy."""
+    p = _portfolio(tmp_path)
+    sel = p.select(goal_state=GOAL, available_functions=AVAIL, iteration=0)
+    text = p.render(sel)
+    assert text.startswith("## STRATEGY DIRECTIVE (HARD")     # launcher greps this
+    assert "RETRY CONTEXT" in text and "Keep the strategy, fix the details." in text
+    assert "overrides all other guidance" not in text
+    assert "the diagnoser tells you to avoid" not in text
