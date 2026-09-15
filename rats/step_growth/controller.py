@@ -374,6 +374,16 @@ class StepGrowthController:
                 attempt=attempt,
                 retry_switch_after=self.cfg.diversity_retry_switch_after,
             )
+            # A switched type starts its streak over: the count is "this family
+            # missed N times", not "this phase has missed N times". Without the
+            # reset the streak stays >= retry_switch_after forever and every
+            # later retry switches again, burning the whole pool in one
+            # iteration (smoke 5258527: 5 grasp families in 6 attempts).
+            misses = dict(self._iter.get("misses") or {})
+            for t, why in sel.reasons.items():
+                if why == "switched":
+                    misses[t] = 0
+            self._iter["misses"] = misses
             self._install_selection(sel)
             div = iteration_data.setdefault("step_growth", {}).setdefault("diversity", {})
             div["rewards"] = list(self._iter.get("reward_events") or [])

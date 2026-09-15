@@ -206,3 +206,52 @@ def test_shipped_bank_is_loadable_and_within_budget():
     assert all(f.step_types for f in bank.families)
     ids = [f.id for f in bank.families]
     assert len(ids) == len(set(ids))
+
+
+def test_exhausted_ban_list_recycles_instead_of_dropping_the_type(tmp_path):
+    """Regression (smoke 5258527): every family banned -> the phase vanished.
+
+    open_close has 3 families and turn has 2, so a few mid-iteration switches
+    banned them all; `select` then returned no family for that type. The two
+    milestones that run DID reach (open, turnon) landed on attempts with no
+    assignment, so no family was ever paid and the bandit stayed at 0 rewards.
+    """
+    p = _portfolio(tmp_path)
+    prev = Selection(iteration=1, attempt=4, families={"grasp": "C"}, step_types=["grasp"],
+                     banned={"grasp": ["A", "B"]})
+    sel = p.select_for_retry(prev, misses={"grasp": 2},
+                             retry_feedback={"failure_mode": "grasp_failure"},
+                             diagnosis=None, goal_state=GOAL, available_functions=AVAIL,
+                             iteration=1, attempt=5, retry_switch_after=2)
+    assert "grasp" in sel.families, sel.reasons        # the phase still gets a directive
+    assert sel.families["grasp"] in {"A", "B"}         # C was just banned, so not C
+    assert "recycled" in sel.reasons["grasp"]
+    assert sel.banned["grasp"] == ["C"]                # ban list reset to the last one
+    assert "GRASP —" in p.render(sel)
+
+
+def test_recycling_keeps_the_reward_attributable(tmp_path):
+    """After recycling, the achieving attempt still has a family to pay."""
+    p = _portfolio(tmp_path)
+    prev = Selection(iteration=1, attempt=4, families={"grasp": "C"}, step_types=["grasp"],
+                     banned={"grasp": ["A", "B"]})
+    sel = p.select_for_retry(prev, misses={"grasp": 2},
+                             retry_feedback={"failure_mode": "grasp_failure"},
+                             diagnosis=None, goal_state=GOAL, available_functions=AVAIL,
+                             iteration=1, attempt=5, retry_switch_after=2)
+    events = p.update(sel, ["grasped(bowl_1)", "lifted(bowl_1)"])
+    paid = {e["step_type"]: e["reward"] for e in events}
+    assert paid["grasp"] == 1 and paid["place"] == 0
+    assert p.stats_snapshot()[sel.families["grasp"]]["rewards"] == 1
+
+
+def test_single_family_type_is_never_dropped(tmp_path):
+    """A type with one family: banning it must not silence the phase."""
+    bank = StrategyBank([Family("ONLY", ("turn",), "turn it", (), (), ())], [], source="t")
+    p = StrategyPortfolio(bank, tmp_path / "s.json", rng_seed=0)
+    prev = Selection(iteration=1, attempt=0, families={"turn": "ONLY"}, step_types=["turn"])
+    sel = p.select_for_retry(prev, misses={"turn": 3},
+                             retry_feedback={"failure_mode": "wrong_affordance"},
+                             diagnosis=None, goal_state=[("turnon", "stove_1")],
+                             available_functions=AVAIL, iteration=1, attempt=1)
+    assert sel.families["turn"] == "ONLY" and "recycled" in sel.reasons["turn"]

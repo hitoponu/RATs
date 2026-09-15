@@ -276,20 +276,37 @@ class StrategyPortfolio:
         return [t for t in types if int(self.per_type_families.get(t, 1)) > 0]
 
     def _candidates(
-        self, step_type: str, available_functions: Iterable[str], banned: Iterable[str],
-    ) -> tuple[list[Family], bool]:
-        """Candidates for this type, and whether the collapse override narrowed them."""
-        banned = set(banned or ())
-        cands = [f for f in self.bank.for_type(step_type, available_functions) if f.id not in banned]
+        self, step_type: str, available_functions: Iterable[str], banned: list[str] | None,
+    ) -> tuple[list[Family], bool, bool]:
+        """Candidates for this type; whether the collapse override narrowed them,
+        and whether the ban list had to be recycled.
+
+        Recycling matters: a type has as few as two families (turn), and each
+        mid-iteration switch bans one for the rest of the iteration. Once they
+        were all banned the type dropped out of the selection entirely — in the
+        first smoke (job 5258527) that is exactly when the drawer finally
+        opened and when the stove finally turned on, so the two milestones the
+        run did reach paid no family at all. Rather than leave a phase with no
+        directive we re-open the pool, keeping out only the family that was
+        banned last.
+        """
+        banned = list(banned or ())
+        pool = self.bank.for_type(step_type, available_functions)
+        cands = [f for f in pool if f.id not in set(banned)]
+        recycled = False
+        if not cands and pool:
+            last = {banned[-1]} if banned else set()
+            cands = [f for f in pool if f.id not in last] or list(pool)
+            recycled = True
         voted = str((self._collapse or {}).get("family") or "")
         if not voted or not cands:
-            return cands, False
+            return cands, False, recycled
         not_collapsed = [f for f in cands if voted not in f.tags]
         if not not_collapsed:
-            return cands, False
+            return cands, False, recycled
         preferred = [f for f in not_collapsed if COLLAPSE_PREFERRED_TAGS & set(f.tags)]
         narrowed = preferred or not_collapsed
-        return narrowed, len(narrowed) < len(cands)
+        return narrowed, len(narrowed) < len(cands), recycled
 
     def _pick(self, cands: list[Family], iteration: int) -> tuple[Family, str]:
         under = [f for f in cands if self._window_pulls(f.id, iteration) < self.min_pulls]
@@ -328,7 +345,9 @@ class StrategyPortfolio:
                     sel.families[t] = pinned
                     sel.reasons[t] = "kept"
                     continue
-            cands, narrowed = self._candidates(t, available_functions, sel.banned.get(t, []))
+            cands, narrowed, recycled = self._candidates(
+                t, available_functions, sel.banned.get(t, []),
+            )
             if not cands:
                 sel.reasons[t] = "no_candidate"
                 continue
@@ -336,6 +355,11 @@ class StrategyPortfolio:
             sel.families[t] = fam.id
             sel.reasons[t] = f"{why}+collapse_override" if narrowed else why
             collapse_fired = collapse_fired or narrowed
+            if recycled:
+                # The pool was re-opened: keep only the most recent exclusion so
+                # the bans do not immediately empty it again.
+                sel.banned[t] = sel.banned.get(t, [])[-1:]
+                sel.reasons[t] = f"{sel.reasons[t]}+recycled"
         if collapse_fired:
             sel.notes.append(
                 f"COLLAPSE: the last {int(collapse.get('k', self.collapse_k))} first attempts all "
@@ -398,7 +422,9 @@ class StrategyPortfolio:
         )
         for t in switched:
             if t in sel.families:
-                sel.reasons[t] = "switched"
+                # keep the "+recycled" marker if the pool had to be re-opened
+                suffix = "+recycled" if "recycled" in sel.reasons.get(t, "") else ""
+                sel.reasons[t] = f"switched{suffix}"
         return sel
 
     # -- reward ------------------------------------------------------------

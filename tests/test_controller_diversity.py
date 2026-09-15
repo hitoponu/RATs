@@ -223,3 +223,30 @@ def test_maybe_create_builds_the_shipped_portfolio(tmp_path, monkeypatch):
     )
     assert off is not None and off.portfolio is None
     el.unregister_policy_step_listener(off.recorder.on_step_event)
+
+
+def test_switching_restarts_the_miss_streak(ctrl):
+    """Regression (smoke 5258527): the streak never reset, so every later retry
+    switched again and one iteration burned the whole family pool."""
+    c, _, _, _ = ctrl
+    iteration_data = {"iteration": 7}
+    c.on_plan_ready(plan=PLAN, task_proposal=TASK, scene_context=SCENE, iteration_data=iteration_data)
+    _run_attempt(c, attempt=0, attempt_in_iter=0, iteration_data=iteration_data)
+    # first retry flushes the attempt's reward (which recomputes the streaks)
+    c.on_retry(iteration=7, attempt=1, attempt_in_iter=0, attempt_boundary=True, plan=PLAN,
+               retry_feedback={"failure_mode": "grasp_failure"}, diagnosis=None,
+               iteration_data=iteration_data)
+    c._iter["misses"] = {"grasp": 2, "place": 1}
+    out = c.on_retry(iteration=7, attempt=2, attempt_in_iter=1, attempt_boundary=True, plan=PLAN,
+                     retry_feedback={"failure_mode": "grasp_failure"}, diagnosis=None,
+                     iteration_data=iteration_data)
+    assert out["reasons"]["grasp"].startswith("switched")
+    assert c._iter["misses"]["grasp"] == 0        # the new family starts fresh
+    assert c._iter["misses"]["place"] == 1        # untouched type keeps its count
+
+    # ... so the very next retry does NOT switch again
+    again = c.on_retry(iteration=7, attempt=3, attempt_in_iter=2, attempt_boundary=True, plan=PLAN,
+                       retry_feedback={"failure_mode": "grasp_failure"}, diagnosis=None,
+                       iteration_data=iteration_data)
+    assert again["families"]["grasp"] == out["families"]["grasp"]
+    assert not again["notes"]
