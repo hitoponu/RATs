@@ -573,6 +573,17 @@ class StrategyPortfolio:
             "CONTEXT and the diagnosis for this attempt — they saw what actually happened. "
             "Keep the strategy, fix the details.",
             "",
+            # Half of smoke 5259311's programs wrapped everything in `def main()`
+            # and never called it: they executed, reported success, moved no
+            # joint and emitted no step_context event. A strategy per phase
+            # reads like a spec and pulls the writer into that shape, so say
+            # plainly what shape the program must have.
+            "STRUCTURE: write the program as straight-line module-level code — one "
+            "`with step_context(...)` block per plan step, filling RESULT as you go. A "
+            "helper `def` is fine, but the WORK must run at module level: if you define "
+            "`def main()` you must also call it (`RESULT = main()`). A file that only "
+            "defines functions executes, reports success, and moves nothing.",
+            "",
         ]
         forbids: list[str] = list(self.bank.common_forbids)
         for t in selection.step_types:

@@ -316,3 +316,12 @@ def test_directive_binds_the_strategy_but_defers_the_details(tmp_path):
     assert "RETRY CONTEXT" in text and "Keep the strategy, fix the details." in text
     assert "overrides all other guidance" not in text
     assert "the diagnoser tells you to avoid" not in text
+
+
+def test_directive_pins_the_program_shape(tmp_path):
+    """Regression (smoke 5259311): 9 of 18 programs defined main() and never
+    called it — they executed, reported success and moved nothing."""
+    p = _portfolio(tmp_path)
+    text = p.render(p.select(goal_state=GOAL, available_functions=AVAIL, iteration=0))
+    assert "STRUCTURE:" in text
+    assert "RESULT = main()" in text and "step_context" in text
