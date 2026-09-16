@@ -4,18 +4,10 @@ Hooks (all guarded by ``if self._step_growth is not None`` in the loop and
 all exception-safe here):
 
   on_plan_ready        -> derive the milestone chain for this iteration
-  on_attempt_start     -> (re)bind the low-level env, resolve the goal,
-                          [diversity] pick strategy families and arm the directive
+  on_attempt_start     -> (re)bind the low-level env, resolve the goal
   on_execution_start   -> open the oracle recording window
-  note_code            -> [diversity] fingerprint the written code, detect collapse
-  on_attempt_executed  -> close window, judge steps, credit skills, persist,
-                          [diversity] pay the bandit and track milestone misses
-  on_retry             -> [diversity] switch family when a milestone keeps failing
+  on_attempt_executed  -> close window, judge steps, credit skills, persist
   on_iteration_end     -> step-level skill extraction on failed iterations
-
-The hooks marked [diversity] are no-ops unless the diversity half is on
-(``RATS_STEP_GROWTH_DIVERSITY=1`` / ``diversity.enabled``); with it off this
-file behaves exactly as it did before section B was implemented.
 """
 
 from __future__ import annotations
@@ -34,16 +26,9 @@ from rats.step_growth.code_slices import (
     reachable_learned_skills,
     step_code_blocks,
 )
-from rats.step_growth.code_fingerprint import fingerprint as code_fingerprint
-from rats.step_growth.config import (
-    StepGrowthConfig,
-    diversity_enabled,
-    load_config,
-    step_growth_enabled,
-)
+from rats.step_growth.config import StepGrowthConfig, load_config, step_growth_enabled
 from rats.step_growth.oracle_recorder import StepOracleRecorder
 from rats.step_growth.step_judge import AttemptVerdicts, judge
-from rats.step_growth.strategy_portfolio import Selection, StrategyBank, StrategyPortfolio
 
 logger = logging.getLogger("rats.step_growth")
 
@@ -73,7 +58,6 @@ class StepGrowthController:
         env_type: str,
         library_getter: Callable[[], Any],
         curator: Any | None = None,
-        writer_getter: Callable[[], Any] | None = None,
     ) -> "StepGrowthController | None":
         if not step_growth_enabled():
             return None
@@ -81,23 +65,13 @@ class StepGrowthController:
             logger.warning("RATS_STEP_GROWTH=1 but env_type=%s (LIBERO only) — arm disabled", env_type)
             return None
         cfg = load_config()
-        ctrl = cls(cfg, output_dir=output_dir, library_getter=library_getter,
-                   writer_getter=writer_getter)
+        ctrl = cls(cfg, output_dir=output_dir, library_getter=library_getter)
         if curator is not None:
             ctrl.retarget_curator_prompt(curator)
         logger.info(
-            "Step-growth arm ENABLED (tier_policy=%s, extraction=%s, diversity=%s, config=%s)",
-            cfg.tier_policy, cfg.extraction_enabled,
-            "ON" if ctrl.portfolio is not None else "off",
-            cfg.source_path or "<defaults>",
+            "Step-growth arm ENABLED (tier_policy=%s, extraction=%s, config=%s)",
+            cfg.tier_policy, cfg.extraction_enabled, cfg.source_path or "<defaults>",
         )
-        if ctrl.portfolio is not None:
-            logger.info(
-                "  Diversity: %d families from %s (seed=%s, min_pulls=%d, window=%d, collapse_k=%d)",
-                len(ctrl.portfolio.bank.families), ctrl.portfolio.bank.source,
-                cfg.diversity_seed, cfg.diversity_min_pulls, cfg.diversity_window_iters,
-                cfg.diversity_collapse_k,
-            )
         return ctrl
 
     def __init__(
@@ -108,13 +82,10 @@ class StepGrowthController:
         library_getter: Callable[[], Any],
         extractor: Any | None = None,
         register_listener: bool = True,
-        writer_getter: Callable[[], Any] | None = None,
-        portfolio: Any | None = None,
     ) -> None:
         self.cfg = cfg
         self.output_dir = Path(output_dir)
         self._library_getter = library_getter
-        self._writer_getter = writer_getter
         self.recorder = StepOracleRecorder(cfg)
         if register_listener:
             from rats.utils.execution_logger import register_policy_step_listener
@@ -135,27 +106,6 @@ class StepGrowthController:
         self._run_extractions = 0
         self._load_state()
         self._iter: dict[str, Any] = {}
-        # --- diversity half (section B); None keeps every hook below inert ---
-        self.portfolio: StrategyPortfolio | None = portfolio
-        if self.portfolio is None and diversity_enabled(cfg):
-            try:
-                self.portfolio = StrategyPortfolio(
-                    StrategyBank.load(cfg.diversity_bank_path),
-                    self._state_dir / "strategy_state.json",
-                    rng_seed=cfg.diversity_seed,
-                    min_pulls=cfg.diversity_min_pulls,
-                    window_iters=cfg.diversity_window_iters,
-                    collapse_k=cfg.diversity_collapse_k,
-                    per_type_families=cfg.diversity_per_type_families,
-                    show_evidence=cfg.diversity_show_evidence,
-                )
-                if not self.portfolio.bank.families:
-                    logger.warning("diversity enabled but the strategy bank is empty — disabling it")
-                    self.portfolio = None
-            except Exception as exc:
-                logger.warning("diversity setup failed (%s) — running without it", exc)
-                self.portfolio = None
-        self._writer_warned = False
 
     # -------------------------------------------------------------- curator
     def retarget_curator_prompt(self, curator: Any) -> None:
@@ -231,10 +181,6 @@ class StepGrowthController:
                 "activity_name": str(task_proposal.get("activity_name") or ""),
                 "available_functions": list(scene_context.get("available_functions") or []),
                 "attempts": {},
-                # diversity (unused when self.portfolio is None)
-                "selection": None,
-                "misses": {},
-                "pending_reward": None,
             }
             sg = iteration_data.setdefault("step_growth", {})
             sg.update({
@@ -244,15 +190,6 @@ class StepGrowthController:
                 "bddl_path": str(self._iter["bddl_path"]) if self._iter["bddl_path"] else None,
                 "attempts": {},
             })
-            if self.portfolio is not None:
-                sg["diversity"] = {
-                    "enabled": True,
-                    "bank": self.portfolio.bank.source,
-                    "selections": {},
-                    "fingerprints": {},
-                    "rewards": [],
-                    "collapse": self.portfolio.collapse,
-                }
         except Exception as exc:
             logger.warning("step-growth on_plan_ready failed (non-fatal): %s", exc)
 
@@ -272,12 +209,6 @@ class StepGrowthController:
                 self._iter = {"iteration": iteration, "plan_steps": [], "attempts": {}, "goal_state": None}
             if self._iter.get("goal_state") is None:
                 self._iter["goal_state"] = self._resolve_goal_state(low_level)
-            if self.portfolio is not None:
-                pending = self._iter.get("pending_reward")
-                if pending and int(pending.get("attempt_in_iter", -1)) != attempt_in_iter:
-                    self._flush_reward()
-                if self._iter.get("selection") is None:
-                    self._select_families(iteration=iteration, attempt=attempt)
         except Exception as exc:
             logger.warning("step-growth on_attempt_start failed (non-fatal): %s", exc)
 
@@ -297,100 +228,6 @@ class StepGrowthController:
             )
         except Exception as exc:
             logger.warning("step-growth on_execution_start failed (non-fatal): %s", exc)
-
-    def note_code(
-        self,
-        *,
-        iteration: int,
-        attempt: int,
-        attempt_in_iter: int,
-        code: str,
-        scene_context: dict[str, Any],
-        iteration_data: dict[str, Any],
-    ) -> dict[str, Any] | None:
-        """Fingerprint the code this attempt is about to run (diversity only).
-
-        Reads only what the agent wrote. The fingerprint feeds the collapse
-        rule -- five first-attempts in a row that vote the same family AND
-        hard-code an orientation means the search has degenerated, and the
-        next iteration's first attempt excludes that recipe.
-        """
-        if self.portfolio is None:
-            return None
-        try:
-            available = list(scene_context.get("available_functions")
-                             or self._iter.get("available_functions") or [])
-            fp = code_fingerprint(code, available, self._learned_names(), self.portfolio.bank)
-            collapse = self.portfolio.note_fingerprint(iteration, attempt_in_iter, fp)
-            div = iteration_data.setdefault("step_growth", {}).setdefault("diversity", {})
-            div.setdefault("fingerprints", {})[str(attempt)] = fp
-            div["collapse"] = collapse
-            return fp
-        except Exception as exc:
-            logger.warning("step-growth note_code failed (non-fatal): %s", exc)
-            return None
-
-    def on_retry(
-        self,
-        *,
-        iteration: int,
-        attempt: int,
-        attempt_in_iter: int,
-        attempt_boundary: bool,
-        plan: dict[str, Any] | None,
-        retry_feedback: dict[str, Any] | None,
-        diagnosis: dict[str, Any] | None,
-        iteration_data: dict[str, Any],
-    ) -> dict[str, Any] | None:
-        """Decide the NEXT attempt's strategy families (diversity only).
-
-        Families are sticky by default: an argument-level fix to a strategy
-        that is working should not throw the strategy away. They switch only
-        when the same step type has missed its milestone ``retry_switch_after``
-        attempts running AND the diagnoser blamed the physics.
-        """
-        if self.portfolio is None:
-            return None
-        try:
-            if attempt_boundary:
-                self._flush_reward()
-            prev: Selection | None = self._iter.get("selection")
-            if prev is None:
-                return None
-            if not attempt_boundary:
-                # Within-attempt turn transition: the env still holds the
-                # partial result of this strategy; changing it mid-attempt
-                # would leave the next turn operating on a state the new
-                # strategy never produced.
-                return None
-            sel = self.portfolio.select_for_retry(
-                prev,
-                misses=dict(self._iter.get("misses") or {}),
-                retry_feedback=retry_feedback,
-                diagnosis=diagnosis,
-                goal_state=self._iter.get("goal_state"),
-                available_functions=self._iter.get("available_functions") or [],
-                iteration=iteration,
-                attempt=attempt,
-                retry_switch_after=self.cfg.diversity_retry_switch_after,
-            )
-            # A switched type starts its streak over: the count is "this family
-            # missed N times", not "this phase has missed N times". Without the
-            # reset the streak stays >= retry_switch_after forever and every
-            # later retry switches again, burning the whole pool in one
-            # iteration (smoke 5258527: 5 grasp families in 6 attempts).
-            misses = dict(self._iter.get("misses") or {})
-            for t, why in sel.reasons.items():
-                if why == "switched":
-                    misses[t] = 0
-            self._iter["misses"] = misses
-            self._install_selection(sel)
-            div = iteration_data.setdefault("step_growth", {}).setdefault("diversity", {})
-            div["rewards"] = list(self._iter.get("reward_events") or [])
-            return sel.as_dict()
-        except Exception as exc:
-            logger.warning("step-growth on_retry failed (non-fatal): %s", exc)
-            return None
 
     def on_attempt_executed(
         self,
@@ -434,28 +271,8 @@ class StepGrowthController:
             logger.warning("step-growth on_iteration_end failed (non-fatal): %s", exc, exc_info=True)
             return None
         finally:
-            self._end_iteration_diversity(iteration_data)
             self._iter = {}
             self._save_state()
-
-    def _end_iteration_diversity(self, iteration_data: dict[str, Any]) -> None:
-        """Pay the last attempt, disarm the directive, persist the bandit."""
-        if self.portfolio is None:
-            return
-        try:
-            self._flush_reward()
-            writer = self._writer()
-            if writer is not None and hasattr(writer, "pending_directive"):
-                writer.pending_directive = ""
-                writer.pending_directive_meta = {}
-            div = iteration_data.setdefault("step_growth", {}).setdefault("diversity", {})
-            div["rewards"] = list(self._iter.get("reward_events") or [])
-            div["misses"] = dict(self._iter.get("misses") or {})
-            div["collapse"] = self.portfolio.collapse
-            div["family_stats"] = self.portfolio.stats_snapshot()
-            self.portfolio.save()
-        except Exception as exc:
-            logger.warning("step-growth diversity epilogue failed (non-fatal): %s", exc)
 
     # ---------------------------------------------------------- internals
     @staticmethod
@@ -521,110 +338,6 @@ class StepGrowthController:
             for ev in events or []:
                 credited.append({"lifecycle": ev})
         return credited
-
-    # ---------------------------------------------------------- diversity
-    def _writer(self) -> Any | None:
-        if self._writer_getter is None:
-            return None
-        try:
-            return self._writer_getter()
-        except Exception:
-            return None
-
-    def _apply_directive(self, selection: Selection) -> str:
-        """Arm the writer's priority-0 slot for the next ``write()`` call."""
-        assert self.portfolio is not None
-        text = self.portfolio.render(selection)
-        writer = self._writer()
-        if writer is None or not hasattr(writer, "pending_directive"):
-            if not self._writer_warned:
-                logger.warning(
-                    "diversity: the policy writer cannot carry a directive "
-                    "(%s) — families are still selected and scored, but the "
-                    "writer never sees them", type(writer).__name__,
-                )
-                self._writer_warned = True
-            return text
-        writer.pending_directive = text
-        try:
-            writer.pending_directive_meta = selection.as_dict()
-        except Exception:
-            pass
-        return text
-
-    def _persist_directive(self, selection: Selection, text: str) -> None:
-        """Save the exact text that was armed, next to the attempt's artifacts.
-
-        The loop only persists a policy-writer prompt when there IS retry
-        feedback (``_save_policy_writer_retry_artifacts`` returns early
-        otherwise), so attempt 0 — the one the collapse metric is about —
-        leaves no prompt on disk. This file is how a run can be audited for
-        what the writer was told on every attempt.
-        """
-        if not text:
-            return
-        try:
-            iteration = int(self._iter.get("iteration") or selection.iteration)
-            path = (self.output_dir / f"iteration_{iteration:03d}"
-                    / f"strategy_directive_attempt{int(selection.attempt):02d}.txt")
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text)
-        except Exception as exc:
-            logger.debug("strategy directive artifact write failed: %s", exc)
-
-    def _install_selection(self, selection: Selection) -> None:
-        self._iter["selection"] = selection
-        self._persist_directive(selection, self._apply_directive(selection))
-        if selection.families:
-            logger.info(
-                "  Strategy: %s%s",
-                ", ".join(f"{t}={selection.families[t]}({selection.reasons.get(t, '')})"
-                          for t in selection.step_types if t in selection.families),
-                (" | " + " | ".join(selection.notes)) if selection.notes else "",
-            )
-
-    def _select_families(self, *, iteration: int, attempt: int) -> None:
-        assert self.portfolio is not None
-        sel = self.portfolio.select(
-            goal_state=self._iter.get("goal_state"),
-            available_functions=self._iter.get("available_functions") or [],
-            iteration=iteration,
-            attempt=attempt,
-        )
-        self._install_selection(sel)
-
-    def _note_attempt_outcome(
-        self, *, iteration: int, attempt: int, attempt_in_iter: int, achieved: list[str],
-    ) -> None:
-        """Remember this attempt's milestones; the bandit is paid when the
-        attempt is over (turns inside one attempt share a cumulative record,
-        so only the last one is the attempt's real outcome)."""
-        if self.portfolio is None:
-            return
-        sel: Selection | None = self._iter.get("selection")
-        if sel is None:
-            return
-        self._iter["pending_reward"] = {
-            "attempt_in_iter": attempt_in_iter, "attempt": attempt,
-            "iteration": iteration, "achieved": list(achieved), "selection": sel,
-        }
-
-    def _flush_reward(self) -> list[dict[str, Any]]:
-        """Pay the bandit for the attempt that just ended and update miss streaks."""
-        pending = self._iter.get("pending_reward")
-        self._iter["pending_reward"] = None
-        if self.portfolio is None or not pending:
-            return []
-        sel: Selection = pending["selection"]
-        achieved = pending.get("achieved") or []
-        events = self.portfolio.update(sel, achieved, iteration=int(pending.get("iteration", 0)))
-        misses: dict[str, int] = dict(self._iter.get("misses") or {})
-        for ev in events:
-            t = str(ev.get("step_type"))
-            misses[t] = 0 if ev.get("reward") else misses.get(t, 0) + 1
-        self._iter["misses"] = misses
-        self._iter.setdefault("reward_events", []).extend(events)
-        return events
 
     def _sidecar_path(self, iteration: int, attempt: int) -> Path:
         return self.output_dir / f"iteration_{iteration:03d}" / f"attempt_{attempt:02d}" / "step_oracle.json"
@@ -703,17 +416,6 @@ class StepGrowthController:
         self._iter.setdefault("attempts", {})[attempt] = {
             "code": code, "blocks": blocks, "verdicts": verdicts, "result": result,
         }
-        if self.portfolio is not None:
-            self._note_attempt_outcome(
-                iteration=iteration, attempt=attempt,
-                attempt_in_iter=attempt_in_iter, achieved=list(verdicts.achieved),
-            )
-            sel: Selection | None = self._iter.get("selection")
-            div = sg.setdefault("diversity", {"enabled": True})
-            if sel is not None:
-                summary["strategy"] = sel.as_dict()
-                div.setdefault("selections", {})[str(attempt)] = sel.as_dict()
-            div["rewards"] = list(self._iter.get("reward_events") or [])
         logger.info(
             "  Step-oracle: progress %.2f (%s) S*=%s fail=%s(%s) credited=%d",
             verdicts.progress, ",".join(verdicts.achieved) or "-",
@@ -847,16 +549,6 @@ class StepGrowthController:
         name = str(skill.get("name") or "step_skill")
         code = str(skill.get("code") or "")
         tag = str(skill.get("strategy_tag") or "other")
-        # With diversity on, the family this attempt was told to use is a
-        # better tag than the extractor's guess: it is what the code actually
-        # committed to, and it is what keeps two family variants of the same
-        # behaviour from being deduplicated into one.
-        sel: Selection | None = self._iter.get("selection") if self.portfolio is not None else None
-        if sel is not None and tag in ("", "other"):
-            for t in sel.step_types:
-                if t in sel.families:
-                    tag = sel.families[t]
-                    break
         # Keep strategy variants distinct: same name, different tag -> suffix.
         try:
             existing = {s.get("name"): s for s in self.library.get_full_skills_for_planner(include_deprecated=True)}
